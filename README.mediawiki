@@ -20,3 +20,58 @@ XWeb is simple modular library to create JavaEE base web applications. You are a
 	<version>0.6.0</version>
 </dependency>
 </pre>
+
+== Configurations ==
+* Add to web.xml
+<pre>
+<!-- XWEB requirements -->
+<filter>
+	<filter-name>AuthenticationFilter</filter-name>
+	<filter-class>ir.xweb.server.Authentication</filter-class>
+</filter>
+<filter-mapping>
+	<filter-name>AuthenticationFilter</filter-name>
+	<url-pattern>/*</url-pattern>
+	<!--<dispatcher>REQUEST</dispatcher>
+	<dispatcher>FORWARD</dispatcher>-->
+</filter-mapping>
+
+<servlet>
+	<servlet-name>api</servlet-name>
+	<display-name>api</display-name>
+	<description>Handle system API</description>
+	<servlet-class>ir.xweb.server.ApiManager</servlet-class>
+	<load-on-startup>1</load-on-startup>
+</servlet>
+
+<servlet-mapping>
+	<servlet-name>api</servlet-name>
+	<url-pattern>/api</url-pattern>
+</servlet-mapping>
+
+<listener>
+	<listener-class>ir.xweb.server.XWebLoader</listener-class>
+</listener>
+</pre>
+* Create xweb.xml (same directory as web.xml)
+<pre>
+<?xml version="1.0" encoding="utf-8"?>
+<xweb version='0.6.0'>
+	<datasources>
+		<datasource>
+			...
+		</datasource>
+	</datasources>
+
+	<modules>
+		<module>
+			...
+		</module>
+		...
+	</modules>
+
+	<properties>
+		...
+	</properties>
+</xweb>
+</pre>
