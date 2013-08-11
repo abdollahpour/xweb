@@ -4,7 +4,7 @@
 	<groupId>ir.xweb</groupId>
 	<artifactId>xweb</artifactId>
 	<packaging>jar</packaging>
-	<version>0.6.0</version>
+	<version>0.6.1-SNAPSHOT</version>
 	<name>xweb</name>
 	<description>XWeb is standard modular platform base on JavaEE</description>
 	<url>https://github.com/abdollahpour/xweb</url>
@@ -90,3 +90,9 @@
 	</distributionManagement>
 
 </project>
+
+<!--
+== How to deploy ==
+mvn -DaltDeploymentRepository=snapshot-repo::default::file:snapshots clean deploy
+mvn -DaltDeploymentRepository=repo::default::file:releases/ clean deploy
+-->
