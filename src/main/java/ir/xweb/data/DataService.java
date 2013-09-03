@@ -172,6 +172,16 @@ public class DataService {
     }
 
     public void write(Writer w, String format, Object object) throws IOException {
+        if(w == null) {
+            throw new IllegalArgumentException("null writer");
+        }
+        if(format == null) {
+            throw new IllegalArgumentException("null format");
+        }
+        if(object == null) {
+            throw new IllegalArgumentException("null object");
+        }
+
         writer = writers.get(format);
         if(writer == null) {
             throw new IOException("format type not found: " + format);

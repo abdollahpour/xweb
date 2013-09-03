@@ -14,6 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.WritableByteChannel;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -325,31 +329,74 @@ public class ResourceModule extends Module {
         }
     }
 
+    public File initResourceDir(String path) {
+        if(this.defaultIdentifier == null) {
+            throw new IllegalArgumentException("Default identifier not found");
+        }
+
+        return initResourceDir(this.defaultIdentifier, path);
+    }
+
+    public File getDataDir() {
+        return dataDir;
+    }
+
+    public File getTempDir() {
+        return tempDir;
+    }
+
+    public File initResourceDir(String id, String path) {
+        File dir = new File(dataDir, id + File.separator + path);
+        if(dir.exists() || dir.mkdirs()) {
+            return dir;
+        }
+        return null;
+    }
+
+    public File initResourceFile(String userId, String path) {
+        File dir = new File(dataDir, userId);
+        File file = new File(dir, path);
+
+        File p = file.getParentFile();
+        if(!p.exists() && !p.mkdirs()) {
+            return null;
+        }
+
+        return file;
+    }
+
+    /*public File initResourceDir(XWebUser user, String path) {
+        File dir = new File(dataDir, user.getIdentifier() + File.separator + path);
+        if(dir.exists() || dir.mkdirs()) {
+            return dir;
+        }
+        return null;
+    }*/
+
+    /**
+     * Write partial file data
+     * @param file
+     * @param out
+     * @param from
+     * @param till
+     * @throws ServletException
+     * @throws IOException
+     */
     private void write(final File file, final OutputStream out, final long from, final long till)
             throws ServletException, IOException {
 
-        final RandomAccessFile in = new RandomAccessFile(file, "r");
-        // TODO
-        in.skipBytes((int) from);
-
-        final byte[] buffer = new byte[BUFFER_SIZE];
-
-        long contentLength = till - from;
-        int bufferFullness;
-        //final long timeStampNano = System.nanoTime();
-        //final long timeDifferenceNano;
-
-        while (contentLength > 0) {
-            if (contentLength / buffer.length > 0) {
-                bufferFullness = buffer.length;
-            } else {
-                bufferFullness = (int) contentLength % buffer.length;
+        final RandomAccessFile f = new RandomAccessFile(file, "r");
+        final WritableByteChannel outChannel = Channels.newChannel(out);
+        try {
+            final MappedByteBuffer map = f.getChannel().map(FileChannel.MapMode.READ_ONLY, from, till - from);
+            outChannel.write(map);
+        } finally {
+            if(f != null) {
+                try {
+                    f.close();
+                } catch (Exception ex) {}
             }
-            in.read(buffer, 0, bufferFullness);
-            out.write(buffer, 0, bufferFullness);
-            contentLength = contentLength - bufferFullness;
         }
-        out.flush();
     }
 
     private String getETag(final File file) {
@@ -425,3 +472,4 @@ public class ResourceModule extends Module {
     }
 
 }
+
