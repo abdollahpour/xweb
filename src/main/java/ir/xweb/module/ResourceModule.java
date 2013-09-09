@@ -99,25 +99,19 @@ public class ResourceModule extends Module {
                     file = getFile(user, path);
                 }
             } else {
-                // TODO: Complete this part
-
-                /*User u = findUser(emf, id);
-
-                if(u != null) {
-                    if(path.startsWith(MODE_PUBLIC + File.separator)) {
-                        file = getFile(u, path);
-                    } else if(path.startsWith(MODE_PROTECTED + File.separator)) {
-                        if(user != null) {
-                            file = getFile(u, path);
-                        } else {
-                            logger.info("Try to access resource that is protected by user session is not active: " + path);
-                        }
-                    } else if(Constants.ROLE_ADMIN.endsWith(u.role)) {
-                        file = getFile(u, path);
+                if(path.startsWith(MODE_PUBLIC + File.separator)) {
+                    file = getFile(id, path);
+                } else if(path.startsWith(MODE_PROTECTED + File.separator)) {
+                    if(user != null) {
+                        file = getFile(id, path);
                     } else {
-                        logger.info("Try to access resource that is private by user session is not active: " + path);
+                        logger.info("Try to access resource that is protected by user session is not active: " + path);
                     }
-                }*/
+                /*} else if(Constants.ROLE_ADMIN.endsWith(u.role)) {
+                    file = getFile(u, path);*/
+                } else {
+                    logger.info("Try to access resource that is private by user session is not active: " + path);
+                }
             }
 
             if(file == null || !file.exists()) {
@@ -329,7 +323,7 @@ public class ResourceModule extends Module {
         }
     }
 
-    public File initResourceDir(String path) {
+    public File initResourceDir(final String path) {
         if(this.defaultIdentifier == null) {
             throw new IllegalArgumentException("Default identifier not found");
         }
