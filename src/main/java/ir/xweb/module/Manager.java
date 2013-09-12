@@ -40,8 +40,6 @@ public class Manager {
 
     private final static String VALIDATOR_NAME = "[a-zA-Z0-9_]{1,30}";
 
-	private Map<String, DataSource> dataSources = new HashMap<String, DataSource>();
-	
 	private Map<String, Module> modules = new HashMap<String, Module>();
 
     private Map<String, String> properties = null;
@@ -64,22 +62,6 @@ public class Manager {
             SAXBuilder builder = new SAXBuilder();
             Document document = builder.build(in);
             Element root = document.getRootElement();
-
-            List<?> datasources = root.getChild("datasources").getChildren("datasource");
-            for(Object o:datasources) {
-                Element element = (Element)o;
-
-                String name = element.getChildText("name");
-                String className = element.getChildText("class");
-
-                try {
-                    Class<?> c = Class.forName(className, false, classLoader);
-                    DataSource datasource = (DataSource) c.newInstance();
-                    dataSources.put(name, datasource);
-                } catch (Exception ex) {
-                    throw new IOException("Error in load datasource", ex);
-                }
-            }
 
             List<?> moduleElements = root.getChild("modules").getChildren("module");
             for(Object o:moduleElements) {
@@ -260,14 +242,6 @@ public class Manager {
         }
         return null;
     }
-
-    public DataSource getDataSource(String name) {
-        return dataSources.get(name);
-    }
-	
-	public Map<String, DataSource> getDataSources() {
-		return dataSources;
-	}
 
     private String applyEnvironmentVariable(String s) {
         Map<String, String> env = new HashMap<String, String>();

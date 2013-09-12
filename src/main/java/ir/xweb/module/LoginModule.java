@@ -39,14 +39,6 @@ public class LoginModule extends Module {
 			HttpServletResponse response, ModuleParam params,
 			HashMap<String, FileItem> files) throws IOException {
 		
-		Manager manager = (Manager) context.getAttribute(Constants.SESSION_MANAGER);
-		DataSource dataSource = manager.getDataSource(Constants.DATA_SOURCE_USER);
-
-		if(dataSource == null) {
-            logger.error("Data sources not found! Please make sure that you have proper xweb.xml config");
-			throw new ModuleException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Data sources don't available!");
-		}
-		
 		String action  = params.validate("action", "login|check|logout", true).getString(null);
         logger.debug("Login module request for action = " + action);
 
@@ -68,16 +60,18 @@ public class LoginModule extends Module {
 			
 			boolean remember = "true".equals(params.getString("remember", "false"));
             // (user, temporary password, is temporary password (false by default))
-			XWebUser user = (XWebUser) dataSource.getData(context, UserDataSource.DATA_SOURCE_USER_AUTH_PASS, identifier, password);
+			XWebUser user = getUser(context, identifier, password);
 
 			if (user != null) {
                 request.getSession().setAttribute(Constants.SESSION_USER, user);
 
                 if(remember) {
-                    String uuid = (String) dataSource.getData(context, UserDataSource.DATA_SOURCE_USER_REMEMBER, identifier, true);
+                    String uuid = generateUUID(context, identifier);
 
-                    CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
-                    response.getWriter().write(uuid);
+                    if(uuid != null) {
+                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                        response.getWriter().write(uuid);
+                    }
                 } else {
                     CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
                 }
@@ -93,5 +87,13 @@ public class LoginModule extends Module {
 			CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
 		}
 	}
+
+    public XWebUser getUser(ServletContext context, String id, String pass) {
+        return null;
+    }
+
+    public String generateUUID(ServletContext context, String id) {
+        return null;
+    }
 
 }

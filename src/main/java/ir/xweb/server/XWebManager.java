@@ -20,11 +20,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class ApiManager extends HttpServlet {
+public class XWebManager extends HttpServlet {
 
 	private static final long serialVersionUID = -2953215151807131181L;
 	
-	private final static Logger logger = LoggerFactory.getLogger(ApiManager.class);
+	private final static Logger logger = LoggerFactory.getLogger("XWebManager");
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)

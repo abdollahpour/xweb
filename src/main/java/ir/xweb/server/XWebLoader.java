@@ -39,11 +39,6 @@ public class XWebLoader implements ServletContextListener {
 				logger.debug("\t\t" + name + ": " + manager.getModules().get(name).getClass());
 			}
 			
-			logger.debug(manager.getModules().size() + " datasource successfully loaded");
-			for(String name:manager.getDataSources().keySet()) {
-				logger.debug("\t\t" + name + ": " + manager.getDataSources().get(name).getClass());
-			}
-			
 			context.getServletContext().setAttribute(Constants.SESSION_MANAGER, manager);
 		} catch (Exception ex) {
 			logger.error("Error in load modules", ex);

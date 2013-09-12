@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.lang.IllegalArgumentException;
 import java.util.*;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletOutputStream;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,7 +19,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
-public abstract class Module {
+public class Module {
 
     public final static String PROPERTIES_MODULE_GZIP = "module_gzip";
 
@@ -136,40 +135,33 @@ public abstract class Module {
         } catch (Exception ex) {
             throw new IOException(ex);
         }
-
-
-        // Check for gzip active configuration
-        if(properties.getBoolean(PROPERTIES_MODULE_GZIP, false)) {
-            //System.out.println("process");
-            if(request instanceof HttpServletRequest) {
-                //HttpServletRequest req = (HttpServletRequest)request;
-                String contentEncoding = request.getHeader("Content-Encoding");
-                if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
-                    request = new GZIP2WayRequestWrapper((HttpServletRequest)request);
-                    //System.out.println("process1");
-                }
-            }
-            if(response instanceof HttpServletResponse) {
-                //HttpServletRequest req = (HttpServletRequest)request;
-                String acceptEncoding = request.getHeader("Accept-Encoding");
-                if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
-                    response = new GZIP2WayResponseWrapper((HttpServletResponse)response);
-                    //System.out.println("process2");
-                }
-            }
-        }
 		
 		process(context, request, response, moduleParam, files);
 
         response.flushBuffer();
 	}
 	
-	public abstract void process(
-			ServletContext context,
+	public void process(
+            ServletContext context,
 			HttpServletRequest request, 
 			HttpServletResponse response, 
 			ModuleParam param,
-			HashMap<String, FileItem> files) throws IOException;
+			HashMap<String, FileItem> files) throws IOException {
+
+    }
+
+    public void doFilter(
+            ServletContext context,
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain) throws IOException, ServletException {
+    }
+
+    public void initFilter(FilterConfig filterConfig) throws ServletException {
+    }
+
+    public void destroyFilter() {
+    }
 
 	/*public boolean hasPermission(ModuleParam params, String role) {
 		if(info != null && info.getRoles() != null) {
