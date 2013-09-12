@@ -21,6 +21,11 @@ XWeb is simple modular library to create JavaEE web applications. You are able t
 </dependency>
 </pre>
 
+If you wanna use the last SNAPSHOT version. Download the source code
+  git clone http://github.com/abdollahpour/xweb.git
+And then install snapshot to local respository with:
+  mvn clean install
+
 == Configurations ==
 * Add to web.xml
 <pre>
@@ -79,6 +84,6 @@ XWeb is simple modular library to create JavaEE web applications. You are able t
 == Add features ==
 Now you can add modules and configure your application:
 * [https://github.com/abdollahpour/xweb/wiki/configure Configure XWeb application]
-* [https://github.com/abdollahpour/xweb/wiki/modules Add modules]
+* [https://github.com/abdollahpour/xweb/wiki/Module modules]
 * [https://github.com/abdollahpour/xweb/wiki/create_modules Create custom modules]
 * [https://github.com/abdollahpour/xweb/wiki/html Bind it to HTMLs]

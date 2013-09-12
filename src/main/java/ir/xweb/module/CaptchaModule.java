@@ -194,6 +194,8 @@ public class CaptchaModule extends Module {
         ImageIO.write(image, "jpeg", outputStream);
         outputStream.close();
 
+        System.out.println("codecode: " + code);
+
         request.getSession().setAttribute(SESSION_CAPTCHA_CODE, code);
         request.getSession().setAttribute(SESSION_CAPTCHA_EXPIRE, expire);
     }
@@ -206,13 +208,20 @@ public class CaptchaModule extends Module {
         request.getSession().removeAttribute(CaptchaModule.SESSION_CAPTCHA_CODE);
         request.getSession().removeAttribute(CaptchaModule.SESSION_CAPTCHA_EXPIRE);
 
-        // check for captcha
-        if(System.currentTimeMillis() > expire) {
-            throw new ModuleException("Captcha code expired!");
-        }
+        System.out.println("code: " + code);
+        System.out.println("expire: " + expire);
 
-        if(code != Integer.parseInt(captcha)) {
-            throw new ModuleException("Illegal captcha code: " + captcha);
+        // check for captcha
+        if(expire != null) {
+            if(System.currentTimeMillis() > expire) {
+                throw new ModuleException("Captcha code expired!");
+            }
+
+            if(code != Integer.parseInt(captcha)) {
+                throw new ModuleException("Illegal captcha code: " + captcha);
+            }
+        } else {
+            throw new IOException("Captcha code does not exist!");
         }
     }
 

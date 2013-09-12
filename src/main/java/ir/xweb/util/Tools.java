@@ -2,8 +2,6 @@ package ir.xweb.util;
 
 import java.io.*;
 import java.net.URLDecoder;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
