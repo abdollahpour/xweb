@@ -110,9 +110,16 @@ public class Manager {
                     List<?> propertyElements = propertiesElement.getChildren("property");
                     for(Object o2:propertyElements) {
                         Element property = (Element)o2;
-                        String key = property.getAttribute("key").getValue();
-                        String text = applyEnvironmentVariable(property.getText());
-                        properties.put(key, text);
+                        String key = property.getAttributeValue("key");
+                        if(key != null) {
+                            String value = property.getAttributeValue("value");
+                            if(value != null) {
+                                properties.put(key, value);
+                            } else {
+                                String text = applyEnvironmentVariable(property.getText());
+                                properties.put(key, text);
+                            }
+                        }
                     }
                 }
 
