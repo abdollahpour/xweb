@@ -4,6 +4,7 @@ import ir.xweb.server.Constants;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.Base64;
 import ir.xweb.util.CookieTools;
+import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,15 +15,20 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.util.HashMap;
 
 public class AuthenticationModule extends Module {
 
     private Logger logger = LoggerFactory.getLogger("AuthenticationModule");
 
-    private ServletContext context;
+    private final static int UUID_AGE_SEC = 60 * 60 * 24 * 30; // 1 month
 
-    public AuthenticationModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    private final int cookieAge;
+
+    public AuthenticationModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
+
+        cookieAge = properties.getInt("cookie-age", UUID_AGE_SEC);
     }
 
     @Override
@@ -157,8 +163,74 @@ public class AuthenticationModule extends Module {
         }
     }
 
+    @Override
+    public void process(ServletContext context, HttpServletRequest request,
+                        HttpServletResponse response, ModuleParam params,
+                        HashMap<String, FileItem> files) throws IOException {
+
+        String action  = params.validate("action", "login|check|logout", true).getString(null);
+        logger.debug("Login module request for action = " + action);
+
+        /**
+         * Actions:
+         * login: Fully login into system. User need to enter captcha code also
+         * temp_pass: generate temporary password for simple authenticate transactions
+         */
+
+        if("login".equals(action)) {
+            String identifier = params.validate(Constants.MODULE_LOGIN_PARAM_IDENTIFIER, null, true).getString(null);
+            // Password hashed with MD5
+            String password = params.validate(Constants.MODULE_LOGIN_PARAM_PASSWORD, null, true).getString(null);
+            String captcha = params.validate(Constants.MODULE_LOGIN_PARAM_CAPTCHA, CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
+
+            CaptchaModule.validateOrThrow(request, captcha);
+
+            logger.info("User try to login: " + identifier);
+
+            boolean remember = "true".equals(params.getString("remember", "false"));
+            // (user, temporary password, is temporary password (false by default))
+            XWebUser user = getUserWithId(context, identifier, password);
+
+            if (user != null) {
+                request.getSession().setAttribute(Constants.SESSION_USER, user);
+
+                if(remember) {
+                    String uuid = generateUUID(context, identifier);
+
+                    if(uuid != null) {
+                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                        response.getWriter().write(uuid);
+                    }
+                } else {
+                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
+                }
+
+                logger.info(identifier + " successfully login into system. Remember = " + remember);
+
+                return;
+            } else {
+                throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
+            }
+        } else if("logout".equals(action)) {
+            request.getSession().invalidate();
+            CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
+        }
+    }
+
     public XWebUser getUserWithUUID(ServletContext context, String uuid) {
         return null;
+    }
+
+    public XWebUser getUserWithId(ServletContext context, String userId, String pass) {
+        return null;
+    }
+
+    public String generateUUID(ServletContext context, String userId) {
+        return null;
+    }
+
+    public boolean createDefaultUser(ServletContext context, String username) {
+        return false;
     }
 
 }
