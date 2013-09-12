@@ -21,6 +21,8 @@ public class AuthenticationModule extends Module {
 
     private Logger logger = LoggerFactory.getLogger("AuthenticationModule");
 
+    public final static String PARAM_DEFAULT = "default";
+
     public final static String PARAM_REDIRECT = "redirect";
 
     public final static String PARAM_CHECK = "check";
@@ -35,6 +37,14 @@ public class AuthenticationModule extends Module {
         super(manager, info, properties);
 
         cookieAge = properties.getInt("cookie-age", UUID_AGE_SEC);
+    }
+
+    @Override
+    public void init(final ServletContext context) {
+        final String defaultUser = getProperties().getString(PARAM_DEFAULT, null);
+        if(defaultUser != null) {
+            createDefaultUser(context, defaultUser);
+        }
     }
 
     @Override
@@ -69,8 +79,6 @@ public class AuthenticationModule extends Module {
         String redirect = getProperties().getString(PARAM_REDIRECT, null);
         String check = getProperties().getString(PARAM_CHECK, null);
         String ignore = getProperties().getString(PARAM_IGNORE, null);
-
-        //System.out.println(path + " " + path.matches(check));
 
         if(uri.equals(redirect)){
             filterChain.doFilter(request, response);
@@ -235,6 +243,12 @@ public class AuthenticationModule extends Module {
         return null;
     }
 
+    /**
+     * Create default user if it's not exist
+     * @param context
+     * @param username
+     * @return true if user created false if it's already exist
+     */
     public boolean createDefaultUser(ServletContext context, String username) {
         return false;
     }
