@@ -37,11 +37,5 @@ public class Constants {
     public final static String MODULE_LOGIN_PARAM_TEMP_PASS = "temp_pass";
 
     public final static String MODULE_LOGIN_PARAM_CAPTCHA = "captcha";
-
-    public final static String AUTHENTICATION_REDIRECT = "authentication.redirect";
-
-    public final static String AUTHENTICATION_CHECK = "authentication.check";
-
-    public final static String AUTHENTICATION_IGNORE = "authentication.ignore";
 	
 }

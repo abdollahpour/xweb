@@ -32,7 +32,7 @@ public class XWebLoader implements ServletContextListener {
 			InputStream in = context.getServletContext().getResourceAsStream("/WEB-INF/xweb.xml");
 
 			
-			manager.load(context.getServletContext(), in);
+			manager.load(in);
 			
 			logger.debug(manager.getModules().size() + " module successfully loaded");
 			for(String name:manager.getModules().keySet()) {
@@ -47,6 +47,6 @@ public class XWebLoader implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		manager.unload();
+		manager.destroy();
 	}
 }

@@ -21,6 +21,12 @@ public class AuthenticationModule extends Module {
 
     private Logger logger = LoggerFactory.getLogger("AuthenticationModule");
 
+    public final static String PARAM_REDIRECT = "redirect";
+
+    public final static String PARAM_CHECK = "check";
+
+    public final static String PARAM_IGNORE = "ignore";
+
     private final static int UUID_AGE_SEC = 60 * 60 * 24 * 30; // 1 month
 
     private final int cookieAge;
@@ -60,9 +66,9 @@ public class AuthenticationModule extends Module {
         // we don't care about context path, so we trunk it
         String path = uri.getPath().substring(request.getContextPath().length());
 
-        String redirect = getProperties().getString(Constants.AUTHENTICATION_REDIRECT, null);
-        String check = getProperties().getString(Constants.AUTHENTICATION_CHECK, null);
-        String ignore = getProperties().getString(Constants.AUTHENTICATION_IGNORE, null);
+        String redirect = getProperties().getString(PARAM_REDIRECT, null);
+        String check = getProperties().getString(PARAM_CHECK, null);
+        String ignore = getProperties().getString(PARAM_IGNORE, null);
 
         //System.out.println(path + " " + path.matches(check));
 

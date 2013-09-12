@@ -2,6 +2,8 @@ package ir.xweb.util;
 
 import java.io.*;
 import java.net.URLDecoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,6 +106,37 @@ public class Tools {
             }
         }
         return params;
+    }
+
+    public static String md5(String pass)  {
+        if(pass != null) {
+            try {
+                MessageDigest algorithm = MessageDigest.getInstance("MD5");
+
+                byte[] defaultBytes = pass.getBytes("UTF-8");
+                algorithm.reset();
+                algorithm.update(defaultBytes);
+                byte messageDigest[] = algorithm.digest();
+
+                StringBuffer hexString = new StringBuffer();
+
+                for (int i = 0; i < messageDigest.length; i++) {
+                    String hex = Integer.toHexString(0xFF & messageDigest[i]);
+                    if (hex.length() == 1)
+                    {
+                        hexString.append('0');
+                    }
+                    hexString.append(hex);
+                }
+
+                return hexString.toString();
+            } catch (NoSuchAlgorithmException ex) {
+                // never happen
+            } catch (UnsupportedEncodingException e) {
+                // never happen
+            }
+        }
+        return null;
     }
 
 }

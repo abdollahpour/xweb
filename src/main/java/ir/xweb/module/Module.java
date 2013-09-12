@@ -57,6 +57,12 @@ public class Module {
         }
     }
 
+    public void init(ServletContext context) {
+    }
+
+    public void destroy() {
+    }
+
 	public ModuleInfo getInfo() {
 		return info;
 	}
@@ -194,10 +200,6 @@ public class Module {
 
     public ModuleParam getProperties() {
         return properties;
-    }
-    
-    public void unload() {
-    	
     }
     
     public boolean redirectAuthFail() {

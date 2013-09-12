@@ -54,7 +54,8 @@ public class XWebManager extends HttpServlet {
                     // When Authentication exception happen, we it be possible (module have this feature and
                     // redirect URL was available) we will redirect connection to authentication page
 
-                    String redirect = manager.getProperty(Constants.AUTHENTICATION_REDIRECT);
+                    // TODO: Not support after modular Authentication
+                    /*String redirect = manager.getProperty(Constants.AUTHENTICATION_REDIRECT);
                     if(redirect != null) {
                         String uri = request.getRequestURI().substring(request.getContextPath().length());
 
@@ -64,7 +65,7 @@ public class XWebManager extends HttpServlet {
                                 + URLEncoder.encode(uri + "?" + request.getQueryString(), "UTF-8"));
 
                         return;
-                    }
+                    }*/
                 } else {
                     logger.error("Error in module process." +
                             " Module: " + module.getInfo().getName() +

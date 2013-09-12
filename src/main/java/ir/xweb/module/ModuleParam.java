@@ -8,7 +8,7 @@ public class ModuleParam implements Map<String, String> {
 
     private Map<String, String> data;
 
-    protected ModuleParam(Map<String, String> data) {
+    public ModuleParam(Map<String, String> data) {
         this.data = data;
     }
 
