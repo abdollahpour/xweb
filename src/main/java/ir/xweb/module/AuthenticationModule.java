@@ -33,10 +33,20 @@ public class AuthenticationModule extends Module {
 
     private final int cookieAge;
 
+    private final String redirect;
+
+    private final String check;
+
+    private final String ignore;
+
     public AuthenticationModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
 
         cookieAge = properties.getInt("cookie-age", UUID_AGE_SEC);
+
+        redirect = properties.getString(PARAM_REDIRECT, null);
+        check = properties.getString(PARAM_CHECK, null);
+        ignore = properties.getString(PARAM_IGNORE, null);
     }
 
     @Override
@@ -74,11 +84,7 @@ public class AuthenticationModule extends Module {
         }
 
         // we don't care about context path, so we trunk it
-        String path = uri.getPath().substring(request.getContextPath().length());
-
-        String redirect = getProperties().getString(PARAM_REDIRECT, null);
-        String check = getProperties().getString(PARAM_CHECK, null);
-        String ignore = getProperties().getString(PARAM_IGNORE, null);
+        final String path = uri.getPath().substring(request.getContextPath().length());
 
         if(uri.equals(redirect)){
             filterChain.doFilter(request, response);
