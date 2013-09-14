@@ -139,4 +139,39 @@ public class Tools {
         return null;
     }
 
+    public static String readTextFile(File file) throws IOException {
+        if(file == null) {
+            throw new IllegalArgumentException("null file");
+        }
+
+        // Max 20KB
+        if(file.length() > 20 * 1000) {
+            throw new IllegalArgumentException("Illegal file size");
+        }
+
+        StringBuilder s = new StringBuilder();
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+
+            InputStreamReader r = new InputStreamReader(fis, "UTF-8");
+
+            char[] buffer = new char[1024];
+            int size = 0;
+
+            while((size = r.read(buffer)) > 0)  {
+                s.append(buffer, 0, size);
+            }
+        } finally {
+            if(fis != null) {
+                try {
+                    fis.close();
+                } catch (Exception ex) {}
+            }
+        }
+
+        return s.toString();
+    }
+
 }

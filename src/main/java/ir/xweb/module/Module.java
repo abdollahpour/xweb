@@ -1,7 +1,7 @@
 /**
- * xweb project
+ * XWeb project
  * Created by Hamed Abdollahpour
- * http://www.mobile4use.com/xweb
+ * https://github.com/abdollahpour/xweb
  */
 
 package ir.xweb.module;

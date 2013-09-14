@@ -186,7 +186,11 @@ public class Manager {
 
             // now init modules with same order
             for(Map.Entry<String, Module> m:modules.entrySet()) {
-                m.getValue().init(context);
+                try {
+                    m.getValue().init(context);
+                } catch (Exception ex) {
+                    logger.error("Error to init module: " + m.getClass().getName(), ex);
+                }
             }
         } catch (JDOMException ex) {
             throw new IOException(ex);
