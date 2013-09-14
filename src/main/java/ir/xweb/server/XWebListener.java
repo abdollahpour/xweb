@@ -16,9 +16,9 @@ import javax.servlet.ServletContextListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class XWebLoader implements ServletContextListener {
+public class XWebListener implements ServletContextListener {
 	
-	private Logger logger = LoggerFactory.getLogger(XWebLoader.class);
+	private Logger logger = LoggerFactory.getLogger("XWebListener");
 	
 	private static Manager manager;
 
