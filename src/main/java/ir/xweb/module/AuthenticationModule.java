@@ -78,11 +78,11 @@ public class AuthenticationModule extends Module {
         ignore = properties.getString(PARAM_IGNORE, null);
 
         if(properties.containsKey(PARAM_XML_SOURCE)) {
-
+            importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
         } else if(properties.containsKey(PARAM_JSON_SOURCE)) {
-
+            importJsonSource(properties.getString(PARAM_JSON_SOURCE, null));
         } else if(properties.containsKey(PARAM_TEXT_SOURCE)) {
-
+            importTextSource(properties.getString(PARAM_TEXT_SOURCE, null));
         }
     }
 
