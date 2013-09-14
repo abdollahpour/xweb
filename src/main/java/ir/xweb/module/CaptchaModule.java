@@ -194,8 +194,6 @@ public class CaptchaModule extends Module {
         ImageIO.write(image, "jpeg", outputStream);
         outputStream.close();
 
-        System.out.println("codecode: " + code);
-
         request.getSession().setAttribute(SESSION_CAPTCHA_CODE, code);
         request.getSession().setAttribute(SESSION_CAPTCHA_EXPIRE, expire);
     }
@@ -207,9 +205,6 @@ public class CaptchaModule extends Module {
         // remove
         request.getSession().removeAttribute(CaptchaModule.SESSION_CAPTCHA_CODE);
         request.getSession().removeAttribute(CaptchaModule.SESSION_CAPTCHA_EXPIRE);
-
-        System.out.println("code: " + code);
-        System.out.println("expire: " + expire);
 
         // check for captcha
         if(expire != null) {

@@ -232,6 +232,8 @@ public class AuthenticationModule extends Module {
         final String defaultUser = getProperties().getString(PARAM_DEFAULT, null);
         if(defaultUser != null) {
             createDefaultUser(context, defaultUser);
+        } else {
+            logger.warn("Default user not found!");
         }
     }
 
@@ -376,10 +378,10 @@ public class AuthenticationModule extends Module {
          */
 
         if("login".equals(action)) {
-            String identifier = params.validate(Constants.MODULE_LOGIN_PARAM_IDENTIFIER, null, true).getString(null);
+            String identifier = params.validate("id", null, true).getString(null);
             // Password hashed with MD5
-            String password = params.validate(Constants.MODULE_LOGIN_PARAM_PASSWORD, null, true).getString(null);
-            String captcha = params.validate(Constants.MODULE_LOGIN_PARAM_CAPTCHA, CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
+            String password = params.validate("password", null, true).getString(null);
+            String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
 
             CaptchaModule.validateOrThrow(request, captcha);
 
