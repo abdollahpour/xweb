@@ -15,19 +15,20 @@ public class XWebFilter implements Filter {
 
     private final static Logger logger = LoggerFactory.getLogger("XWebFilter");
 
-    private Collection<Module> modules = null;
+    private Collection<Module> modules;
 
     private ServletContext context;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        Manager manager = (Manager) filterConfig.getServletContext().getAttribute(Constants.SESSION_MANAGER);
+    public void init(final FilterConfig filterConfig) throws ServletException {
+        final Manager manager = (Manager) filterConfig.getServletContext().getAttribute(Constants.SESSION_MANAGER);
         if(manager != null) {
             modules = manager.getModules().values();
             for(Module m:modules) {
                 m.initFilter(filterConfig);
             }
         } else {
+            modules = null;
             logger.error("Manager not found in session!");
         }
 
@@ -36,9 +37,9 @@ public class XWebFilter implements Filter {
 
     @Override
     public void doFilter(
-            ServletRequest request,
-            ServletResponse response,
-            FilterChain filterChain) throws IOException, ServletException {
+            final ServletRequest request,
+            final ServletResponse response,
+            final FilterChain filterChain) throws IOException, ServletException {
 
         // Damn servlet!
         // http://stackoverflow.com/questions/469874/how-do-i-correctly-decode-unicode-parameters-passed-to-a-servlet
@@ -47,20 +48,35 @@ public class XWebFilter implements Filter {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        ServletRequest req = request;
+        ServletResponse resp = response;
+
         if(modules != null) {
             for(Module m:modules) {
                 if(request instanceof HttpServletRequest) {
                     if(response instanceof HttpServletResponse) {
+                        Chain chain = new Chain();
+                        chain.chainedRequest = req;
+                        chain.chainedResponse = resp;
+
                         m.doFilter(
                                 context,
-                                (HttpServletRequest) request,
-                                (HttpServletResponse) response,
-                                filterChain
+                                (HttpServletRequest) req,
+                                (HttpServletResponse) resp,
+                                chain
                         );
+
+                        if(!chain.fired) {
+                            return; // fail
+                        }
+                        req = chain.chainedRequest;
+                        resp = chain.chainedResponse;
                     }
                 }
             }
         }
+
+        filterChain.doFilter(req, resp);
     }
 
     @Override
@@ -69,6 +85,26 @@ public class XWebFilter implements Filter {
             for(Module m:modules) {
                 m.destroyFilter();
             }
+        }
+    }
+
+    private class Chain implements FilterChain {
+
+        boolean fired = false;
+
+        ServletRequest chainedRequest;
+
+        ServletResponse chainedResponse;
+
+        @Override
+        public void doFilter(
+                ServletRequest request,
+                ServletResponse response) throws IOException, ServletException {
+
+            chainedRequest = request;
+            chainedResponse = response;
+
+            fired = true;
         }
     }
 

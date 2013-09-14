@@ -161,6 +161,7 @@ public class Module {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws IOException, ServletException {
+        filterChain.doFilter(request, response);
     }
 
     public void initFilter(FilterConfig filterConfig) throws ServletException {

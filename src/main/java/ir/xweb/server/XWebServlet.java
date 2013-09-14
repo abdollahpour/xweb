@@ -33,9 +33,14 @@ public class XWebServlet extends HttpServlet {
 		Manager manager = (Manager)getServletContext().getAttribute(Constants.SESSION_MANAGER);
 		
 		String api = request.getParameter("api");
+        if(api == null) {
+            throw new ServletException(Constants.SESSION_MANAGER + " parameter not found (please set module name)");
+        }
 		
 		Module module = manager.getModule(api);
 		if(module != null) {
+            logger.trace("Call module: " + module.getInfo().getName());
+
             try {
                 XWebUser user = (XWebUser) request.getSession().getAttribute(Constants.SESSION_USER);
 
