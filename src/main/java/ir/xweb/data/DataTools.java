@@ -29,6 +29,138 @@ public class DataTools {
     private final static Logger logger = LoggerFactory.getLogger("DataTools");
 
     public void write(
+            final Object object,
+            final Map<String, String> data,
+            final String role) throws IllegalAccessException, InstantiationException, InvocationTargetException {
+
+        final String r = (role == null ? null : (role + ","));
+        final List<?> keys = new ArrayList<Object>(data.keySet());
+
+        Field[] fields = object.getClass().getFields();
+
+        for(Field f:fields) {
+            String name = f.getName();
+            String validator = "";
+
+            if(f.isAnnotationPresent(XWebDataElement.class)) {
+                final String aName = f.getAnnotation(XWebDataElement.class).key();
+                final String aRole = f.getAnnotation(XWebDataElement.class).role();
+                validator = f.getAnnotation(XWebDataElement.class).validator();
+
+                if(aName != null) {
+                    if(r != null && aRole != null && (aRole + ",").indexOf(r) == -1) {
+                        throw new IllegalAccessException("No sufficient role. " + role + " not in " + aRole);
+                    }
+                    name = aName;
+                }
+            }
+
+            if(name != null && keys.contains(name)) {
+                final String value = data.get(name);
+
+                // validate of require
+                if(validator.length() > 0 && !value.matches(validator)) {
+                    throw new IllegalAccessException("Illegal value: " + value + " not match " + validator);
+                }
+
+                Class<?> type = f.getType();
+
+                if(type == String.class) {
+                    f.set(object, value.toString());
+                } else if(type == Integer.class || type == int.class) {
+                    f.set(object, Integer.valueOf(value));
+                } else if(type == Boolean.class || type == boolean.class) {
+                    f.setBoolean(object, Boolean.parseBoolean(value));
+                } else if(type == Byte.class || type == byte.class) {
+                    f.setByte(object, Byte.valueOf(value).byteValue());
+                } else if(type == Character.class || type == char.class) {
+                    if(value.length() == 0) {
+                        f.setChar(object, value.charAt(0));
+                    }
+                } else if(type == Double.class || type == double.class) {
+                    f.setDouble(object, Double.parseDouble(value));
+                } else if(type == Float.class || type == float.class) {
+                    f.setFloat(object, Float.parseFloat(value));
+                } else if(type == Long.class || type == long.class) {
+                    f.setLong(object, Long.parseLong(value));
+                } else if(type == Short.class || type == short.class) {
+                    f.setShort(object, Short.parseShort(value));
+                }
+
+                keys.remove(name);
+            }
+        }
+
+        Method[] methods = object.getClass().getMethods();
+        for(Method m:methods) {
+            String name = null;
+            String validator = "";
+
+            if(m.isAnnotationPresent(XWebDataElement.class)) {
+                final String aName = m.getAnnotation(XWebDataElement.class).key();
+                final String aRole = m.getAnnotation(XWebDataElement.class).role();
+                validator = m.getAnnotation(XWebDataElement.class).validator();
+
+                if(aName != null) {
+                    if(r != null && aRole != null && (aRole + ",").indexOf(r) == -1) {
+                        throw new IllegalAccessException("No sufficient role. " + role + " not in " + aRole);
+                    }
+                    name = aName;
+                }
+            }
+
+            String value = null;
+            if(name == null) {
+                name = m.getName();
+                if(keys.contains(name)) {
+                    value = data.get(name);
+                } else if(name.startsWith("set")) {
+                    // make setter function
+                    String setterName = name.substring(3);
+                    setterName = setterName.substring(0, 1).toLowerCase() + setterName.substring(1);
+
+                    value = data.get(setterName);
+                }
+            } else {
+                value = data.get(name);
+            }
+
+            if(value != null) {
+                // validate of require
+                if(validator.length() > 0 && !value.matches(validator)) {
+                    throw new IllegalAccessException("Illegal value: " + value + " not match " + validator);
+                }
+
+                Class<?> type = m.getParameterTypes()[0];
+
+                if(type == String.class) {
+                    m.invoke(object, value.toString());
+                } else if(type == Integer.class || type == int.class) {
+                    m.invoke(object, Integer.valueOf(value));
+                } else if(type == Boolean.class || type == boolean.class) {
+                    m.invoke(object, Boolean.parseBoolean(value));
+                } else if(type == Byte.class || type == byte.class) {
+                    m.invoke(object, Byte.valueOf(value).byteValue());
+                } else if(type == Character.class || type == char.class) {
+                    if(value.length() == 0) {
+                        m.invoke(object, value.charAt(0));
+                    }
+                } else if(type == Double.class || type == double.class) {
+                    m.invoke(object, Double.parseDouble(value));
+                } else if(type == Float.class || type == float.class) {
+                    m.invoke(object, Float.parseFloat(value));
+                } else if(type == Long.class || type == long.class) {
+                    m.invoke(object, Long.parseLong(value));
+                } else if(type == Short.class || type == short.class) {
+                    m.invoke(object, Short.parseShort(value));
+                }
+
+                keys.remove(name);
+            }
+        }
+    }
+
+    public void write(
             final HttpServletResponse response,
             final String format,
             final String role,

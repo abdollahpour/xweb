@@ -20,7 +20,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+
+import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.*;
 
 @RunWith(value = Parameterized.class)
 public class DataToolsTest {
@@ -58,20 +62,51 @@ public class DataToolsTest {
         map2.put("sub", map1);
 
         Object[][] data = new Object[][] {
-                //{"xml", "string"},
-                //{"json", "string"},
-
-                {"xml", map1},
-                {"json", map1},
+                {"xml", map2},
+                {"json", map2},
         };
         return Arrays.asList(data);
     }
 
     @Test
-    public void loginFail() throws IOException {
-        System.out.println();
-
+    public void writeWriter() throws IOException {
         tools.write(response, this.format, null, this.data);
+    }
+
+    @Test
+    public void writeObject() throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("field1", "1");
+        map.put("method1", "2");
+        map.put("noname1", "3");
+
+        EmptyObject object = new EmptyObject();
+
+        tools.write(object, map, null);
+
+        assertTrue(object.field1 == 1);
+        assertTrue(object.method1_value == "2");
+        assertTrue(object.noname1_value == "3");
+    }
+
+
+    private class EmptyObject {
+
+        public int field1;
+
+        public String method1_value;
+
+        public String noname1_value;
+
+        public void setMethod1(String s) {
+            method1_value = s;
+        }
+
+        @XWebDataElement(key = "noname1")
+        public void setNoName1(String s) {
+            noname1_value = s;
+        }
+
     }
 
 }
