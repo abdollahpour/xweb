@@ -228,16 +228,6 @@ public class AuthenticationModule extends Module {
     }
 
     @Override
-    public void init(final ServletContext context) {
-        final String defaultUser = getProperties().getString(PARAM_DEFAULT, null);
-        if(defaultUser != null) {
-            createDefaultUser(context, defaultUser);
-        } else {
-            logger.warn("Default user not found!");
-        }
-    }
-
-    @Override
     public void doFilter(
             ServletContext context,
             HttpServletRequest request,
@@ -427,16 +417,6 @@ public class AuthenticationModule extends Module {
 
     public String generateUUID(ServletContext context, String userId) {
         return null;
-    }
-
-    /**
-     * Create default user if it's not exist
-     * @param context
-     * @param username
-     * @return true if user created false if it's already exist
-     */
-    public boolean createDefaultUser(ServletContext context, String username) {
-        return false;
     }
 
 }

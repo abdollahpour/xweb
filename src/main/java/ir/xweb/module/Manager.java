@@ -62,6 +62,24 @@ public class Manager {
             final Document document = builder.build(in);
             final Element root = document.getRootElement();
 
+            Map<String, String> env = getEnvMap(properties);
+
+            final Element envPropertiesElement = root.getChild("properties");
+            if(envPropertiesElement != null) {
+                final List<?> propertyElements = envPropertiesElement.getChildren("property");
+                for(Object o2:propertyElements) {
+                    Element property = (Element) o2;
+                    String key = property.getAttributeValue("key");
+                    String value = property.getAttributeValue("value");
+                    if(value != null) {
+                        properties.put(key, value);
+                    } else {
+                        String text = applyEnvironmentVariable(env, property.getText());
+                        properties.put(key, text);
+                    }
+                }
+            }
+
             final List<?> moduleElements = root.getChild("modules").getChildren("module");
             for(Object o:moduleElements) {
                 final Element model = (Element)o;
@@ -115,9 +133,11 @@ public class Manager {
                             if(value != null) {
                                 properties.put(key, value);
                             } else {
-                                final String text = applyEnvironmentVariable(property.getText());
+                                final String text = applyEnvironmentVariable(env, property.getText());
                                 properties.put(key, text);
                             }
+                        } else {
+                            logger.warn("Key not found for property (" + name + ")");
                         }
                     }
                 }
@@ -173,17 +193,6 @@ public class Manager {
                 }
             }
 
-            final Element propertiesElement = root.getChild("properties");
-            if(propertiesElement != null) {
-                final List<?> propertyElements = propertiesElement.getChildren("property");
-                for(Object o2:propertyElements) {
-                    Element property = (Element)o2;
-                    String key = property.getAttribute("key").getValue();
-                    String text = applyEnvironmentVariable(property.getText());
-                    properties.put(key, text);
-                }
-            }
-
             // now init modules with same order
             for(Map.Entry<String, Module> m:modules.entrySet()) {
                 try {
@@ -210,7 +219,7 @@ public class Manager {
             s.shutdown();
         }
 
-		if(modules == null) {
+		if(modules != null) {
 			for(Module m:modules.values()) {
 				try {
 					m.destroy();
@@ -244,9 +253,9 @@ public class Manager {
         return null;
     }
 
-    private String applyEnvironmentVariable(final String s) {
+    private Map<String, String> getEnvMap(Map<String, String> properties) {
         final Map<String, String> env = new HashMap<String, String>();
-        if(System.getenv() == null) {
+        if(System.getenv() != null) {
             env.putAll(System.getenv());
         }
 
@@ -272,7 +281,12 @@ public class Manager {
         // custom items
         env.put("xweb.dir", context.getRealPath("."));
 
+        env.putAll(properties);
 
+        return env;
+    }
+
+    private String applyEnvironmentVariable(Map<String, String> env, final String s) {
         final Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
 
         final Matcher m = pattern.matcher(s);

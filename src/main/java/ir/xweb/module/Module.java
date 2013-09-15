@@ -200,7 +200,7 @@ public class Module {
     }
 
     public ModuleParam getProperties() {
-        return properties;
+        return this.properties;
     }
     
     public boolean redirectAuthFail() {

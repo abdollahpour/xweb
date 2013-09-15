@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+@Deprecated
 public class DataService {
 
     //private static final Logger logger = LoggerFactory.getLogger(DataService.class);
