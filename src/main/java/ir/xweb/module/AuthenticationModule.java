@@ -40,6 +40,8 @@ public class AuthenticationModule extends Module {
 
     private Logger logger = LoggerFactory.getLogger("AuthenticationModule");
 
+    public final static String SESSION_USER = "xweb_user";
+
     public final static String PARAM_COOKIE_AGE = "cookie-age";
 
     public final static String PARAM_XML_SOURCE = "xml-source";
@@ -236,7 +238,7 @@ public class AuthenticationModule extends Module {
 
         HttpSession session = request.getSession();
 
-        XWebUser user = (XWebUser) session.getAttribute(Constants.SESSION_USER);
+        XWebUser user = (XWebUser) session.getAttribute(SESSION_USER);
 
         // pre-check to speedup checking
         if(user != null) {
@@ -281,7 +283,7 @@ public class AuthenticationModule extends Module {
             user = getUserWithUUID(context, uuid);
             if(user != null) {
                 logger.debug("User successfully login with UUID: " + uuid);
-                session.setAttribute(Constants.SESSION_USER, user);
+                session.setAttribute(SESSION_USER, user);
                 filterChain.doFilter(request, response);
                 return;
             } else {
@@ -300,7 +302,7 @@ public class AuthenticationModule extends Module {
                 user = getUserWithUUID (context, uuid);
                 if(user != null) {
                     logger.debug("User successfully login with HTTP authentication: " + token);
-                    session.setAttribute(Constants.SESSION_USER, user);
+                    session.setAttribute(SESSION_USER, user);
                     filterChain.doFilter(request, response);
                     return;
                 } else {
@@ -382,7 +384,7 @@ public class AuthenticationModule extends Module {
             XWebUser user = getUserWithId(context, identifier, password);
 
             if (user != null) {
-                request.getSession().setAttribute(Constants.SESSION_USER, user);
+                request.getSession().setAttribute(SESSION_USER, user);
 
                 if(remember) {
                     String uuid = generateUUID(context, identifier);

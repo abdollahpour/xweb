@@ -13,7 +13,8 @@ public class Constants {
 	public final static String MODULE_URI_PERFIX = "/api";
 
     public final static String MODULE_NAME_PARAMETER = "api";
-	
+
+    @Deprecated
 	public final static String SESSION_USER = "xweb_user";
 
     public final static String SESSION_TEMP_LOGIN = "xweb_temp_login";

@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 import ir.xweb.module.AuthenticationModule;
 import ir.xweb.module.CaptchaModule;
 import ir.xweb.module.ModuleException;
+import ir.xweb.module.ModuleParam;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
@@ -74,38 +76,24 @@ public class DataToolsTest {
     }
 
     @Test
-    public void writeObject() throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
-        Map<String, String> map = new HashMap<String, String>();
-        map.put("field1", "1");
-        map.put("method1", "2");
-        map.put("noname1", "3");
+    public void testUserWrite() throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        final String email = "ha.hamed@gmail.com";
 
-        EmptyObject object = new EmptyObject();
+        final Map<String, String> map = new HashMap<String, String>();
+        map.put("email", email);
 
-        tools.write(object, map, null);
+        final User user = new User();
 
-        assertTrue(object.field1 == 1);
-        assertTrue(object.method1_value == "2");
-        assertTrue(object.noname1_value == "3");
+        tools.write(user, new ModuleParam(map), "admin");
+
+        assertTrue(email.equals(user.email));
     }
 
+    @XWebData(name = "user")
+    class User {
 
-    private class EmptyObject {
-
-        public int field1;
-
-        public String method1_value;
-
-        public String noname1_value;
-
-        public void setMethod1(String s) {
-            method1_value = s;
-        }
-
-        @XWebDataElement(key = "noname1")
-        public void setNoName1(String s) {
-            noname1_value = s;
-        }
+        @XWebDataElement (role = "admin,user", writable = true, validator = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")
+        public String email;
 
     }
 

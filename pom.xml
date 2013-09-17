@@ -81,7 +81,8 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.9.5</version>
-		</dependency>
+            <scope>test</scope>
+        </dependency>
 		<!--<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-rewrite</artifactId>
