@@ -13,7 +13,7 @@ import java.util.Collections;
 
 import static org.mockito.Mockito.mock;
 
-public class ModuleTest {
+public class TestModule {
 
     final ServletContext servletContext = mock(ServletContext.class);
 

@@ -111,10 +111,10 @@ public class RewriteModule extends Module {
 
 
         // get init paramerers from context web.xml file
-        String confReloadCheckIntervalStr = filterConfig.getInitParameter("confReloadCheckInterval");
-        String confPathStr = filterConfig.getInitParameter("confPath");
-        String statusPathConf = filterConfig.getInitParameter("statusPath");
-        String statusEnabledConf = filterConfig.getInitParameter("statusEnabled");
+        //String confReloadCheckIntervalStr = filterConfig.getInitParameter("confReloadCheckInterval");
+        //String confPathStr = filterConfig.getInitParameter("confPath");
+        //String statusPathConf = filterConfig.getInitParameter("statusPath");
+        //String statusEnabledConf = filterConfig.getInitParameter("statusEnabled");
         String statusEnabledOnHosts = filterConfig.getInitParameter("statusEnabledOnHosts");
 
         String allowConfSwapViaHttpStr = filterConfig.getInitParameter("allowConfSwapViaHttp");
@@ -157,25 +157,25 @@ public class RewriteModule extends Module {
         //logger.debug("confPath set to " + confPath);
 
         // status enabled (default true)
-        if (statusEnabledConf != null && !"".equals(statusEnabledConf)) {
-            logger.debug("statusEnabledConf set to " + statusEnabledConf);
-            statusEnabled = "true".equals(statusEnabledConf.toLowerCase());
-        }
-        if (statusEnabled) {
-            // status path (default /rewrite-status)
-            if (statusPathConf != null && !"".equals(statusPathConf)) {
-                statusPath = statusPathConf.trim();
-                logger.info("status display enabled, path set to " + statusPath);
-            }
-        } else {
-            logger.info("status display disabled");
-        }
+        //if (statusEnabledConf != null && !"".equals(statusEnabledConf)) {
+        //    logger.debug("statusEnabledConf set to " + statusEnabledConf);
+        //    statusEnabled = "true".equals(statusEnabledConf.toLowerCase());
+        //}
+        //if (statusEnabled) {
+        //    // status path (default /rewrite-status)
+        //    if (statusPathConf != null && !"".equals(statusPathConf)) {
+        //        statusPath = statusPathConf.trim();
+        //        logger.info("status display enabled, path set to " + statusPath);
+        //    }
+        //} else {
+        //    logger.info("status display disabled");
+        //}
 
-        if (StringUtils.isBlank(statusEnabledOnHosts)) {
+        //if (StringUtils.isBlank(statusEnabledOnHosts)) {
             statusEnabledOnHosts = DEFAULT_STATUS_ENABLED_ON_HOSTS;
-        } else {
-            logger.debug("statusEnabledOnHosts set to " + statusEnabledOnHosts);
-        }
+        //} else {
+        //    logger.debug("statusEnabledOnHosts set to " + statusEnabledOnHosts);
+        //}
         statusServerNameMatcher = new ServerNameMatcher(statusEnabledOnHosts);
 
         // now load conf from snippet in web.xml if modRewriteStyleConf is set

@@ -80,6 +80,9 @@ public class Manager {
                 }
             }
 
+            // Update environment variables with new system properties
+            env = getEnvMap(properties);
+
             final List<?> moduleElements = root.getChild("modules").getChildren("module");
             for(Object o:moduleElements) {
                 final Element model = (Element)o;

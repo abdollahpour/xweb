@@ -17,7 +17,7 @@ import java.util.Collection;
 import static org.mockito.Mockito.*;
 
 @RunWith(value = Parameterized.class)
-public class TestResourceModuleInvalidPath extends ModuleTest {
+public class TestResourceModuleInvalidPath extends TestModule {
 
     final String path;
 
