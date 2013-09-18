@@ -88,6 +88,11 @@
 			<artifactId>jetty-rewrite</artifactId>
 			<version>9.0.4.v20130625</version>
 		</dependency>-->
+		<dependency>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
+			<version>4.0.3</version>
+		</dependency>
 	</dependencies>
 
 	<distributionManagement>

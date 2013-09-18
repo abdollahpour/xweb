@@ -60,7 +60,7 @@ public class ResourceModule extends Module {
     public ResourceModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
 
-        tempDir = new File(properties.getString(PROPERTY_TEMP_DIR, null));
+        tempDir = new File(properties.getString(PROPERTY_TEMP_DIR, System.getProperty("java.io.tmpdir")));
         storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
 
         // deprecated
@@ -86,17 +86,17 @@ public class ResourceModule extends Module {
             String path = params.getString("download", null);
             String id = params.getString("id", null);
 
-            // Deprecated
-            if(id == null) {
-                id = params.get(id, null);
-            }
-
             File file = null;
             if(id == null) {
                 if(user == null) {
                     file = getFile(path);
                 } else {
                     file = getFile(user, path);
+
+                    // if file not found for current user, try to get it from default user
+                    if(file == null) {
+                        file = getFile(path);
+                    }
                 }
             } else {
                 if(path.startsWith(MODE_PUBLIC + File.separator)) {
@@ -254,7 +254,7 @@ public class ResourceModule extends Module {
         if(path == null) {
             throw new IllegalArgumentException("null path");
         }
-        if(path.startsWith(".")) {
+        if(path.matches("^(\\./|\\.\\./|~/|\\\\)")) {   // try to hack
             throw new IllegalArgumentException("Illegal path: " + path);
         }
 
@@ -472,6 +472,10 @@ public class ResourceModule extends Module {
 
     private void storeResourceUsage(ServletContext context, String path) {
 
+    }
+
+    private String getUserDirectory(String id) {
+        return id;
     }
 
 }
