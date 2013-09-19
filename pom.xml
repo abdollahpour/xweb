@@ -4,7 +4,7 @@
 	<groupId>ir.xweb</groupId>
 	<artifactId>xweb</artifactId>
 	<packaging>jar</packaging>
-	<version>0.6.2-SNAPSHOT</version>
+	<version>0.7.0-SNAPSHOT</version>
 	<name>xweb</name>
 	<description>XWeb is standard modular platform base on JavaEE</description>
 	<url>https://github.com/abdollahpour/xweb</url>

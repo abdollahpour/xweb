@@ -28,6 +28,24 @@ public class DataTools {
 
     private final static Logger logger = LoggerFactory.getLogger("DataTools");
 
+    public final static String FORMAT_JSON = "json";
+
+    public final static String FORMAT_JSONP = "jsonp";
+
+    public final static String FORMAT_XML = "xml";
+
+    private final Map<String, Formatter> formatters = new HashMap<String, Formatter>();
+
+    public DataTools() {
+        formatters.put(FORMAT_JSON, new JsonFormatter());
+        formatters.put(FORMAT_JSONP, new JsonpFormatter());
+        formatters.put(FORMAT_XML, new XmlFormatter());
+    }
+
+    public Formatter addFormatter(String name, Formatter formatter) {
+        return formatters.put(name, formatter);
+    }
+
     public void write(
             final Object object,
             final Map<String, String> data,
@@ -183,12 +201,8 @@ public class DataTools {
             throw new IllegalArgumentException("null object");
         }
 
-        final Formatter formatter;
-        if("json".equals(format)) {
-            formatter = new JsonFormatter();
-        } else if("xml".equals(format)) {
-            formatter = new XmlFormatter();
-        } else {
+        final Formatter formatter = formatters.get(format);
+        if(formatter == null) {
             throw new IllegalArgumentException("Illegal formatter");
         }
 
@@ -287,13 +301,35 @@ public class DataTools {
 
     }
 
+    private class JsonpFormatter extends JsonFormatter {
+
+        @Override
+        public void write(final Writer writer, final Object object) throws IOException {
+            try {
+                if(object instanceof Map) {
+                    writer.write("jsonCallback(");
+                    writer.write(write(object).toString());
+                    writer.write(");");
+
+                } else {
+                    writer.write("jsonCallback(");
+                    writer.write(object.toString());
+                    writer.write(");");
+                }
+            } catch (JSONException ex) {
+                throw new IOException(ex);
+            }
+        }
+
+    }
+
     private class JsonFormatter implements Formatter {
 
         @Override
         public void write(final Writer writer, final Object object) throws IOException {
             try {
                 if(object instanceof Map) {
-                    writer.write(write((Map)object).toString());
+                    writer.write(write(object).toString());
                 } else {
                     writer.write(object.toString());
                 }
@@ -302,7 +338,7 @@ public class DataTools {
             }
         }
 
-        private Object write(final Object object) throws JSONException {
+        protected Object write(final Object object) throws JSONException {
             if(object instanceof Map) {
                 final JSONObject json = new JSONObject();
 
