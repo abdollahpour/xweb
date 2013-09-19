@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 @RunWith(value = Parameterized.class)
-public class AuthenticationModuleTest {
+public class TestAuthenticationModule {
 
     private final String username;
 
@@ -45,7 +45,7 @@ public class AuthenticationModuleTest {
 
     final HttpSession session = mock(HttpSession.class);
 
-    public AuthenticationModuleTest(
+    public TestAuthenticationModule(
             final String username,
             final String password) {
 

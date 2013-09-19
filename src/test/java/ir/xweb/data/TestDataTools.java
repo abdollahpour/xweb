@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
 @RunWith(value = Parameterized.class)
-public class DataToolsTest {
+public class TestDataTools {
 
     private final String format;
 
@@ -39,7 +39,7 @@ public class DataToolsTest {
 
     private final HttpServletResponse response = mock(HttpServletResponse.class);
 
-    public DataToolsTest(final String format, final Object data) {
+    public TestDataTools(final String format, final Object data) {
         this.format = format;
         this.data = data;
     }
