@@ -109,7 +109,7 @@ public class AuthenticationModule extends Module {
 
                     final XWebUser user = new XWebUser() {
                         @Override
-                        public String getIdentifier() {
+                        public String getId() {
                             return username;
                         }
 
@@ -153,7 +153,7 @@ public class AuthenticationModule extends Module {
 
                     XWebUser user = new XWebUser() {
                         @Override
-                        public String getIdentifier() {
+                        public String getId() {
                             return username;
                         }
 
@@ -199,7 +199,7 @@ public class AuthenticationModule extends Module {
 
                             XWebUser user = new XWebUser() {
                                 @Override
-                                public String getIdentifier() {
+                                public String getId() {
                                     return username;
                                 }
 

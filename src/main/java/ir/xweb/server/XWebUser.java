@@ -8,7 +8,7 @@ package ir.xweb.server;
 
 public interface XWebUser {
 	
-	String getIdentifier();
+	String getId();
 	
 	String getRole();
 

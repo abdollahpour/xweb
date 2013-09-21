@@ -283,7 +283,18 @@ public class Manager {
 
         // custom items
         env.put("xweb.dir", context.getRealPath("."));
+        String base = System.getProperty("catalina.base");
+        if(base == null) {
+            base = System.getProperty("jetty.home");
+        }
+        if(base != null) {
+            env.put("xweb.base", base);
+        } else {
+            logger.info("Application home not found. Maybe you are using non of tomcat/jetty." +
+                    "You can set it manually by setting global property \"xweb.base\"");
+        }
 
+        // add global properties
         env.putAll(properties);
 
         return env;

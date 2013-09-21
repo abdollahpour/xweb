@@ -21,8 +21,6 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class Module {
 
-    public final static String PROPERTIES_MODULE_GZIP = "module_gzip";
-
     private Manager manager;
 
 	private ModuleInfo info;

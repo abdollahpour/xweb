@@ -120,7 +120,7 @@ public class TestAuthenticationModule {
 
         final XWebUser user = new XWebUser() {
             @Override
-            public String getIdentifier() {
+            public String getId() {
                 return username;
             }
 

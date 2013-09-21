@@ -11,8 +11,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import static org.mockito.Mockito.*;
 
@@ -39,7 +41,12 @@ public class TestResourceModuleValidPath extends TestModule {
 
     @Test
     public void testResourceModuleIllegalPath() {
-        final ResourceModule resourceModule = new ResourceModule(manager, moduleInfo, moduleParam);
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put(ResourceModule.PROPERTY_DATA_DIR, new File(".").getPath());
+
+        ModuleParam moduleParam = new ModuleParam(params);
+
+        final ResourceModule resourceModule = new ResourceModule(this.manager, this.moduleInfo, moduleParam);
 
         resourceModule.getFile("1", this.path);
     }

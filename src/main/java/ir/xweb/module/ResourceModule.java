@@ -1,6 +1,5 @@
 package ir.xweb.module;
 
-import ir.xweb.server.Constants;
 import ir.xweb.server.XWebUser;
 import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
@@ -35,13 +34,13 @@ public class ResourceModule extends Module {
 
     private long startTempNumber = System.currentTimeMillis();
 
-    private final static String PROPERTY_TEMP_DIR = "temp_dir";
+    public final static String PROPERTY_TEMP_DIR = "dir.temp";
 
-    private final static String PROPERTY_DEFAULT_IDENTIFIER   = "default_id";
+    public final static String PROPERTY_DEFAULT_ID = "default.id";
 
-    private final static String PROPERTY_DATA_DIR   = "data_dir";
+    public final static String PROPERTY_DATA_DIR   = "dir.data";
 
-    private final static String PROPERTY_STORE_PATTERN   = "store_pattern";
+    public final static String PROPERTY_STORE_PATTERN   = "store.pattern";
 
     public final static String MODE_PUBLIC = "public";
 
@@ -53,38 +52,51 @@ public class ResourceModule extends Module {
 
     private final File dataDir;
 
-    private final String defaultIdentifier;
+    private final String defaultId;
 
     private final String storePattern;
+
+    private ServletContext context;
 
     public ResourceModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
 
-        tempDir = new File(properties.getString(PROPERTY_TEMP_DIR, System.getProperty("java.io.tmpdir")));
+        String dataPath = properties.getString(PROPERTY_DATA_DIR, null);
+        if(dataPath == null) {
+            throw new IllegalArgumentException("Data path not found please set: " + PROPERTY_DATA_DIR);
+        }
+        dataDir = new File(dataPath);
+
+        String tempPath = properties.getString(PROPERTY_TEMP_DIR, System.getProperty("java.io.tmpdir"));
+        if(tempPath == null) {
+            tempPath = dataPath + File.separator + "temp";
+        }
+        tempDir = new File(tempPath);
+
         storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
 
         // deprecated
-        defaultIdentifier = properties.getString(
-                PROPERTY_DEFAULT_IDENTIFIER,
-                getManager().getProperty("default_identifier"));
+        defaultId = properties.getString(PROPERTY_DEFAULT_ID, null);
+    }
 
-        dataDir = new File(properties.getString(
-                PROPERTY_DATA_DIR,
-                manager.getContext().getInitParameter("data_store_path")));
+    @Override
+    public void init(final ServletContext context) {
+        this.context = context;
     }
 
     @Override
     public void process(
-            ServletContext context,
-            HttpServletRequest request,
-            HttpServletResponse response, ModuleParam params,
-            HashMap<String, FileItem> files) throws IOException {
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final ModuleParam params,
+            final HashMap<String, FileItem> files) throws IOException {
 
         final XWebUser user = (XWebUser)request.getSession().getAttribute(ir.xweb.server.Constants.SESSION_USER);
 
         if(params.containsKey("download")) {
-            String path = params.getString("download", null);
-            String id = params.getString("id", null);
+            final String path = params.getString("download", null);
+            final String id = params.getString("id", null);
 
             File file = null;
             if(id == null) {
@@ -222,6 +234,10 @@ public class ResourceModule extends Module {
         response.setHeader("Content-Length", String.valueOf(totalSize));
         response.setHeader("Content-Type", getContentType(file));
         response.setHeader("Content-Range", getContentRange(validRanges, fileSize));
+        response.setHeader("Content-Disposition",
+                "inline; " +
+                        "filename=" + file.getName() + "; " +
+                        "modification-date=\"" + dateFormat.format(file.lastModified()) + "\"");
 
         //send body
         response.setBufferSize(0);
@@ -239,17 +255,17 @@ public class ResourceModule extends Module {
         return "bytes " + ranges[0] + "-" + (ranges[1]-1) + "/" + fileSize;
     }
 
-    public File getFile(String path) {
-        if(this.defaultIdentifier == null) {
-            throw new IllegalArgumentException("Default identifier not found");
+    public File getFile(final String path) {
+        if(this.defaultId == null) {
+            throw new IllegalArgumentException("Default identifier not found. Please set: " + PROPERTY_DEFAULT_ID);
         }
 
-        return getFile(this.defaultIdentifier, path);
+        return getFile(this.defaultId, path);
     }
 
-    public File getFile(String identifier, String path) {
-        if(identifier == null) {
-            throw new IllegalArgumentException("null user");
+    public File getFile(final String id, final String path) {
+        if(id == null) {
+            throw new IllegalArgumentException("null id");
         }
         if(path == null) {
             throw new IllegalArgumentException("null path");
@@ -258,7 +274,7 @@ public class ResourceModule extends Module {
             throw new IllegalArgumentException("Illegal path: " + path);
         }
 
-        File f = new File(this.dataDir, identifier + File.separator + path);
+        File f = new File(this.dataDir, getUserDirectory(context, id) + File.separator + path);
         if(f.exists()) {
             return f;
         }
@@ -267,19 +283,7 @@ public class ResourceModule extends Module {
     }
 
     public File getFile(final XWebUser user, final String path) {
-        if(user == null) {
-            throw new IllegalArgumentException("null user");
-        }
-        if(path == null) {
-            throw new IllegalArgumentException("null path");
-        }
-
-        final File f = new File(this.dataDir, user.getIdentifier() + File.separator + path);
-        if(f.exists()) {
-            return f;
-        }
-
-        return null;
+        return getFile(user.getId(), path);
     }
 
     public File initTempFile() {
@@ -306,6 +310,10 @@ public class ResourceModule extends Module {
             response.setHeader("ETag", getETag(file));
             response.setHeader("Last-Modified", getLastModified(file));
             response.setHeader("Content-Length", String.valueOf(till - from));
+            response.setHeader("Content-Disposition",
+                    "inline; " +
+                    "filename=" + file.getName() + "; " +
+                    "modification-date=\"" + dateFormat.format(file.lastModified()) + "\"");
 
             if(!response.containsHeader("Content-Type")) {
                 response.setHeader("Content-Type", getContentType(file));
@@ -325,11 +333,11 @@ public class ResourceModule extends Module {
     }
 
     public File initResourceDir(final String path) {
-        if(this.defaultIdentifier == null) {
+        if(this.defaultId == null) {
             throw new IllegalArgumentException("Default identifier not found");
         }
 
-        return initResourceDir(this.defaultIdentifier, path);
+        return initResourceDir(this.defaultId, path);
     }
 
     public File getDataDir() {
@@ -361,7 +369,7 @@ public class ResourceModule extends Module {
     }
 
     /*public File initResourceDir(XWebUser user, String path) {
-        File dir = new File(dataDir, user.getIdentifier() + File.separator + path);
+        File dir = new File(dataDir, user.getId() + File.separator + path);
         if(dir.exists() || dir.mkdirs()) {
             return dir;
         }
@@ -431,6 +439,10 @@ public class ResourceModule extends Module {
         response.setHeader("Last-Modified", getLastModified(file));
         response.setHeader("Content-Length", String.valueOf(till - from));
         response.setHeader("Content-Type", getContentType(file));
+        response.setHeader("Content-Disposition",
+                "inline; " +
+                "filename=" + file.getName() + "; " +
+                "modification-date=\"" + dateFormat.format(file.lastModified()) + "\"");
 
         response.setBufferSize(0);
         final OutputStream out = response.getOutputStream();
@@ -466,15 +478,15 @@ public class ResourceModule extends Module {
         return new Long(value);
     }
 
-    private boolean isAdmin(ServletContext context, XWebUser user) {
+    protected boolean isAdmin(ServletContext context, XWebUser user) {
         return false;
     }
 
-    private void storeResourceUsage(ServletContext context, String path) {
+    protected void storeResourceUsage(ServletContext context, String path) {
 
     }
 
-    private String getUserDirectory(String id) {
+    protected String getUserDirectory(final ServletContext context, final String id) {
         return id;
     }
 
