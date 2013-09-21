@@ -66,6 +66,9 @@ public class ResourceModule extends Module {
             throw new IllegalArgumentException("Data path not found please set: " + PROPERTY_DATA_DIR);
         }
         dataDir = new File(dataPath);
+        if((!dataDir.exists() && !dataDir.mkdirs()) || !dataDir.canWrite()) {
+            throw new IllegalArgumentException("Data is not accessible: " + dataPath);
+        }
 
         String tempPath = properties.getString(PROPERTY_TEMP_DIR, System.getProperty("java.io.tmpdir"));
         if(tempPath == null) {

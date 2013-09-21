@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +24,7 @@ public class TestResourceModuleValidPath extends TestModule {
 
     final String path;
 
-    public TestResourceModuleValidPath(final String path) {
+    public TestResourceModuleValidPath(final String path) throws IOException {
         this.path = path;
     }
 
@@ -35,7 +36,6 @@ public class TestResourceModuleValidPath extends TestModule {
 
     @Before
     public void setup() {
-        when(manager.getContext()).thenReturn(servletContext);
         when(servletContext.getInitParameter("data_store_path")).thenReturn("/tmp");
     }
 
@@ -46,7 +46,7 @@ public class TestResourceModuleValidPath extends TestModule {
 
         ModuleParam moduleParam = new ModuleParam(params);
 
-        final ResourceModule resourceModule = new ResourceModule(this.manager, this.moduleInfo, moduleParam);
+        final ResourceModule resourceModule = new ResourceModule(getManager(), this.moduleInfo, moduleParam);
 
         resourceModule.getFile("1", this.path);
     }

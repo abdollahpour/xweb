@@ -83,116 +83,119 @@ public class Manager {
             // Update environment variables with new system properties
             env = getEnvMap(properties);
 
-            final List<?> moduleElements = root.getChild("modules").getChildren("module");
-            for(Object o:moduleElements) {
-                final Element model = (Element)o;
+            Element modulesElement = root.getChild("modules");
+            if(modulesElement != null) {
+                final List<?> moduleElements = modulesElement.getChildren("module");
+                for(Object o:moduleElements) {
+                    final Element model = (Element)o;
 
-                final String name = model.getChildText("name");
-                final String author = model.getChildText("author");
-                final String className = model.getChildText("class");
+                    final String name = model.getChildText("name");
+                    final String author = model.getChildText("author");
+                    final String className = model.getChildText("class");
 
-                final List<Validator> validators = new ArrayList<Validator>();
-                final Element validatorsElement = model.getChild("validators");
-                if(validatorsElement != null) {
-                    final List<?> validatorElements = validatorsElement.getChildren("validator");
-                    for(Object o2:validatorElements) {
-                        final Element v = (Element)o2;
+                    final List<Validator> validators = new ArrayList<Validator>();
+                    final Element validatorsElement = model.getChild("validators");
+                    if(validatorsElement != null) {
+                        final List<?> validatorElements = validatorsElement.getChildren("validator");
+                        for(Object o2:validatorElements) {
+                            final Element v = (Element)o2;
 
-                        validators.add(new Validator(
-                                v.getAttributeValue("param"),
-                                v.getAttributeValue("regex"),
-                                "true".equalsIgnoreCase(v.getAttributeValue("require"))
-                        ));
-                    }
-                }
-
-                final List<Role> roles = new ArrayList<Role>();
-                final Element rolesElement = model.getChild("roles");
-                if(rolesElement != null) {
-                    final List<?> roleElements = rolesElement.getChildren("role");
-                    for(Object o2:roleElements) {
-                        final Element role = (Element)o2;
-
-                        final Role r = new Role(
-                                role.getAttributeValue("param"),
-                                role.getAttributeValue("eval"),
-                                role.getAttributeValue("value"),
-                                role.getAttributeValue("definite")
-                        );
-
-                        roles.add(r);
-                    }
-                }
-
-                final Map<String, String> properties = new HashMap<String, String>();
-                final Element propertiesElement = model.getChild("properties");
-                if(propertiesElement != null) {
-                    final List<?> propertyElements = propertiesElement.getChildren("property");
-                    for(Object o2:propertyElements) {
-                        final Element property = (Element)o2;
-                        final String key = property.getAttributeValue("key");
-                        if(key != null) {
-                            final String value = property.getAttributeValue("value");
-                            if(value != null) {
-                                properties.put(key, value);
-                            } else {
-                                final String text = applyEnvironmentVariable(env, property.getText());
-                                properties.put(key, text);
-                            }
-                        } else {
-                            logger.warn("Key not found for property (" + name + ")");
+                            validators.add(new Validator(
+                                    v.getAttributeValue("param"),
+                                    v.getAttributeValue("regex"),
+                                    "true".equalsIgnoreCase(v.getAttributeValue("require"))
+                            ));
                         }
                     }
-                }
 
-                try {
-                    final Info info = new Info(name, author, validators, roles);
-
-                    final Class<?> c = Class.forName(className, false, classLoader);
-                    final Constructor<?> cons = c.getConstructor(Manager.class, ModuleInfo.class, ModuleParam.class);
-                    final Module module = (Module) cons.newInstance(this, info, new ModuleParam(properties));
-
-
-                    // Add schedules now
-                    final Element schedulesElement = model.getChild("schedules");
-                    if(schedulesElement != null) {
-                        final List<?> roleElements = schedulesElement.getChildren("schedule");
+                    final List<Role> roles = new ArrayList<Role>();
+                    final Element rolesElement = model.getChild("roles");
+                    if(rolesElement != null) {
+                        final List<?> roleElements = rolesElement.getChildren("role");
                         for(Object o2:roleElements) {
-                            final Element schedule = (Element)o2;
+                            final Element role = (Element)o2;
 
-                            final String unit = schedule.getAttributeValue("unit");
-                            int start = Integer.parseInt(schedule.getAttributeValue("start"));
-                            int period = Integer.parseInt(schedule.getAttributeValue("period"));
-                            final String query = schedule.getAttributeValue("query");
+                            final Role r = new Role(
+                                    role.getAttributeValue("param"),
+                                    role.getAttributeValue("eval"),
+                                    role.getAttributeValue("value"),
+                                    role.getAttributeValue("definite")
+                            );
 
-                            if("month".equalsIgnoreCase(unit)) {
-                                start = start * 30 * 24 * 60 * 60 * 1000;
-                                period = period * 30 * 24 * 60 * 60 * 1000;
-                            } else if("day".equalsIgnoreCase(unit)) {
-                                start = start * 24 * 60 * 60 * 1000;
-                                period = period * 24 * 60 * 60 * 1000;
-                            } else if("hour".equalsIgnoreCase(unit)) {
-                                start = start * 60 * 60 * 1000;
-                                period = period * 60 * 60 * 1000;
-                            } else if("minuet".equalsIgnoreCase(unit)) {
-                                start = start * 60 * 1000;
-                                period = period * 60 * 1000;
-                            } else if(unit == null) { // hour by default
-                                start = start * 24 * 60 * 60 * 1000;
-                                period = period * 24 * 60 * 60 * 1000;
-                            }
-
-                            // system load
-                            start += 2000;
-
-                            addSchedule(module, query, start, period);
+                            roles.add(r);
                         }
                     }
 
+                    final Map<String, String> properties = new HashMap<String, String>();
+                    final Element propertiesElement = model.getChild("properties");
+                    if(propertiesElement != null) {
+                        final List<?> propertyElements = propertiesElement.getChildren("property");
+                        for(Object o2:propertyElements) {
+                            final Element property = (Element)o2;
+                            final String key = property.getAttributeValue("key");
+                            if(key != null) {
+                                final String value = property.getAttributeValue("value");
+                                if(value != null) {
+                                    properties.put(key, value);
+                                } else {
+                                    final String text = applyEnvironmentVariable(env, property.getText());
+                                    properties.put(key, text);
+                                }
+                            } else {
+                                logger.warn("Key not found for property (" + name + ")");
+                            }
+                        }
+                    }
 
-                    modules.put(name, module);
-                } catch (Exception ex) {
-                    throw new IOException("Error in load module", ex);
+                    try {
+                        final Info info = new Info(name, author, validators, roles);
+
+                        final Class<?> c = Class.forName(className, false, classLoader);
+                        final Constructor<?> cons = c.getConstructor(Manager.class, ModuleInfo.class, ModuleParam.class);
+                        final Module module = (Module) cons.newInstance(this, info, new ModuleParam(properties));
+
+
+                        // Add schedules now
+                        final Element schedulesElement = model.getChild("schedules");
+                        if(schedulesElement != null) {
+                            final List<?> roleElements = schedulesElement.getChildren("schedule");
+                            for(Object o2:roleElements) {
+                                final Element schedule = (Element)o2;
+
+                                final String unit = schedule.getAttributeValue("unit");
+                                int start = Integer.parseInt(schedule.getAttributeValue("start"));
+                                int period = Integer.parseInt(schedule.getAttributeValue("period"));
+                                final String query = schedule.getAttributeValue("query");
+
+                                if("month".equalsIgnoreCase(unit)) {
+                                    start = start * 30 * 24 * 60 * 60 * 1000;
+                                    period = period * 30 * 24 * 60 * 60 * 1000;
+                                } else if("day".equalsIgnoreCase(unit)) {
+                                    start = start * 24 * 60 * 60 * 1000;
+                                    period = period * 24 * 60 * 60 * 1000;
+                                } else if("hour".equalsIgnoreCase(unit)) {
+                                    start = start * 60 * 60 * 1000;
+                                    period = period * 60 * 60 * 1000;
+                                } else if("minuet".equalsIgnoreCase(unit)) {
+                                    start = start * 60 * 1000;
+                                    period = period * 60 * 1000;
+                                } else if(unit == null) { // hour by default
+                                    start = start * 24 * 60 * 60 * 1000;
+                                    period = period * 24 * 60 * 60 * 1000;
+                                }
+
+                                // system load
+                                start += 2000;
+
+                                addSchedule(module, query, start, period);
+                            }
+                        }
+
+
+                        modules.put(name, module);
+                    } catch (Exception ex) {
+                        throw new IOException("Error in load module", ex);
+                    }
                 }
             }
 
@@ -249,7 +252,7 @@ public class Manager {
 	public <T extends Module> T getModule(final Class<T> clazz) {
         //String name = clazz.getName();
         for(Module m:modules.values()) {
-            if(m.getClass() == clazz) {
+            if(m.getClass().isAssignableFrom(clazz)) {
                 return (T)m;
             }
         }
@@ -287,12 +290,10 @@ public class Manager {
         if(base == null) {
             base = System.getProperty("jetty.home");
         }
-        if(base != null) {
-            env.put("xweb.base", base);
-        } else {
-            logger.info("Application home not found. Maybe you are using non of tomcat/jetty." +
-                    "You can set it manually by setting global property \"xweb.base\"");
+        if(base == null) {
+            base = System.getProperty("user.dir");
         }
+        env.put("xweb.base", base);
 
         // add global properties
         env.putAll(properties);

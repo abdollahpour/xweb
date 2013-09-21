@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xweb version='1.0'>
+
+	<properties>
+		<property key='default.user'>admin@pdroid.org</property>
+		<property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
+	</properties>
+
+</xweb>

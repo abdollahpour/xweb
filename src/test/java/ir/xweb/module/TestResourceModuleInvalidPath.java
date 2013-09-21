@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -21,7 +22,7 @@ public class TestResourceModuleInvalidPath extends TestModule {
 
     final String path;
 
-    public TestResourceModuleInvalidPath(final String path) {
+    public TestResourceModuleInvalidPath(final String path) throws IOException {
         this.path = path;
     }
 
@@ -33,13 +34,12 @@ public class TestResourceModuleInvalidPath extends TestModule {
 
     @Before
     public void setup() {
-        when(manager.getContext()).thenReturn(servletContext);
-        when(servletContext.getInitParameter("data_store_path")).thenReturn("/tmp");
+
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testResourceModuleIllegalPath() {
-        final ResourceModule resourceModule = new ResourceModule(manager, moduleInfo, moduleParam);
+        final ResourceModule resourceModule = new ResourceModule(getManager(), moduleInfo, moduleParam);
 
         resourceModule.getFile("1", this.path);
     }
