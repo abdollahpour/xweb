@@ -25,51 +25,36 @@ import java.util.*;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
-@RunWith(value = Parameterized.class)
 public class TestDataTools {
 
-    private final String format;
-
-    private final Object data;
 
     private final DataTools tools = new DataTools();
 
     private final HttpServletResponse response = mock(HttpServletResponse.class);
 
-    public TestDataTools(final String format, final Object data) {
-        this.format = format;
-        this.data = data;
-    }
-
-    @Before
-    public void setup() throws IOException {
-        // setup require values
+    public TestDataTools() throws IOException {
         when(response.getWriter()).thenReturn(new PrintWriter(System.out));
-    }
-
-    @Parameterized.Parameters
-    public static Collection<Object[]> data() {
-        List<String> list1 = Arrays.asList("hamed", "ali", "muhammad");
-
-        Map map1 = new HashMap();
-        map1.put("users", list1);
-        map1.put("count", 100);
-
-        Map map2 = new HashMap();
-        map2.put("name", "hamed");
-        map2.put("family", "abdollahpour");
-        map2.put("sub", map1);
-
-        Object[][] data = new Object[][] {
-                {"xml", map2},
-                {"json", map2},
-        };
-        return Arrays.asList(data);
     }
 
     @Test
     public void writeWriter() throws IOException {
-        tools.write(response, this.format, null, this.data);
+        HashMap map = new HashMap();
+        map.put("count", 10);
+
+        List list = Arrays.asList(new User(), new User());
+        map.put("users", list);
+
+        System.out.println("Role: null");
+        tools.write(response, "json", null, map);
+        System.out.println();
+
+        System.out.println("Role: admin");
+        tools.write(response, "json", "admin", map);
+        System.out.println();
+
+        System.out.println("Role: user");
+        tools.write(response, "json", "user", map);
+        System.out.println();
     }
 
     @Test
@@ -89,8 +74,13 @@ public class TestDataTools {
     @XWebData(name = "user")
     class User {
 
-        @XWebDataElement (role = "admin,user", writable = true, validator = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")
+        @XWebDataElement (role = "admin", writable = true, validator = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")
         public String email;
+
+        @XWebDataElement(key = "userId")
+        public long getUserId() {
+            return 123;
+        }
 
     }
 

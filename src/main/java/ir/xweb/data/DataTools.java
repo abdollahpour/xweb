@@ -240,7 +240,7 @@ public class DataTools {
                         final String aName = m.getAnnotation(XWebDataElement.class).key();
                         final String aRole = m.getAnnotation(XWebDataElement.class).role();
 
-                        if(role == null || aRole.length() > 0 || (aRole + ",").indexOf(role) > -1) {
+                        if(role == null || aRole.length() == 0 || (aRole + ",").indexOf(role) > -1) {
                             Object value = m.invoke(object);
 
                             if(aName == null || aName.length() == 0) {
@@ -261,7 +261,7 @@ public class DataTools {
                     final String aName = f.getAnnotation(XWebDataElement.class).key();
                     final String aRole = f.getAnnotation(XWebDataElement.class).role();
 
-                    if(role == null || aRole.length() > 0 || (aRole + ",").indexOf(role) > -1) {
+                    if(role == null || aRole.length() == 0 || (aRole + ",").indexOf(role) > -1) {
                         final Object value = f.get(object);
 
                         if(value != null) {
