@@ -221,6 +221,10 @@ public class DataTools {
             final Object object,
             final String role) throws IOException, InvocationTargetException, IllegalAccessException {
 
+        if(object == null) {
+            throw new IllegalArgumentException("null object");
+        }
+
         final Class c = object.getClass();
         final boolean isAnnoted = c.isAnnotationPresent(XWebData.class);
 
@@ -260,10 +264,12 @@ public class DataTools {
                     if(role == null || aRole.length() > 0 || (aRole + ",").indexOf(role) > -1) {
                         final Object value = f.get(object);
 
-                        if(aName == null || aName.length() == 0) {
-                            data.put(f.getName(), convert(value, role));
-                        } else {
-                            data.put(aName, convert(value, role));
+                        if(value != null) {
+                            if(aName == null || aName.length() == 0) {
+                                data.put(f.getName(), convert(value, role));
+                            } else {
+                                data.put(aName, convert(value, role));
+                            }
                         }
                     }
 

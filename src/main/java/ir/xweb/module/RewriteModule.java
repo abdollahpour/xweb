@@ -13,8 +13,6 @@ import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tuckey.web.filters.urlrewrite.*;
-import org.tuckey.web.filters.urlrewrite.utils.ModRewriteConfLoader;
-import org.tuckey.web.filters.urlrewrite.utils.NumberUtils;
 import org.tuckey.web.filters.urlrewrite.utils.ServerNameMatcher;
 import org.tuckey.web.filters.urlrewrite.utils.StringUtils;
 
@@ -22,18 +20,10 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Date;
-import java.util.Properties;
 
 public class RewriteModule extends Module {
 
     private static Logger logger = LoggerFactory.getLogger("RewriteModule");
-
-    //public static final String VERSION = "3.2.0";
-
-    //public static final String DEFAULT_WEB_CONF_PATH = "/WEB-INF/urlrewrite.xml";
 
     /**
      * The conf for this filter.
@@ -46,40 +36,16 @@ public class RewriteModule extends Module {
     private boolean confReloadCheckEnabled = false;
 
     /**
-     * A user defined setting that says how often to check the conf has changed.
-     */
-    //private int confReloadCheckInterval = 0;
-
-    /**
      * A user defined setting that will allow configuration to be swapped via an HTTP to rewrite-status.
      */
     private boolean allowConfSwapViaHttp = false;
 
-    /**
-     * The last time that the conf file was loaded.
-     */
-    //private long confLastLoad = 0;
-    //private Conf confLastLoaded = null;
-    //private long confReloadLastCheck = 30;
-    //private boolean confLoadedFromFile = true;
-
-    /**
-     * path to conf file.
-     */
-    //private String confPath;
-
-    /**
-     * Flag to make sure we don't bog the filter down during heavy load.
-     */
-    //private boolean confReloadInProgress = false;
-
     private boolean statusEnabled = true;
+
     private String statusPath = "/rewrite-status";
 
-    //private boolean modRewriteStyleConf = false;
-    //public static final String DEFAULT_MOD_REWRITE_STYLE_CONF_PATH = "/WEB-INF/.htaccess";
-
     private ServerNameMatcher statusServerNameMatcher;
+
     private static final String DEFAULT_STATUS_ENABLED_ON_HOSTS = "localhost, local, 127.0.0.1";
 
 
@@ -191,7 +157,6 @@ public class RewriteModule extends Module {
         //}   else {
         //
             loadUrlRewriter(filterConfig);
-        //}
     }
 
     /**
@@ -333,16 +298,16 @@ public class RewriteModule extends Module {
 
         UrlRewriter urlRewriter = getUrlRewriter(request, response, chain);
 
-        final HttpServletRequest hsRequest = (HttpServletRequest) request;
-        final HttpServletResponse hsResponse = (HttpServletResponse) response;
-        UrlRewriteWrappedResponse urlRewriteWrappedResponse = new UrlRewriteWrappedResponse(hsResponse, hsRequest,
+        //final HttpServletRequest hsRequest = (HttpServletRequest) request;
+        //final HttpServletResponse hsResponse = (HttpServletResponse) response;
+        UrlRewriteWrappedResponse urlRewriteWrappedResponse = new UrlRewriteWrappedResponse(response, request,
                 urlRewriter);
 
         boolean requestRewritten = false;
         if (urlRewriter != null) {
 
             // process the request
-            requestRewritten = urlRewriter.processRequest(hsRequest, urlRewriteWrappedResponse, chain);
+            requestRewritten = urlRewriter.processRequest(request, urlRewriteWrappedResponse, chain);
 
         } else {
             if (logger.isDebugEnabled()) {
@@ -352,7 +317,7 @@ public class RewriteModule extends Module {
 
         // if no rewrite has taken place continue as normal
         if (!requestRewritten) {
-            chain.doFilter(hsRequest, urlRewriteWrappedResponse);
+            chain.doFilter(request, urlRewriteWrappedResponse);
         }
     }
 
@@ -368,93 +333,5 @@ public class RewriteModule extends Module {
         //}
         return urlRewriter;
     }
-
-    /**
-     * Is it time to reload the configuration now.  Depends on is conf reloading is enabled.
-     */
-    //public boolean isTimeToReloadConf() {
-    //    if (!confLoadedFromFile) return false;
-    //    long now = System.currentTimeMillis();
-    //    return confReloadCheckEnabled && !confReloadInProgress && (now - confReloadCheckInterval) > confReloadLastCheck;
-    //}
-
-    /**
-     * Forcibly reload the configuration now.
-     */
-    /*public void reloadConf() {
-        long now = System.currentTimeMillis();
-        confReloadInProgress = true;
-        confReloadLastCheck = now;
-
-        logger.debug("starting conf reload check");
-        long confFileCurrentTime = getConfFileLastModified();
-        if (confLastLoad < confFileCurrentTime) {
-            // reload conf
-            confLastLoad = System.currentTimeMillis();
-            logger.info("conf file modified since last load, reloading");
-            loadUrlRewriterLocal();
-        } else {
-            logger.debug("conf is not modified");
-        }
-        confReloadInProgress = false;
-    }*/
-
-    /**
-     * Gets the last modified date of the conf file.
-     *
-     * @return time as a long
-     */
-    //private long getConfFileLastModified() {
-    //    File confFile = new File(context.getRealPath(confPath));
-    //    return confFile.lastModified();
-    //}
-
-
-    //public boolean isConfReloadCheckEnabled() {
-    //    return confReloadCheckEnabled;
-    //}
-
-    /**
-     * The amount of seconds between reload checks.
-     *
-     * @return int number of millis
-     */
-    //public int getConfReloadCheckInterval() {
-    //    return confReloadCheckInterval / 1000;
-    //}
-
-    //public Date getConfReloadLastCheck() {
-    //    return new Date(confReloadLastCheck);
-    //}
-
-    //public boolean isStatusEnabled() {
-    //    return statusEnabled;
-    //}
-
-    //public String getStatusPath() {
-    //    return statusPath;
-    //}
-
-    //public boolean isLoaded() {
-    //    return urlRewriter != null;
-    //}
-
-    /*public static String getFullVersionString() {
-        Properties props = new Properties();
-        String buildNumberStr = "";
-        try {
-            InputStream is = UrlRewriteFilter.class.getResourceAsStream("build.number.properties");
-            if ( is != null ) {
-                props.load(is);
-                String buildNumber = (String) props.get("build.number");
-                if (!StringUtils.isBlank(buildNumber)){
-                    buildNumberStr =  " build " + props.get("build.number");
-                }
-            }
-        } catch (IOException e) {
-            logger.error("", e);
-        }
-        return VERSION + buildNumberStr;
-    }*/
 
 }
