@@ -1,6 +1,7 @@
 package ir.xweb.module;
 
 import ir.xweb.server.XWebUser;
+import ir.xweb.util.MimeType;
 import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -235,7 +236,7 @@ public class ResourceModule extends Module {
         response.setHeader("ETag", getETag(file));
         response.setHeader("Last-Modified", getLastModified(file));
         response.setHeader("Content-Length", String.valueOf(totalSize));
-        response.setHeader("Content-Type", getContentType(file));
+        response.setHeader("Content-Type", MimeType.get(file));
         response.setHeader("Content-Range", getContentRange(validRanges, fileSize));
         response.setHeader("Content-Disposition",
                 "inline; " +
@@ -319,7 +320,7 @@ public class ResourceModule extends Module {
                     "modification-date=\"" + dateFormat.format(file.lastModified()) + "\"");
 
             if(!response.containsHeader("Content-Type")) {
-                response.setHeader("Content-Type", getContentType(file));
+                response.setHeader("Content-Type", MimeType.get(file));
             }
 
             response.setBufferSize(0);
@@ -413,21 +414,6 @@ public class ResourceModule extends Module {
         return this.dateFormat.format(new Date(file.lastModified()));
     }
 
-    private String getContentType(final File file) {
-        String mime = getContext().getMimeType(file.getName());
-        if (mime != null) {
-            // add UTF-8 for text contents
-            if(mime.startsWith("text/")) {
-                // All the text contents should be with UTF-8 format
-                mime += "; charset=utf-8";
-            }
-
-            return mime;
-        } else {
-            return "application/octetstream";
-        }
-    }
-
     private void fullDownload(
             final HttpServletRequest request,
             final HttpServletResponse response,
@@ -441,7 +427,7 @@ public class ResourceModule extends Module {
         response.setHeader("ETag", getETag(file));
         response.setHeader("Last-Modified", getLastModified(file));
         response.setHeader("Content-Length", String.valueOf(till - from));
-        response.setHeader("Content-Type", getContentType(file));
+        response.setHeader("Content-Type", MimeType.get(file));
         response.setHeader("Content-Disposition",
                 "inline; " +
                 "filename=" + file.getName() + "; " +

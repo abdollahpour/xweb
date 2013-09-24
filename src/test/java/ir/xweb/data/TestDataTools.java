@@ -8,10 +8,7 @@ package ir.xweb.data;
 
 import static org.mockito.Mockito.*;
 
-import ir.xweb.module.AuthenticationModule;
-import ir.xweb.module.CaptchaModule;
-import ir.xweb.module.ModuleException;
-import ir.xweb.module.ModuleParam;
+import ir.xweb.module.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

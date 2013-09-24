@@ -248,15 +248,24 @@ public class Manager {
 		return modules.get(name);
 	}
 
-    @SuppressWarnings("unchecked")
 	public <T extends Module> T getModule(final Class<T> clazz) {
         //String name = clazz.getName();
         for(Module m:modules.values()) {
-            if(m.getClass().isAssignableFrom(clazz)) {
+            if(clazz.isAssignableFrom(m.getClass())) {
                 return (T)m;
             }
         }
         return null;
+    }
+
+    public <T extends Module> T getModuleOrThrow(final Class<T> clazz) {
+        //String name = clazz.getName();
+        for(Module m:modules.values()) {
+            if(clazz.isAssignableFrom(m.getClass())) {
+                return (T)m;
+            }
+        }
+        throw new IllegalArgumentException("Module " + clazz.getName() + " not find. But it's require");
     }
 
     private Map<String, String> getEnvMap(Map<String, String> properties) {
