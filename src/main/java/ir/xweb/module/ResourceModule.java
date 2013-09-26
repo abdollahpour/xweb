@@ -332,7 +332,8 @@ public class ResourceModule extends Module {
                 throw new IOException(ex);
             }
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            throw new ModuleException(HttpServletResponse.SC_NOT_FOUND,
+                    (file == null ? null : file.getName()) + " not found");
         }
     }
 

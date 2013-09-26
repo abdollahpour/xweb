@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 public class Tools {
@@ -193,6 +195,31 @@ public class Tools {
                     fos.close();
                 } catch (Exception ex) {}
             }
+        }
+    }
+
+    public static boolean isValidFilename(String filename) {
+        if(System.getProperty("os.name").toLowerCase().contains("Windows")) {
+            Pattern pattern = Pattern.compile(
+                    "# Match a valid Windows filename (unspecified file system).          \n" +
+                            "^                                # Anchor to start of string.        \n" +
+                            "(?!                              # Assert filename is not: CON, PRN, \n" +
+                            "  (?:                            # AUX, NUL, COM1, COM2, COM3, COM4, \n" +
+                            "    CON|PRN|AUX|NUL|             # COM5, COM6, COM7, COM8, COM9,     \n" +
+                            "    COM[1-9]|LPT[1-9]            # LPT1, LPT2, LPT3, LPT4, LPT5,     \n" +
+                            "  )                              # LPT6, LPT7, LPT8, and LPT9...     \n" +
+                            "  (?:\\.[^.]*)?                  # followed by optional extension    \n" +
+                            "  $                              # and end of string                 \n" +
+                            ")                                # End negative lookahead assertion. \n" +
+                            "[^<>:\"/\\\\|?*\\x00-\\x1F]*     # Zero or more valid filename chars.\n" +
+                            "[^<>:\"/\\\\|?*\\x00-\\x1F\\ .]  # Last char is not a space or dot.  \n" +
+                            "$                                # Anchor to end of string.            ",
+                    Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE | Pattern.COMMENTS);
+            Matcher matcher = pattern.matcher(filename);
+            boolean isMatch = matcher.matches();
+            return isMatch;
+        } else {
+            return filename.matches("^[^.\\\\/:*?\"<>|]?[^\\\\/:*?\"<>|]*");
         }
     }
 
