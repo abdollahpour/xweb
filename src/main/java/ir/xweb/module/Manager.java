@@ -304,6 +304,8 @@ public class Manager {
         }
         env.put("xweb.base", base);
 
+        env.put("xweb.root", context.getRealPath("/"));
+
         // add global properties
         env.putAll(properties);
 
