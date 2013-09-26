@@ -21,9 +21,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ir.xweb.module.Module;
-import ir.xweb.module.ModuleInfo;
-import ir.xweb.module.ModuleParam;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
