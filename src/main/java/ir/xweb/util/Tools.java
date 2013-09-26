@@ -174,4 +174,26 @@ public class Tools {
         return s.toString();
     }
 
+    public static void writeTextFile(String s, File file) throws IOException {
+        if(file == null) {
+            throw new IllegalArgumentException("null file");
+        }
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+
+            OutputStreamWriter w = new OutputStreamWriter(fos, "UTF-8");
+
+            w.write(s);
+            w.flush();
+        } finally {
+            if(fos != null) {
+                try {
+                    fos.close();
+                } catch (Exception ex) {}
+            }
+        }
+    }
+
 }
