@@ -1,6 +1,11 @@
-# xweb
+# XWeb
 
 XWeb is simple modular library to create JavaEE base web applications. You are able to authenticate, restrict, validate, compress and do many other cool things just with simple XML file (xweb.xml). You can use XWeb for simple project without even one line of Java code! But for more feature like connect it to database, add advance user functionality and more, you need to simply extends some modules, or you write your own module.
+
+* [Start to make first application](Home)
+
+
+
 
 ## Use XWeb with maven
 1. If you are using maven, you need to add our own repository to repositories list:
