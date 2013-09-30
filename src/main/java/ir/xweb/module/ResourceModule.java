@@ -306,6 +306,10 @@ public class ResourceModule extends Module {
 
     public void writeFile(final HttpServletResponse response, final File file) throws IOException {
         if(file != null && file.exists()) {
+            if(response == null) {
+                throw new IllegalArgumentException("null response");
+            }
+
             final long from = 0;
             final long till = file.length();
 
