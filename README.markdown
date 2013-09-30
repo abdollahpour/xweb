@@ -7,18 +7,18 @@ Let's look at the main feature of XWeb framework:
 
 * Fully modular: You can Use, create and extends modules so simple! Each module also simplify many thing for you.
 * Data tools: You can validate and generate Java objects from GET and POST request in single line of code!
-* [Authentication module: ](https://github.com/abdollahpour/xweb/wiki/AuthenticationModule) Ultimate solution for authentication, support create exact pattern for authentications, remember login (with cookie), Captcha support, single file or fully database support.
-
-You are able to authenticate, restrict, validate, compress and do many other cool things just with simple XML file (xweb.xml). You can use XWeb for simple project without even one line of Java code! But for more feature like connect it to database, add advance user functionality and more, you need to simply extends some modules, or you write your own module.
+* [Authentication Module: ](https://github.com/abdollahpour/xweb/wiki/AuthenticationModule) Ultimate solution for authentication, support create exact pattern for authentications, remember login (with cookie), Captcha support, single file or fully database support.
+* [Resource Module: ](https://github.com/abdollahpour/xweb/wiki/ResourceModule) You can easily load resource like, pictures, video and other things from outside of WEBROOT of your project. It's ideal for keeping user data. It's pretty fast, no limitation and memory overflow and it also support resume and multi connection.
+* [Rewrite/Redirect Module: ](https://github.com/abdollahpour/xweb/wiki/RewriteModule) Create rewrite with same format as Apache standards
+* [GZip Module: ](https://github.com/abdollahpour/xweb/wiki/GzipModule) Super fast gzip with caching. You can compress anything automatically.
+* [Schedule: ](https://github.com/abdollahpour/xweb/wiki/Schedule) Run specific task in specific period of time in system.
+* Validation: You can validate all the parameters also depend on user Roles with Regular Expression
+* [Wiki Module: ](https://github.com/abdollahpour/xweb-wiki) Parse and Cache data with Wiki format (MediaWiki) so simple.
 
 ## How can I use it?
-[Please see wiki to make you first XWeb application](https://github.com/abdollahpour/xweb/wiki)
+[See Wiki to make you first XWeb applicationn](https://github.com/abdollahpour/xweb/wiki)
 
 ## HTML5 client
 You can also simply create HTML5 client for you application
 
 [Please see xweb-html5-bootstrap](https://github.com/abdollahpour/xweb-html5-bootstrap)
-
-## Extra modules
-You can also have some extra modules:
-* [Wiki module](https://github.com/abdollahpour/xweb-wiki)
