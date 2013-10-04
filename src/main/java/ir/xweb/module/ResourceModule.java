@@ -304,6 +304,39 @@ public class ResourceModule extends Module {
         return file;
     }
 
+    /**
+     * Write file with gzip checking, file <filepath>.gz exist and request support gz file, we will use GZ instead of
+     * original file
+     * @param request
+     * @param response
+     * @param file
+     * @throws IOException
+     */
+    public void writeFile(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final File file) throws IOException {
+
+        boolean zipSupport = false;
+
+        final File zipFile = new File(file.getPath() + ".gz");
+
+        if(zipFile.exists() && zipFile.canRead()) {
+            String contentEncoding = request.getHeader("Content-Encoding");
+            if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
+                zipSupport = true;
+            }
+        }
+
+        if(zipSupport) {
+            response.addHeader("Content-Encoding", "gzip");
+            response.setHeader("Content-Type", MimeType.get(file));
+            writeFile(response, zipFile);
+        } else {
+            writeFile(response, file);
+        }
+    }
+
     public void writeFile(final HttpServletResponse response, final File file) throws IOException {
         if(file != null && file.exists()) {
             if(response == null) {
