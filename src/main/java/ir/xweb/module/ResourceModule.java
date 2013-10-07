@@ -10,14 +10,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.nio.file.Files;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -296,6 +294,42 @@ public class ResourceModule extends Module {
         return file;
     }
 
+    /**
+     * Create temp file and write inputstream on that
+     * @param is
+     * @return
+     */
+    public File initTempFile(InputStream is) throws IOException {
+        if(is == null) {
+            throw new IllegalArgumentException("Inputstream null");
+        }
+        final File file = initTempFile();
+        Files.copy(is, file.toPath());
+
+        return file;
+
+        /*FileOutputStream fos = null;
+
+        try {
+            fos = new FileOutputStream(file);
+            int size;
+            byte[] buffer = new byte[1024];
+
+            while((size = is.read(buffer)) > 0) {
+                fos.write(buffer, 0, size);
+            }
+
+            return file;
+        } finally {
+            if(fos != null) {
+                try {
+                    fos.flush();
+                    fos.close();
+                } catch (Exception ex) {}
+            }
+        }*/
+    }
+
     public File initTempDir() throws IOException {
         final File file = new File(this.tempDir, Long.toString(System.currentTimeMillis()));
         if(!file.exists() && !file.mkdirs()) {
@@ -322,15 +356,17 @@ public class ResourceModule extends Module {
         final File zipFile = new File(file.getPath() + ".gz");
 
         if(zipFile.exists() && zipFile.canRead()) {
-            String contentEncoding = request.getHeader("Content-Encoding");
-            if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
+            final String encoding = request.getHeader("Accept-Encoding");
+            if(encoding != null && encoding.toLowerCase().indexOf("gzip") > -1) {
                 zipSupport = true;
             }
         }
 
         if(zipSupport) {
             response.addHeader("Content-Encoding", "gzip");
-            response.setHeader("Content-Type", MimeType.get(file));
+            if(!response.containsHeader("Content-Type")) {
+                response.addHeader("Content-Type", MimeType.get(file));
+            }
             writeFile(response, zipFile);
         } else {
             writeFile(response, file);
@@ -357,7 +393,7 @@ public class ResourceModule extends Module {
                     "modification-date=\"" + dateFormat.format(file.lastModified()) + "\"");
 
             if(!response.containsHeader("Content-Type")) {
-                response.setHeader("Content-Type", MimeType.get(file));
+                response.addHeader("Content-Type", MimeType.get(file));
             }
 
             response.setBufferSize(0);

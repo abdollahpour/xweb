@@ -220,6 +220,9 @@ public class MimeType {
         map.put(".jpeg", "image/jpeg");
         map.put(".jpg", "image/jpeg");
         map.put(".js", "application/x-javascript");
+        map.put(".js", "application/x-javascript");
+        map.put(".json", "application/json");
+        map.put(".jsonp", "application/javascript");
         map.put(".jsx", "text/jscript");
         map.put(".jsxbin", "text/plain");
         map.put(".latex", "application/x-latex");
@@ -582,13 +585,16 @@ public class MimeType {
     }
 
     public static String get(File file) {
-        return file.getName();
+        return get(file.getName());
     }
 
     public static String get(String file) {
         String mime = m.get(file);
         if(mime == null) {
-            mime = m.get(file.substring(0, file.lastIndexOf('.')));
+            mime = m.get("." + file);
+        }
+        if(mime == null) {
+            mime = m.get("." + Tools.getFileExtension(file));
         }
         if(mime == null) {
             mime = "application/octetstream";
@@ -599,7 +605,7 @@ public class MimeType {
     public static String get(String file, String charset) {
         String mime = get(file);
         if(mime.startsWith("text/")) {
-            mime += "; charset=utf-8";
+            mime += "; charset=" + charset;
         }
         return mime;
     }

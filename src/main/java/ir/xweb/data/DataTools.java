@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -46,6 +47,13 @@ public class DataTools {
         return formatters.put(name, formatter);
     }
 
+    /**
+     * Write parameter to an specific object
+     * @param object
+     * @param data
+     * @param role
+     * @throws IOException
+     */
     public void write(
             final Object object,
             final Map<String, String> data,
@@ -190,9 +198,40 @@ public class DataTools {
             final String format,
             final String role,
             final Object object) throws IOException {
-
         if(response == null) {
             throw new IllegalArgumentException("null response");
+        }
+
+        write(response.getWriter(), format, role, object);
+    }
+
+    public String write(
+            final String format,
+            final String role,
+            final Object object) throws IOException {
+
+        final StringWriter writer = new StringWriter();
+        write(writer, format, role, object);
+        return writer.getBuffer().toString();
+    }
+
+    public void write(
+            final Writer writer,
+            final String format,
+            final String role,
+            final Object object) throws IOException {
+        write(writer, format, role, object, false);
+    }
+
+    public void write(
+            final Writer writer,
+            final String format,
+            final String role,
+            final Object object,
+            final boolean expandListToParent) throws IOException {
+
+        if(writer == null) {
+            throw new IllegalArgumentException("null writer");
         }
         if(format == null) {
             throw new IllegalArgumentException("null format");
@@ -209,7 +248,6 @@ public class DataTools {
         try {
             // it's much faster to search for 'ROLE,' to split and check in array
             final Object formattedObject = convert(object, role == null ? null : (role + ","));
-            Writer writer = response.getWriter();
             formatter.write(writer, formattedObject);
             writer.flush();
         } catch (Exception ex) {

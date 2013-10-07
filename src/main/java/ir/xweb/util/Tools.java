@@ -223,4 +223,13 @@ public class Tools {
         }
     }
 
+    public static String getFileExtension(final String f) {
+        String ext = "";
+        int i = f.lastIndexOf('.');
+        if (i > 0 &&  i < f.length() - 1) {
+            ext = f.substring(i + 1);
+        }
+        return ext;
+    }
+
 }

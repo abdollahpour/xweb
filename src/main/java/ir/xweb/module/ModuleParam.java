@@ -1,5 +1,6 @@
 package ir.xweb.module;
 
+import java.io.File;
 import java.lang.String;
 import java.net.URL;
 import java.util.*;
@@ -58,6 +59,16 @@ public class ModuleParam implements Map<String, String> {
         } catch (Exception ex) {
             throw new IllegalArgumentException("Illegal URL: " + s);
         }
+    }
+
+    public File getFile(String name, File def) {
+        String path = getString(name, null);
+        return path == null ? def : new File(path);
+    }
+
+    public File getFile(String name, String defPath) {
+        String path = getString(name, defPath);
+        return path == null ? null : new File(path);
     }
 
     public Locale getLocale(String name, Locale def) {
