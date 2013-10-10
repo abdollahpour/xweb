@@ -63,6 +63,34 @@ public class Downloader {
         return this;
     }
 
+    /**
+     * Set proxy with URI. For http proxy http://hostname:port or https://hostname:port for socket proxy host:port.
+     * @param uri Proxy URI. Null URI will be ignore
+     * @return
+     */
+    public Downloader proxy(final String uri) {
+        if(uri != null) {
+            if(uri.startsWith("http")) {
+                try {
+                    final URI u = new URI(uri);
+
+                    this.proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(u.getHost(), u.getPort()));
+                } catch (URISyntaxException ex) {
+                    throw new IllegalArgumentException(ex);
+                }
+            } else {
+                final String[] parts = uri.split(":");
+                if(parts.length == 2) {
+                    this.proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(parts[0], Integer.parseInt(parts[1])));
+                } else {
+                    throw new IllegalArgumentException("Illegal URI: " + uri);
+                }
+            }
+        }
+
+        return this;
+    }
+
     public Downloader httpProxy(final String host, final int port) {
         if(host == null) {
             throw new IllegalArgumentException("null host");

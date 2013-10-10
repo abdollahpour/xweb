@@ -18,6 +18,7 @@ import java.io.*;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -60,17 +61,18 @@ public class GzipModule extends Module {
             chainedRequest = new ZipRequestWrapper(request);
         }
 
-        URI uri = null;
+        /*URI uri = null;
         try {
             uri = new URI(request.getRequestURI());
         } catch (Exception ex) {
             // never happens
-        }
+        }*/
+
 
         String acceptEncoding = request.getHeader("Accept-Encoding");
         if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
             // we don't care about context path, so we trunk it
-            String path = uri.getPath().substring(request.getContextPath().length());
+            String path = request.getRequestURI();
 
             if(requests != null) {
                 if(path.matches(requests)) {
@@ -82,7 +84,7 @@ public class GzipModule extends Module {
                 // get module names
                 boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
                 if(isApiCall) {
-                    String moduleName = Tools.getUrlParam(uri.getPath(), Constants.MODULE_NAME_PARAMETER);
+                    String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
                     if(modules.contains(moduleName)) {
                         chainedResponse = new ZipResponseWrapper(response);
                     }
@@ -92,6 +94,8 @@ public class GzipModule extends Module {
             if(chainedResponse == null) {
                 File dir = new File(context.getRealPath(File.separator));
                 File file = new File(dir, path);
+
+
 
                 if(file.exists()) {
                     File zipFile = new File(file.getPath() + ".gz");
@@ -107,12 +111,12 @@ public class GzipModule extends Module {
             }
         }
 
-        if(chainedRequest != null || chainedResponse != null) {
+        //if(chainedRequest != null || chainedResponse != null) {
             filterChain.doFilter(
                     chainedRequest == null ? request : chainedRequest,
                     chainedResponse == null ? response : chainedResponse
             );
-        }
+        //}
     }
 
     private class ZipFileRequestWrapper extends HttpServletRequestWrapper {

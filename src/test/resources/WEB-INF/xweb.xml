@@ -6,4 +6,22 @@
 		<property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
 	</properties>
 
+	<modules>
+		<module>
+			<name>gzip</name>
+			<class>ir.xweb.module.GzipModule</class>
+			<properties>
+				<property key='modules'>reply</property>
+			</properties>
+		</module>
+		<module>
+			<name>reply</name>
+			<class>ir.xweb.module.ReplyModule</class>
+		</module>
+	</modules>
+
+
+
+
+
 </xweb>

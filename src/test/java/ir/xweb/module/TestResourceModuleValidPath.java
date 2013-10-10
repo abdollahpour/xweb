@@ -46,7 +46,7 @@ public class TestResourceModuleValidPath extends TestModule {
 
         ModuleParam moduleParam = new ModuleParam(params);
 
-        final ResourceModule resourceModule = new ResourceModule(getManager(), this.moduleInfo, moduleParam);
+        final ResourceModule resourceModule = new ResourceModule(manager, this.moduleInfo, moduleParam);
 
         resourceModule.getFile("1", this.path);
     }

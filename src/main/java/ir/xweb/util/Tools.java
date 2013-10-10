@@ -4,10 +4,7 @@ import java.io.*;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
@@ -78,8 +75,8 @@ public class Tools {
         }
     }
 
-    public static String getUrlParam(final String url, final String name) throws UnsupportedEncodingException {
-        Map<String, List<String>> params = getUrlParameters(url);
+    public static String getUrlParam(final String queryString, final String name) throws UnsupportedEncodingException {
+        Map<String, List<String>> params = parseQueryString(queryString);
         List<String> values = params.get(name);
         if(values != null && values.size() > 0) {
             return values.get(0);
@@ -87,7 +84,7 @@ public class Tools {
         return null;
     }
 
-    public static Map<String, List<String>> getUrlParameters(final String url) throws UnsupportedEncodingException {
+    /*public static Map<String, List<String>> getUrlParameters(final String url) throws UnsupportedEncodingException {
         Map<String, List<String>> params = new HashMap<String, List<String>>();
         String[] urlParts = url.split("\\?");
         if (urlParts.length > 1) {
@@ -102,12 +99,74 @@ public class Tools {
                 List<String> values = params.get(key);
                 if (values == null) {
                     values = new ArrayList<String>();
+                    System.out.println("key: " + key + " value: " + values);
                     params.put(key, values);
                 }
                 values.add(value);
             }
         }
         return params;
+    }*/
+
+    public static HashMap<String, List<String>> parseQueryString(String queryString) {
+        if (queryString == null) {
+            throw new IllegalArgumentException("null queryString");
+        }
+        HashMap<String, List<String>> ht = new HashMap<String, List<String>>();
+        StringBuffer sb = new StringBuffer();
+        StringTokenizer st = new StringTokenizer(queryString, "&");
+        while (st.hasMoreTokens()) {
+            String pair = st.nextToken();
+            int pos = pair.indexOf('=');
+            if (pos == -1) {
+                // XXX
+                // should give more detail about the illegal argument
+                throw new IllegalArgumentException();
+            }
+            String key = parseName(pair.substring(0, pos), sb);
+            String val = parseName(pair.substring(pos+1, pair.length()), sb);
+
+            List<String> list = ht.get(key);
+            if (!ht.containsKey(key)) {
+                list = new ArrayList<String>();
+                ht.put(key, list);
+            }
+            list.add(val);
+        }
+        return ht;
+    }
+
+    private static String parseName(String s, StringBuffer sb) {
+        sb.setLength(0);
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '+':
+                    sb.append(' ');
+                    break;
+                case '%':
+                    try {
+                        sb.append((char) Integer.parseInt(s.substring(i+1, i+3),
+                                16));
+                        i += 2;
+                    } catch (NumberFormatException e) {
+                        // XXX
+                        // need to be more specific about illegal arg
+                        throw new IllegalArgumentException();
+                    } catch (StringIndexOutOfBoundsException e) {
+                        String rest  = s.substring(i);
+                        sb.append(rest);
+                        if (rest.length()==2)
+                            i++;
+                    }
+
+                    break;
+                default:
+                    sb.append(c);
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     public static String md5(String pass)  {

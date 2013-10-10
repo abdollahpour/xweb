@@ -39,7 +39,7 @@ public class TestResourceModuleInvalidPath extends TestModule {
 
     @Test(expected = IllegalArgumentException.class)
     public void testResourceModuleIllegalPath() {
-        final ResourceModule resourceModule = new ResourceModule(getManager(), moduleInfo, moduleParam);
+        final ResourceModule resourceModule = new ResourceModule(manager, moduleInfo, moduleParam);
 
         resourceModule.getFile("1", this.path);
     }

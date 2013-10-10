@@ -27,24 +27,13 @@ public class TestModule {
 
     final HttpSession session = mock(HttpSession.class);
 
-    private final Manager manager;
+    final Manager manager;
 
     public TestModule() throws IOException {
         when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
 
         manager = new Manager(servletContext);
         manager.load(getClass().getResource("/WEB-INF/xweb.xml"));
-    }
-
-    @Before
-    public void setupServer() throws IOException {
-
-
-
-    }
-
-    public Manager getManager() {
-        return this.manager;
     }
 
 }

@@ -35,8 +35,6 @@ public class LogModule extends Module {
 
         String path = properties.getString("path", null);
         log = new File(path);
-
-        logger.debug("Try to run logger: " + path);
     }
 
     @Override
