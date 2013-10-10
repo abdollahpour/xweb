@@ -23,6 +23,8 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class DataTools {
@@ -37,14 +39,20 @@ public class DataTools {
 
     private final Map<String, Formatter> formatters = new HashMap<String, Formatter>();
 
+    private DateFormat dateFormat = new SimpleDateFormat();
+
     public DataTools() {
         formatters.put(FORMAT_JSON, new JsonFormatter());
         formatters.put(FORMAT_JSONP, new JsonpFormatter());
         formatters.put(FORMAT_XML, new XmlFormatter());
     }
 
-    public Formatter addFormatter(String name, Formatter formatter) {
+    public Formatter addFormatter(final String name, final Formatter formatter) {
         return formatters.put(name, formatter);
+    }
+
+    public void setDateFormat(final DateFormat dateFormat) {
+        this.dateFormat = dateFormat;
     }
 
     /**
@@ -334,6 +342,8 @@ public class DataTools {
             }
 
             return data;
+        } else if(object instanceof Date) {
+            return dateFormat.format((Date) object);
         }
 
         return object;
