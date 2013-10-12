@@ -39,7 +39,7 @@ public class XWebServlet extends HttpServlet {
 		
 		Module module = manager.getModule(api);
 		if(module != null) {
-            logger.trace("Call module: " + module.getInfo().getName());
+            //logger.trace("Call module: " + module.getInfo().getName());
 
             try {
                 XWebUser user = (XWebUser) request.getSession().getAttribute(Constants.SESSION_USER);

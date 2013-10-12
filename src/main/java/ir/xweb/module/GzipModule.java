@@ -8,6 +8,7 @@ package ir.xweb.module;
 
 import ir.xweb.server.Constants;
 import ir.xweb.util.Tools;
+import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -15,10 +16,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
-import java.net.URI;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -26,23 +26,34 @@ public class GzipModule extends Module {
 
     public final static String PARAM_MODULES = "modules";
 
-    public final static String PARAM_FILES = "files";
+    public final static String PARAM_EXTENSIONS = "extensions";
 
     public final static String PARAM_REQUESTS = "requests";
 
+    public final static String PARAM_DIR_CACHE = "dir.cache";
+
+    public final static String PARAM_SIZE_MAX = "size.max";
+
+    private final int maxSize;
+
     private final List<String> modules;
 
-    private final String files;
+    private final List<String> extensions;
 
     private final String requests;
+
+    private File cacheDir;
 
     public GzipModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
 
-        String moduleNames = properties.getString(PARAM_MODULES, null);
-        modules = (moduleNames == null ? null : Arrays.asList(moduleNames.split("[,;]")));
-        files = properties.getString(PARAM_FILES, null);
+        final String modulesValue = properties.getString(PARAM_MODULES, null);
+        modules = (modulesValue == null ? null : Arrays.asList(modulesValue.split("[,;]")));
+        final String extensionsValue = properties.getString(PARAM_EXTENSIONS, null);
+        extensions = extensionsValue == null ? null : Arrays.asList(extensionsValue.split("[,;]"));
         requests = properties.getString(PARAM_REQUESTS, null);
+        cacheDir = properties.getFile(PARAM_DIR_CACHE, (File)null);
+        maxSize = properties.getInt(PARAM_SIZE_MAX, 2097152); // 2MB default
     }
 
     @Override
@@ -72,7 +83,7 @@ public class GzipModule extends Module {
         String acceptEncoding = request.getHeader("Accept-Encoding");
         if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
             // we don't care about context path, so we trunk it
-            String path = request.getRequestURI();
+            final String path = request.getRequestURI();
 
             if(requests != null) {
                 if(path.matches(requests)) {
@@ -80,33 +91,51 @@ public class GzipModule extends Module {
                 }
             }
 
-            if(chainedResponse == null && modules != null) {
+            if(chainedResponse == null) {
                 // get module names
                 boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
                 if(isApiCall) {
-                    String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
-                    if(modules.contains(moduleName)) {
-                        chainedResponse = new ZipResponseWrapper(response);
-                    }
-                }
-            }
-
-            if(chainedResponse == null) {
-                File dir = new File(context.getRealPath(File.separator));
-                File file = new File(dir, path);
-
-
-
-                if(file.exists()) {
-                    File zipFile = new File(file.getPath() + ".gz");
-
-                    if(!zipFile.exists() || zipFile.lastModified() < zipFile.lastModified()) {
-                        if(zipFile.canWrite()) {
-                            Tools.zipFile(file, zipFile);
+                    if(modules != null) {
+                        String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
+                        if(modules.contains(moduleName)) {
+                            chainedResponse = new ZipResponseWrapper(response);
                         }
                     }
+                } else if(extensions != null) {
+                    File dir = new File(context.getRealPath(File.separator));
+                    File file = new File(dir, path);
 
-                    chainedRequest = new ZipFileRequestWrapper(request, response);
+                    if(file.exists() && file.length() <= maxSize) {
+                        String extension = Tools.getFileExtension(file.getName());
+
+                        // check extension
+                        if(extensions.contains(extension.toLowerCase())) {
+                            // check for cache dir
+                            if(cacheDir == null || !cacheDir.exists()) {
+                                cacheDir = getManager().getModule(ResourceModule.class).initTempDir();
+                            }
+
+                            File zipFile = new File(cacheDir.getPath() + path + ".gz");
+                            File zipDir = zipFile.getParentFile();
+                            if(zipDir == null || (!zipDir.exists() && !zipDir.mkdirs())) {
+                                throw new IOException("Can not create zip dir: " + zipDir);
+                            }
+
+                            if(!zipFile.exists() || zipFile.lastModified() < file.lastModified()) {
+                                Tools.zipFile(file, zipFile);
+                            }
+
+                            // TODO: It's not the right way to redirect and cut the filter!
+                            // It will cut the rest of filters!
+                            // we redirect it to resource module
+                            final String filePath = Constants.MODULE_URI_PERFIX + "?" +
+                                    Constants.MODULE_NAME_PARAMETER  + "=" +
+                                    getInfo().getName() + "&file=" + path;
+                            RequestDispatcher dispatcher = request.getRequestDispatcher(filePath);
+                            dispatcher.forward(request, response);
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -119,22 +148,95 @@ public class GzipModule extends Module {
         //}
     }
 
-    private class ZipFileRequestWrapper extends HttpServletRequestWrapper {
+    @Override
+    public void process(
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final ModuleParam param,
+            final HashMap<String, FileItem> files) throws IOException {
 
-        final HttpServletRequest request;
+        if(param.containsKey("file")) {
+            final ResourceModule module = getManager().getModuleOrThrow(ResourceModule.class);
 
-        public ZipFileRequestWrapper(HttpServletRequest request, HttpServletResponse response) {
+            final String path = param.getString("file", null);
+            final File file = new File(cacheDir, path);
+
+            module.writeFile(request, response, file);
+        }
+    }
+
+    /*private class ZipFileRequestWrapper extends HttpServletRequestWrapper {
+
+        FileServletInputStream inputStream;
+
+        final File zipFile;
+
+        BufferedReader reader;
+
+        public ZipFileRequestWrapper(
+                final HttpServletRequest request,
+                final HttpServletResponse response,
+                final File zipFile) {
+
             super(request);
-            this.request = request;
+            this.zipFile = zipFile;
 
             response.addHeader("Content-Encoding", "gzip");
         }
 
         @Override
-        public String getRequestURI() {
-            return this.request.getRequestURI() + ".gz";
+        public ServletInputStream getInputStream() throws IOException {
+            if(inputStream == null) {
+                System.out.println("ddddddddddddddd1");
+                inputStream = new FileServletInputStream(zipFile);
+            }
+            return inputStream;
+        }
+
+        @Override
+        public int getContentLength() {
+            return (int) zipFile.length();
+        }
+
+        @Override
+        public BufferedReader getReader() throws IOException {
+            if(this.reader == null) {
+                System.out.println("ddddddddddddddd2");
+                this.reader = new BufferedReader(new InputStreamReader(getInputStream(), getRequest().getCharacterEncoding()));
+            }
+            return this.reader;
         }
     }
+
+    private class FileServletInputStream extends ServletInputStream {
+
+        final FileInputStream inputStream;
+
+        FileServletInputStream(final File file) throws IOException {
+            inputStream = new FileInputStream(file);
+        }
+
+        @Override
+        public int read() throws IOException {
+            return inputStream.read();
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return inputStream.read(b, off, len);
+        }
+
+        @Override
+        public int read(byte[] b) throws IOException {
+            return inputStream.read(b);
+        }
+
+        @Override
+        public void close() throws IOException {
+            inputStream.close();
+        }
+    }*/
 
     private class ZipRequestStream extends ServletInputStream {
 
@@ -175,7 +277,7 @@ public class GzipModule extends Module {
 
         final ServletInputStream inStream;
 
-        final BufferedReader reader;
+        BufferedReader reader;
 
         public ZipRequestWrapper(final HttpServletRequest req) throws IOException {
             super(req);
@@ -284,5 +386,8 @@ public class GzipModule extends Module {
             return writer;
         }
     }
+
+
+
 
 }

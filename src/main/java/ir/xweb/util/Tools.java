@@ -67,8 +67,8 @@ public class Tools {
             }
             if(gzos != null) {
                 try {
-                    gzos.finish();
                     gzos.flush();
+                    gzos.finish();
                     gzos.close();
                 } catch (Exception ex){}
             }
@@ -283,12 +283,12 @@ public class Tools {
     }
 
     public static String getFileExtension(final String f) {
-        String ext = "";
         int i = f.lastIndexOf('.');
-        if (i > 0 &&  i < f.length() - 1) {
-            ext = f.substring(i + 1);
+        if (i > 0) {
+            return f.substring(i + 1);
         }
-        return ext;
+
+        return f;
     }
 
 }

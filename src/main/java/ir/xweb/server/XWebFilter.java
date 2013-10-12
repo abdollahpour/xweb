@@ -55,22 +55,27 @@ public class XWebFilter implements Filter {
             for(Module m:modules) {
                 if(request instanceof HttpServletRequest) {
                     if(response instanceof HttpServletResponse) {
-                        Chain chain = new Chain();
-                        chain.chainedRequest = req;
-                        chain.chainedResponse = resp;
+                        try {
+                            Chain chain = new Chain();
+                            chain.chainedRequest = req;
+                            chain.chainedResponse = resp;
 
-                        m.doFilter(
-                                context,
-                                (HttpServletRequest) req,
-                                (HttpServletResponse) resp,
-                                chain
-                        );
+                            m.doFilter(
+                                    context,
+                                    (HttpServletRequest) req,
+                                    (HttpServletResponse) resp,
+                                    chain
+                            );
 
-                        if(!chain.fired) {
-                            return; // fail
+                            if(!chain.fired) {
+                                return; // fail
+                            }
+
+                            req = chain.chainedRequest;
+                            resp = chain.chainedResponse;
+                        } catch (Exception ex) {
+                            logger.error("Error filter in module: " + m.getClass(), ex);
                         }
-                        req = chain.chainedRequest;
-                        resp = chain.chainedResponse;
                     }
                 }
             }
