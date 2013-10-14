@@ -1,4 +1,7 @@
 # XWeb
+
+![XWeb](logo.png "XWeb project")
+
 XWeb is simple modular library to create JavaEE base web applications. As you know, Java is the one the best programing language that exist nowadays, with a lot of documentation and over 100 solution for each feature that you want!!
 
 Java is also very popular and powerful in Web applications, but there's some problem. There's some powerful and massive projects like [Spring Framework ](projects.spring.io/spring-framework), but the problem is, most of these projects are so big and heavy for our purpose and you should load ton of libraries to make simple feature! But with XWeb, you have many cool features, clean API and you can run it on lightweight application server like [Tomcat ](tomcat.apache.org) and [Jetty ](http://www.eclipse.org/jetty) in less that 1 MB!
