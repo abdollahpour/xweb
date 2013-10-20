@@ -562,7 +562,7 @@ public class MimeType {
         map.put(".xltm", "application/vnd.ms-excel.template.macroEnabled.12");
         map.put(".xltx", "application/vnd.openxmlformats-officedocument.spreadsheetml.template");
         map.put(".xlw", "application/vnd.ms-excel");
-        map.put(".xml", "text/xml");
+        map.put(".xml", "application/xml");
         map.put(".xmta", "application/xml");
         map.put(".xof", "x-world/x-vrml");
         map.put(".XOML", "text/plain");

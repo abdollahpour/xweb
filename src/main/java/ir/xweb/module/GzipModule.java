@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -118,9 +119,13 @@ public class GzipModule extends Module {
 
                                 File zipFile = new File(cacheDir.getPath() + path + ".gz");
                                 File zipDir = zipFile.getParentFile();
-                                if(zipDir == null || (!zipDir.exists() && !zipDir.mkdirs())) {
-                                    throw new IOException("Can not create zip dir: " + zipDir);
-                                }
+
+                                // Because of some weird problem, this solution does not work in Jetty, but Java7
+                                // API is fine anywhere
+                                //if(zipDir == null || (!zipDir.exists() && !zipDir.mkdirs())) {
+                                //    throw new IOException("Can not create zip dir: " + zipDir);
+                                //}
+                                Files.createDirectories(zipDir.toPath());
 
                                 if(!zipFile.exists() || zipFile.lastModified() < file.lastModified()) {
                                     Tools.zipFile(file, zipFile);

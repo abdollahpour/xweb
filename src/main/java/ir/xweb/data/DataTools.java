@@ -6,6 +6,7 @@
 
 package ir.xweb.data;
 
+import ir.xweb.util.MimeType;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.output.Format;
@@ -210,6 +211,14 @@ public class DataTools {
             throw new IllegalArgumentException("null response");
         }
 
+        Formatter formatter = formatters.get(format);
+        if(formatter != null) {
+            if(!response.containsHeader("Content-Type")) {
+                response.addHeader("Content-Type", formatter.getMimeType());
+                response.setCharacterEncoding("UTF-8");
+            }
+        }
+
         write(response.getWriter(), format, role, object);
     }
 
@@ -353,9 +362,13 @@ public class DataTools {
 
         public void write(final Writer writer, final Object object) throws IOException;
 
+        public String getMimeType();
+
     }
 
     private class JsonpFormatter extends JsonFormatter {
+
+        private final String mimeType = MimeType.get("json");
 
         @Override
         public void write(final Writer writer, final Object object) throws IOException {
@@ -375,9 +388,16 @@ public class DataTools {
             }
         }
 
+        @Override
+        public String getMimeType() {
+            return mimeType;
+        }
+
     }
 
     private class JsonFormatter implements Formatter {
+
+        private final String mimeType = MimeType.get("json");
 
         @Override
         public void write(final Writer writer, final Object object) throws IOException {
@@ -415,9 +435,16 @@ public class DataTools {
             return object;
         }
 
+        @Override
+        public String getMimeType() {
+            return mimeType;
+        }
+
     }
 
     private class XmlFormatter implements Formatter {
+
+        private final String mimeType = MimeType.get("xml");
 
         public void write(final Writer writer, final Object object) throws IOException {
             //final String key = map.keySet().iterator().next().toString();
@@ -482,6 +509,11 @@ public class DataTools {
             } else {
                 parent.setText(object.toString());
             }
+        }
+
+        @Override
+        public String getMimeType() {
+            return mimeType;
         }
 
     }
