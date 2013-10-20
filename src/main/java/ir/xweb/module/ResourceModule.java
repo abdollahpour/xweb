@@ -351,14 +351,23 @@ public class ResourceModule extends Module {
             final HttpServletResponse response,
             final File file) throws IOException {
 
-        boolean zipSupport = false;
+        if(file == null) {
+            throw new IllegalArgumentException("Null file");
+        }
 
+        boolean zipSupport = false;
         final File zipFile = new File(file.getPath() + ".gz");
 
-        if(zipFile.exists() && zipFile.canRead()) {
-            final String encoding = request.getHeader("Accept-Encoding");
-            if(encoding != null && encoding.toLowerCase().indexOf("gzip") > -1) {
-                zipSupport = true;
+        if(!file.exists() && !zipFile.exists()) {
+            throw new ModuleException(HttpServletResponse.SC_NOT_FOUND, file + " not found");
+        }
+
+        if(!response.containsHeader("Content-Encoding")) {
+            if(zipFile.exists() && zipFile.canRead()) {
+                final String encoding = request.getHeader("Accept-Encoding");
+                if(encoding != null && encoding.toLowerCase().indexOf("gzip") > -1) {
+                    zipSupport = true;
+                }
             }
         }
 

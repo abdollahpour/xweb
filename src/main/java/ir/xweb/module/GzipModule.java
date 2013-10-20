@@ -66,74 +66,76 @@ public class GzipModule extends Module {
         HttpServletRequest chainedRequest = null;
         HttpServletResponse chainedResponse = null;
 
-        // we will check for incoming request anyway
-        String contentEncoding = request.getHeader("Content-Encoding");
-        if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
-            chainedRequest = new ZipRequestWrapper(request);
-        }
-
-        /*URI uri = null;
-        try {
-            uri = new URI(request.getRequestURI());
-        } catch (Exception ex) {
-            // never happens
-        }*/
-
-
-        String acceptEncoding = request.getHeader("Accept-Encoding");
-        if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
-            // we don't care about context path, so we trunk it
-            final String path = request.getRequestURI();
-
-            if(requests != null) {
-                if(path.matches(requests)) {
-                    chainedResponse = new ZipResponseWrapper(response);
-                }
+        if(!response.containsHeader("Content-Encoding")) {
+            // we will check for incoming request anyway
+            String contentEncoding = request.getHeader("Content-Encoding");
+            if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
+                chainedRequest = new ZipRequestWrapper(request);
             }
 
-            if(chainedResponse == null) {
-                // get module names
-                boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
-                if(isApiCall) {
-                    if(modules != null) {
-                        String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
-                        if(modules.contains(moduleName)) {
-                            chainedResponse = new ZipResponseWrapper(response);
-                        }
+            /*URI uri = null;
+            try {
+                uri = new URI(request.getRequestURI());
+            } catch (Exception ex) {
+                // never happens
+            }*/
+
+
+            String acceptEncoding = request.getHeader("Accept-Encoding");
+            if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
+                // we don't care about context path, so we trunk it
+                final String path = request.getRequestURI();
+
+                if(requests != null) {
+                    if(path.matches(requests)) {
+                        chainedResponse = new ZipResponseWrapper(response);
                     }
-                } else if(extensions != null) {
-                    File dir = new File(context.getRealPath(File.separator));
-                    File file = new File(dir, path);
+                }
 
-                    if(file.exists() && file.length() <= maxSize) {
-                        String extension = Tools.getFileExtension(file.getName());
-
-                        // check extension
-                        if(extensions.contains(extension.toLowerCase())) {
-                            // check for cache dir
-                            if(cacheDir == null || !cacheDir.exists()) {
-                                cacheDir = getManager().getModule(ResourceModule.class).initTempDir();
+                if(chainedResponse == null) {
+                    // get module names
+                    boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
+                    if(isApiCall) {
+                        if(modules != null) {
+                            String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
+                            if(modules.contains(moduleName)) {
+                                chainedResponse = new ZipResponseWrapper(response);
                             }
+                        }
+                    } else if(extensions != null) {
+                        File dir = new File(context.getRealPath(File.separator));
+                        File file = new File(dir, path);
 
-                            File zipFile = new File(cacheDir.getPath() + path + ".gz");
-                            File zipDir = zipFile.getParentFile();
-                            if(zipDir == null || (!zipDir.exists() && !zipDir.mkdirs())) {
-                                throw new IOException("Can not create zip dir: " + zipDir);
+                        if(file.exists() && file.length() <= maxSize) {
+                            String extension = Tools.getFileExtension(file.getName());
+
+                            // check extension
+                            if(extensions.contains(extension.toLowerCase())) {
+                                // check for cache dir
+                                if(cacheDir == null || !cacheDir.exists()) {
+                                    cacheDir = getManager().getModule(ResourceModule.class).initTempDir();
+                                }
+
+                                File zipFile = new File(cacheDir.getPath() + path + ".gz");
+                                File zipDir = zipFile.getParentFile();
+                                if(zipDir == null || (!zipDir.exists() && !zipDir.mkdirs())) {
+                                    throw new IOException("Can not create zip dir: " + zipDir);
+                                }
+
+                                if(!zipFile.exists() || zipFile.lastModified() < file.lastModified()) {
+                                    Tools.zipFile(file, zipFile);
+                                }
+
+                                // TODO: It's not the right way to redirect and cut the filter!
+                                // It will cut the rest of filters!
+                                // we redirect it to resource module
+                                final String filePath = Constants.MODULE_URI_PERFIX + "?" +
+                                        Constants.MODULE_NAME_PARAMETER  + "=" +
+                                        getInfo().getName() + "&file=" + path;
+                                RequestDispatcher dispatcher = request.getRequestDispatcher(filePath);
+                                dispatcher.forward(request, response);
+                                return;
                             }
-
-                            if(!zipFile.exists() || zipFile.lastModified() < file.lastModified()) {
-                                Tools.zipFile(file, zipFile);
-                            }
-
-                            // TODO: It's not the right way to redirect and cut the filter!
-                            // It will cut the rest of filters!
-                            // we redirect it to resource module
-                            final String filePath = Constants.MODULE_URI_PERFIX + "?" +
-                                    Constants.MODULE_NAME_PARAMETER  + "=" +
-                                    getInfo().getName() + "&file=" + path;
-                            RequestDispatcher dispatcher = request.getRequestDispatcher(filePath);
-                            dispatcher.forward(request, response);
-                            return;
                         }
                     }
                 }

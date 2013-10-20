@@ -156,7 +156,7 @@ public class RewriteModule extends Module {
         //
         //}   else {
         //
-            loadUrlRewriter(filterConfig);
+        loadUrlRewriter(filterConfig);
     }
 
     /**

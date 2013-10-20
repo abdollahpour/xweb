@@ -51,7 +51,7 @@ public class XWebServlet extends HttpServlet {
                 int responseCode = ex.getReponseCode();
 
                 if(responseCode == HttpServletResponse.SC_NOT_FOUND) {
-                    logger.debug("Data not found. " +
+                    logger.trace("Data not found. " +
                             "Module: " + module.getInfo().getName() +
                             " Code: " + ex.getErrorCode(), ex);
                 } else if(module.redirectAuthFail() && responseCode == HttpServletResponse.SC_UNAUTHORIZED) {
