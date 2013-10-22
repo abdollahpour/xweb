@@ -6,15 +6,14 @@
 
 package ir.xweb.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 
 public class Downloader {
+
+    private final String DEFAULT_USER_AGENT = "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)";
 
     private final URL url;
 
@@ -25,6 +24,8 @@ public class Downloader {
     private int maxSize;
 
     private Proxy proxy;
+
+    private String userAgent;
 
     public Downloader(final String url) {
         try {
@@ -59,6 +60,12 @@ public class Downloader {
 
     public Downloader maxSize(final int size) {
         this.maxSize = size;
+
+        return this;
+    }
+
+    public Downloader userAgent(final String userAgent) {
+        this.userAgent = userAgent;
 
         return this;
     }
@@ -153,6 +160,7 @@ public class Downloader {
                 if(this.timout > 0) {
                     conn.setConnectTimeout(this.timout);
                     conn.setReadTimeout(this.timout);
+                    conn.addRequestProperty("User-Agent", userAgent == null ? DEFAULT_USER_AGENT : userAgent);
                 }
 
                 if(maxSize > 0) {
