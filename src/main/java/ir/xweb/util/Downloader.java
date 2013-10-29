@@ -64,6 +64,11 @@ public class Downloader {
         return this;
     }
 
+    /**
+     * You can get list of available UserAgents at <a href='http://www.useragentstring.com/pages/useragentstring.php'>www.useragentstring.com</a>
+     * @param userAgent User agent for downloader
+     * @return
+     */
     public Downloader userAgent(final String userAgent) {
         this.userAgent = userAgent;
 
@@ -131,8 +136,18 @@ public class Downloader {
                 final URLConnection conn = (proxy == null ? this.url.openConnection() : this.url.openConnection(proxy));
 
                 if(this.timout > 0) {
-                    conn.setConnectTimeout(timout);
-                    conn.setReadTimeout(timout);
+                    conn.setConnectTimeout(this.timout);
+                    conn.setReadTimeout(this.timout);
+                }
+                conn.addRequestProperty("User-Agent", userAgent == null ? DEFAULT_USER_AGENT : userAgent);
+
+                if(maxSize > 0) {
+                    final String contentLength = conn.getHeaderField("Content-Length");
+                    if(contentLength != null) {
+                        if(Integer.parseInt(contentLength) > maxSize) {
+                            throw new IllegalStateException("Illegal size: " + contentLength + " > " + maxSize);
+                        }
+                    }
                 }
 
                 return conn.getInputStream();
@@ -143,7 +158,7 @@ public class Downloader {
                     throw ex;
                 }
             }
-        } while (r > 0);
+        } while (r > -1);
 
         throw new SocketTimeoutException();
     }
@@ -160,19 +175,20 @@ public class Downloader {
                 if(this.timout > 0) {
                     conn.setConnectTimeout(this.timout);
                     conn.setReadTimeout(this.timout);
-                    conn.addRequestProperty("User-Agent", userAgent == null ? DEFAULT_USER_AGENT : userAgent);
                 }
 
-                if(maxSize > 0) {
-                    final String contentLength = conn.getHeaderField("Content-Length");
-                    if(contentLength != null) {
-                        if(Integer.parseInt(contentLength) > maxSize) {
-                            throw new IllegalStateException("Illegal size: " + contentLength + " > " + maxSize);
-                        }
+                final String contentLength = conn.getRequestProperty("Content-Length");
+                final String acceptRanges = conn.getRequestProperty("Accept-Ranges");
+
+                if(contentLength != null && maxSize > 0) {
+                    if(Integer.parseInt(contentLength) > maxSize) {
+                        throw new IllegalStateException("Illegal size: " + contentLength + " > " + maxSize);
                     }
                 }
 
-                if(baos.size() > 0 && conn.getHeaderField("Accept-Ranges").contains("bytes")){
+                conn.addRequestProperty("User-Agent", userAgent == null ? DEFAULT_USER_AGENT : userAgent);
+
+                if(baos.size() > 0 && acceptRanges != null && acceptRanges.contains("bytes")){
                     conn.setRequestProperty("Range", "bytes=" + baos.size() + "-");
                 } else {
                     baos.reset();

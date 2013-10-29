@@ -32,6 +32,8 @@ public class DataTools {
 
     private final static Logger logger = LoggerFactory.getLogger("DataTools");
 
+    public final static String PROPERTY_JSONP_CALLBACK = "jsonp.callback";
+
     public final static String FORMAT_JSON = "json";
 
     public final static String FORMAT_JSONP = "jsonp";
@@ -39,6 +41,8 @@ public class DataTools {
     public final static String FORMAT_XML = "xml";
 
     private final Map<String, Formatter> formatters = new HashMap<String, Formatter>();
+
+    private final HashMap<String, String> properties = new HashMap<String, String>();
 
     private DateFormat dateFormat = new SimpleDateFormat();
 
@@ -53,7 +57,18 @@ public class DataTools {
     }
 
     public void setDateFormat(final DateFormat dateFormat) {
+        if(dateFormat == null) {
+            throw new IllegalArgumentException("null dataFormat");
+        }
         this.dateFormat = dateFormat;
+    }
+
+    public String addProperties(String property, String value) {
+        if(value == null) {
+            return properties.remove(property);
+        } else {
+            return properties.put(property, value);
+        }
     }
 
     /**
@@ -374,7 +389,12 @@ public class DataTools {
         public void write(final Writer writer, final Object object) throws IOException {
             try {
                 if(object instanceof Map) {
-                    writer.write("jsonCallback(");
+                    final String callback = properties.get(PROPERTY_JSONP_CALLBACK);
+                    if(callback == null) {
+                        writer.write("jsonCallback(");
+                    } else {
+                        writer.append(callback).write("(");
+                    }
                     writer.write(write(object).toString());
                     writer.write(");");
 
