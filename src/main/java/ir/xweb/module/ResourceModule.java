@@ -3,6 +3,7 @@ package ir.xweb.module;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.MimeType;
 import ir.xweb.util.Tools;
+import ir.xweb.util.XmlBundle;
 import org.apache.commons.fileupload.FileItem;
 import org.jdom.Document;
 import org.jdom.Element;
@@ -44,6 +45,8 @@ public class ResourceModule extends Module {
 
     private final int BUFFER_SIZE = 256;
 
+    private final static String DEFAULT_BUNDLE = "bundle";
+
     private long startTempNumber = System.currentTimeMillis();
 
     public final static String PROPERTY_TEMP_DIR = "dir.temp";
@@ -53,6 +56,8 @@ public class ResourceModule extends Module {
     public final static String PROPERTY_DATA_DIR   = "dir.data";
 
     public final static String PROPERTY_TEMPLATE_DIR   = "dir.data";
+
+    public final static String PROPERTY_RESOURCE_BUNDLE_DIR   = "dir.bundle";
 
     public final static String PROPERTY_STORE_PATTERN   = "store.pattern";
 
@@ -70,6 +75,8 @@ public class ResourceModule extends Module {
 
     private final File templateDir;
 
+    private final File bundleDir;
+
     private final String defaultId;
 
     private final String storePattern;
@@ -77,6 +84,8 @@ public class ResourceModule extends Module {
     private final String defaultLanguage;
 
     private ServletContext context;
+
+    private final Map<String, XmlBundle> bundles = new HashMap<String, XmlBundle>();
 
     public ResourceModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
@@ -97,6 +106,17 @@ public class ResourceModule extends Module {
         }
 
         this.templateDir = properties.getFile(PROPERTY_TEMPLATE_DIR, new File(tempDir, "template"));
+
+        this.bundleDir = properties.getFile(PROPERTY_RESOURCE_BUNDLE_DIR, new File(tempDir, "bundle"));
+        // load default bundle file
+        final File defaultBundle = new File(DEFAULT_BUNDLE, DEFAULT_BUNDLE + ".xml");
+        if(defaultBundle.exists()) {
+            try {
+                bundles.put(DEFAULT_BUNDLE, new XmlBundle(defaultBundle));
+            } catch (Exception ex) {
+                new IllegalArgumentException("Illegal default bundle file: " + defaultBundle, ex);
+            }
+        }
 
         this.storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
 
@@ -724,6 +744,32 @@ public class ResourceModule extends Module {
         }
 
         return language;
+    }
+
+    public String getString(final Locale locale, final String key, final String defaultValue) {
+        return getString(locale == null ? null : locale.getDisplayLanguage(), key, defaultValue);
+    }
+
+    public String getString(final String language, final String key, final String defaultValue) {
+        final String l = language == null ? defaultLanguage : language;
+
+        // try to load bundle if is not loaded
+        XmlBundle b = bundles.get(l);
+        if(b == null) {
+            final File f = new File(this.bundleDir, l + ".xml");
+            if(f.exists()) {
+                try {
+                    b = new XmlBundle(f);
+                    bundles.put(l, b);
+                } catch (Exception ex) {
+                    logger.error("Error to load bundle file (" + l + "): " + f);
+                }
+            }
+        }
+
+        final String result = b == null ? defaultValue : b.getString(key);
+
+        return result == null ? key : result;
     }
 
     protected boolean isAdmin(ServletContext context, XWebUser user) {
