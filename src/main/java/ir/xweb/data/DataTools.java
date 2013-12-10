@@ -395,12 +395,12 @@ public class DataTools {
                     } else {
                         writer.append(callback).write("(");
                     }
-                    writer.write(write(object).toString());
+                    ((JSONObject) write(object)).write(writer);
                     writer.write(");");
 
                 } else {
                     writer.write("jsonCallback(");
-                    writer.write(object.toString());
+                    ((JSONArray) write(object)).write(writer);
                     writer.write(");");
                 }
             } catch (JSONException ex) {
@@ -423,9 +423,13 @@ public class DataTools {
         public void write(final Writer writer, final Object object) throws IOException {
             try {
                 if(object instanceof Map) {
-                    writer.write(write(object).toString());
+                    JSONObject obj = (JSONObject) write(object);
+                    obj.write(writer);
+                    writer.flush();
                 } else {
-                    writer.write(object.toString());
+                    JSONArray array = (JSONArray) write(object);
+                    array.write(writer);
+                    writer.flush();
                 }
             } catch (JSONException ex) {
                 throw new IOException(ex);

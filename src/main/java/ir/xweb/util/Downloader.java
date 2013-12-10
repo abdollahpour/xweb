@@ -10,6 +10,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Downloader {
 
@@ -26,6 +28,8 @@ public class Downloader {
     private Proxy proxy;
 
     private String userAgent;
+
+    private List<String> mimeTypes;
 
     public Downloader(final String url) {
         try {
@@ -99,6 +103,15 @@ public class Downloader {
                 }
             }
         }
+
+        return this;
+    }
+
+    public Downloader mimeType(String... mimetypes) {
+        if(this.mimeTypes == null) {
+            this.mimeTypes = new ArrayList<String>();
+        }
+        this.mimeTypes.addAll(mimeTypes);
 
         return this;
     }
@@ -179,6 +192,13 @@ public class Downloader {
 
                 final String contentLength = conn.getRequestProperty("Content-Length");
                 final String acceptRanges = conn.getRequestProperty("Accept-Ranges");
+                final String mimeType = conn.getRequestProperty("Content-Type");
+
+                if(mimeTypes != null && mimeTypes.size() > 0) {
+                    if(mimeTypes.contains(mimeType)) {
+                        throw new MimeTypeNotFoundException(mimeType + " is not right for: " + url);
+                    }
+                }
 
                 if(contentLength != null && maxSize > 0) {
                     if(Integer.parseInt(contentLength) > maxSize) {
@@ -223,6 +243,14 @@ public class Downloader {
         } while (r > 0);
 
         throw new SocketTimeoutException();
+    }
+
+    public class MimeTypeNotFoundException extends IOException {
+
+        public MimeTypeNotFoundException(final String message) {
+            super(message);
+        }
+
     }
 
 }

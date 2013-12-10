@@ -6,8 +6,6 @@
 
 package ir.xweb.module;
 
-import org.junit.Before;
-
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 

@@ -2,26 +2,39 @@ package ir.xweb.module;
 
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.MimeType;
+import ir.xweb.util.Tools;
 import org.apache.commons.fileupload.FileItem;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.Format;
+import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.*;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class ResourceModule extends Module {
 
@@ -39,7 +52,11 @@ public class ResourceModule extends Module {
 
     public final static String PROPERTY_DATA_DIR   = "dir.data";
 
+    public final static String PROPERTY_TEMPLATE_DIR   = "dir.data";
+
     public final static String PROPERTY_STORE_PATTERN   = "store.pattern";
+
+    public final static String PROPERTY_DEFAULT_LANGUAGE = "default.language";
 
     public final static String MODE_PUBLIC = "public";
 
@@ -51,34 +68,44 @@ public class ResourceModule extends Module {
 
     private final File dataDir;
 
+    private final File templateDir;
+
     private final String defaultId;
 
     private final String storePattern;
+
+    private final String defaultLanguage;
 
     private ServletContext context;
 
     public ResourceModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
         super(manager, info, properties);
 
-        String dataPath = properties.getString(PROPERTY_DATA_DIR, null);
-        if(dataPath == null) {
-            throw new IllegalArgumentException("Data path not found please set: " + PROPERTY_DATA_DIR);
-        }
-        dataDir = new File(dataPath);
-        if((!dataDir.exists() && !dataDir.mkdirs()) || !dataDir.canWrite()) {
-            throw new IllegalArgumentException("Data is not accessible: " + dataPath);
+        File tempDir;
+        try {
+            tempDir = Files.createTempDirectory("PDROID" + System.currentTimeMillis()).toFile();
+        } catch (Exception ex) {
+            tempDir = new File(
+                    System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis());
         }
 
-        String tempPath = properties.getString(PROPERTY_TEMP_DIR, System.getProperty("java.io.tmpdir"));
-        if(tempPath == null) {
-            tempPath = dataPath + File.separator + "temp";
-        }
-        tempDir = new File(tempPath);
+        this.tempDir = properties.getFile(PROPERTY_TEMP_DIR, tempDir);
 
-        storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
+        this.dataDir = properties.getFile(PROPERTY_DATA_DIR, new File(tempDir, "data"));
+        if((!this.dataDir.exists() && !this.dataDir.mkdirs()) || !this.dataDir.canWrite()) {
+            throw new IllegalArgumentException("Data is not accessible: " + this.dataDir);
+        }
+
+        this.templateDir = properties.getFile(PROPERTY_TEMPLATE_DIR, new File(tempDir, "template"));
+
+        this.storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
 
         // deprecated
-        defaultId = properties.getString(PROPERTY_DEFAULT_ID, null);
+        this.defaultId = properties.getString(PROPERTY_DEFAULT_ID, null);
+
+        this.defaultLanguage = properties.getString(
+                PROPERTY_DEFAULT_LANGUAGE,
+                getManager().getProperty(PROPERTY_DEFAULT_LANGUAGE));
     }
 
     @Override
@@ -548,6 +575,155 @@ public class ResourceModule extends Module {
         }
 
         return new Long(value);
+    }
+
+    public String applyTemplate(
+            final String template,
+            final String language,
+            final Map<String, String> params) {
+
+        // find XSLT template
+        final File xsltFile = getTemplateFile(template, language, ".xsl");
+        if(xsltFile.exists()) {
+            try {
+                final String xml = paramToXml(params);
+                final String html = applyXslt(xsltFile, xml);
+
+                return html;
+            } catch (Exception ex) {
+                logger.error("Error to apply XSLT template: " + xsltFile);
+            }
+        }
+
+        // find text template
+        final File textFile = getTemplateFile(template, language, ".txt");
+        if(textFile.exists()) {
+            try {
+                final String text = applyText(xsltFile, params);
+
+                return text;
+            } catch (Exception ex) {
+                logger.error("Error to apply XSLT template: " + xsltFile);
+            }
+        }
+
+        return null;
+    }
+
+    private String applyText(final File template, final Map<String, String> params) throws Exception {
+        String text = Tools.readTextFile(template);
+
+        for(Map.Entry<String, String> e:params.entrySet()) {
+            text = text.replace("${" + e.getKey() + "}", e.getValue());
+        }
+
+        return text;
+    }
+
+    private String applyXslt(final File template, final String xml) throws Exception {
+        final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+
+        final DocumentBuilder builder = factory.newDocumentBuilder();
+        final InputSource is = new InputSource();
+        is.setCharacterStream(new StringReader(xml));
+
+        // Use a Transformer for output
+        final TransformerFactory tFactory = TransformerFactory.newInstance();
+        final StreamSource styleSource = new StreamSource(template);
+        final Transformer transformer = tFactory.newTransformer(styleSource);
+
+        final StringWriter w = new StringWriter();
+        final DOMSource source = new DOMSource(builder.parse(is));
+        final StreamResult result = new StreamResult(w);
+        transformer.transform(source, result);
+
+        return w.toString();
+    }
+
+    private String paramToXml(final Map<String, String> params) throws IOException {
+        final Element root = new Element("params");
+
+        for(Map.Entry<String, String> e:params.entrySet()) {
+            final Element param = new Element(e.getKey());
+            param.setText(e.getValue());
+            root.addContent(param);
+        }
+
+        final XMLOutputter xmlOutput = new XMLOutputter();
+
+        final StringWriter w = new StringWriter();
+        xmlOutput.setFormat(Format.getRawFormat());
+        xmlOutput.output(new Document(root), w);
+
+        return w.toString();
+    }
+
+    private File getTemplateFile(
+            final String template,
+            final String language,
+            final String extension) {
+
+        File xsltFile = null;
+        // find XSLT file
+        if(language != null) {
+            // ex: template-fa_IR.xsl
+            xsltFile = new File(templateDir, template + "-" + language + extension);
+
+            if(!xsltFile.exists()) {
+                // ex: template-fa.xsl
+                xsltFile = new File(templateDir, template + "-" + language.split("[_-]")[0] + extension);
+            }
+        }
+
+        if(xsltFile == null || !xsltFile.exists()) {
+            xsltFile = new File(templateDir, template + extension);
+        }
+
+        return xsltFile.exists() ? xsltFile : null;
+    }
+
+    public String getLanguage(final HttpServletRequest request) {
+        // Get language from parameter
+        String language = null;
+
+        if(request != null) {
+            language = request.getParameter("language");
+
+            // Get language from cookie
+            if(language == null) {
+                final Cookie[] cookies = request.getCookies();
+                if(cookies != null) {
+                    for(Cookie c:cookies) {
+                        if("language".equals(c.getName())) {
+                            language = c.getValue();
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // get language from user-agent
+            if(language == null) {
+                final Enumeration locales = request.getLocales();
+                while (locales.hasMoreElements()) {
+                    Locale locale = (Locale) locales.nextElement();
+                    language = locale.getDisplayLanguage();
+                    break;
+                }
+            }
+        }
+
+        // default language
+        if(language == null) {
+            language = defaultLanguage;
+        }
+
+        // default server language
+        if(language == null) {
+            language = Locale.getDefault().getDisplayLanguage();
+        }
+
+        return language;
     }
 
     protected boolean isAdmin(ServletContext context, XWebUser user) {
