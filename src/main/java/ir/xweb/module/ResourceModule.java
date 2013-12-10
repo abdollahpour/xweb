@@ -75,6 +75,7 @@ public class ResourceModule extends Module {
 
     private final File templateDir;
 
+    /** Remember bundle dir can be NULL **/
     private final File bundleDir;
 
     private final String defaultId;
@@ -105,10 +106,10 @@ public class ResourceModule extends Module {
             throw new IllegalArgumentException("Data is not accessible: " + this.dataDir);
         }
 
-        this.templateDir = properties.getFile(PROPERTY_TEMPLATE_DIR, new File(tempDir, "template"));
+        this.templateDir = properties.getFile(PROPERTY_TEMPLATE_DIR, new File(getContext().getRealPath("template")));
 
-        this.bundleDir = properties.getFile(PROPERTY_RESOURCE_BUNDLE_DIR, new File(tempDir, "bundle"));
-        // load default bundle file
+        // set bundle directory and load default bundle
+        this.bundleDir = properties.getFile(PROPERTY_RESOURCE_BUNDLE_DIR, new File(getContext().getRealPath("bundle")));
         final File defaultBundle = new File(DEFAULT_BUNDLE, DEFAULT_BUNDLE + ".xml");
         if(defaultBundle.exists()) {
             try {
