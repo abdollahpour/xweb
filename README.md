@@ -19,7 +19,7 @@ Let's look at the main feature of XWeb framework:
 * [Wiki Module: ](https://github.com/abdollahpour/xweb-wiki) Parse and Cache data with Wiki format (MediaWiki) so simple.
 
 ## How can I use it?
-[See Wiki to make you first XWeb applicationn](https://github.com/abdollahpour/xweb/wiki)
+[See Wiki to make your first XWeb application](https://github.com/abdollahpour/xweb/wiki)
 
 ## HTML5 client
 You can also simply create HTML5 client for you application
