@@ -356,9 +356,12 @@ public class AuthenticationModule extends Module {
     }
 
     @Override
-    public void process(ServletContext context, HttpServletRequest request,
-                        HttpServletResponse response, ModuleParam params,
-                        HashMap<String, FileItem> files) throws IOException {
+    public void process(
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final ModuleParam params,
+            final HashMap<String, FileItem> files) throws IOException {
 
         String action  = params.validate("action", "login|check|logout", true).getString(null);
         logger.debug("Login module request for action = " + action);
@@ -379,15 +382,15 @@ public class AuthenticationModule extends Module {
 
             logger.info("User try to login: " + identifier);
 
-            boolean remember = "true".equals(params.getString("remember", "false"));
+            final boolean remember = "true".equals(params.getString("remember", "false"));
             // (user, temporary password, is temporary password (false by default))
-            XWebUser user = getUserWithId(context, identifier, password);
+            final XWebUser user = getUserWithId(context, identifier, password);
 
             if (user != null) {
                 request.getSession().setAttribute(SESSION_USER, user);
 
                 if(remember) {
-                    String uuid = generateUUID(context, identifier);
+                    final String uuid = generateUUID(context, identifier);
 
                     if(uuid != null) {
                         CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);

@@ -55,7 +55,7 @@ public class ResourceModule extends Module {
 
     public final static String PROPERTY_DATA_DIR   = "dir.data";
 
-    public final static String PROPERTY_TEMPLATE_DIR   = "dir.data";
+    public final static String PROPERTY_TEMPLATE_DIR   = "dir.template";
 
     public final static String PROPERTY_RESOURCE_BUNDLE_DIR   = "dir.bundle";
 
@@ -605,7 +605,7 @@ public class ResourceModule extends Module {
 
         // find XSLT template
         final File xsltFile = getTemplateFile(template, language, ".xsl");
-        if(xsltFile.exists()) {
+        if(xsltFile != null) {
             try {
                 final String xml = paramToXml(params);
                 final String html = applyXslt(xsltFile, xml);
@@ -618,7 +618,7 @@ public class ResourceModule extends Module {
 
         // find text template
         final File textFile = getTemplateFile(template, language, ".txt");
-        if(textFile.exists()) {
+        if(textFile != null) {
             try {
                 final String text = applyText(xsltFile, params);
 
