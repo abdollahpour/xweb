@@ -70,7 +70,11 @@ public class AuthenticationModule extends Module {
 
     private final String ignore;
 
-    public AuthenticationModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
+    public AuthenticationModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
 
         cookieAge = properties.getInt(PARAM_COOKIE_AGE, DEFAULT_COOKIE_AGE);

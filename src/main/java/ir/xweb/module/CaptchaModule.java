@@ -42,7 +42,11 @@ public class CaptchaModule extends Module {
 
     private Font font = null;
 
-    public CaptchaModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public CaptchaModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
 
         GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();

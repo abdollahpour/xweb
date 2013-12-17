@@ -33,7 +33,7 @@ public class Module {
 
     private List<String> requireParams;
 
-    public Module(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public Module(Manager manager, ModuleInfo info, ModuleParam properties) throws ModuleException {
         if(manager == null) {
             throw new IllegalArgumentException("null manager");
         }

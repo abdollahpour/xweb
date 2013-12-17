@@ -15,7 +15,11 @@ import java.io.IOException;
 
 public class RedirectModule extends Module {
 
-    public RedirectModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public RedirectModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
     }
 

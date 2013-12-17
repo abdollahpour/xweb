@@ -45,7 +45,11 @@ public class GzipModule extends Module {
 
     private File cacheDir;
 
-    public GzipModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
+    public GzipModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
 
         final String modulesValue = properties.getString(PARAM_MODULES, null);

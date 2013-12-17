@@ -30,7 +30,11 @@ public class LogModule extends Module {
 
     private File log;
 
-    public LogModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public LogModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
 
         String path = properties.getString("path", null);

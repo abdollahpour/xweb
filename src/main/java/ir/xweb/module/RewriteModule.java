@@ -54,7 +54,11 @@ public class RewriteModule extends Module {
      */
     private ServletContext context = null;
 
-    public RewriteModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public RewriteModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
     }
 

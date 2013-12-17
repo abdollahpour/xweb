@@ -88,7 +88,11 @@ public class ResourceModule extends Module {
 
     private final Map<String, XmlBundle> bundles = new HashMap<String, XmlBundle>();
 
-    public ResourceModule(final Manager manager, final ModuleInfo info, final ModuleParam properties) {
+    public ResourceModule(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         super(manager, info, properties);
 
         File tempDir;
