@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -78,6 +77,7 @@ public class XWebServlet extends HttpServlet {
                 }
 
                 if(!response.isCommitted()) {
+                    response.addHeader("xweb-error-code", Integer.toString(ex.getErrorCode()));
                     response.sendError(
                             responseCode > 0 ? responseCode: HttpServletResponse.SC_BAD_REQUEST,
                             "Error in module: " + api + " Cause: " + ex.getMessage());

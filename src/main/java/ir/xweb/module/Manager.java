@@ -191,7 +191,7 @@ public class Manager {
 
                         modules.put(name, module);
                     } catch (Exception ex) {
-                        throw new IOException("Error in load module", ex);
+                        throw new IOException("Error in load module: " + className + " (" + name + ")", ex);
                     }
                 }
             }

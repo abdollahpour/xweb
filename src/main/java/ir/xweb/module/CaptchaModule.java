@@ -34,6 +34,8 @@ import java.util.Random;
  */
 public class CaptchaModule extends Module {
 
+    public static int ERROR_CODE_CAPTCHA = 800;
+
     public static String SESSION_CAPTCHA_CODE = "xweb_captcha_code";
 
     public static String SESSION_CAPTCHA_EXPIRE = "xweb_captcha_expire";
@@ -213,14 +215,14 @@ public class CaptchaModule extends Module {
         // check for captcha
         if(expire != null) {
             if(System.currentTimeMillis() > expire) {
-                throw new ModuleException("Captcha code expired!");
+                throw new ModuleException("Captcha code expired!", ERROR_CODE_CAPTCHA);
             }
 
             if(code != Integer.parseInt(captcha)) {
-                throw new ModuleException("Illegal captcha code: " + captcha);
+                throw new ModuleException("Illegal captcha code: " + captcha, ERROR_CODE_CAPTCHA);
             }
         } else {
-            throw new IOException("Captcha code does not exist!");
+            throw new ModuleException("Captcha code does not exist!", ERROR_CODE_CAPTCHA);
         }
     }
 

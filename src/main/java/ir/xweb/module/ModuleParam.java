@@ -157,6 +157,10 @@ public class ModuleParam implements Map<String, String> {
         return new ValidModuleParam(data, name);
     }
 
+    public ValidModuleParam exists(String name) throws ModuleException {
+        return validate(name, null, true);
+    }
+
     public ValidModuleParam validate(String name, String regex, boolean required) throws ModuleException {
         if(name == null) {
             throw new IllegalArgumentException("null name");
