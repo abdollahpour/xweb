@@ -12,7 +12,7 @@ import java.util.HashMap;
 public class ReplyModule extends Module {
 
 
-    public ReplyModule(Manager manager, ModuleInfo info, ModuleParam properties) {
+    public ReplyModule(Manager manager, ModuleInfo info, ModuleParam properties) throws ModuleException {
         super(manager, info, properties);
     }
 
