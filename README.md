@@ -9,15 +9,18 @@ java is also of the most popular programming languages in web applications for m
 Let's look at the main features of XWeb framework:
 
 * Fully modular: You can Use, create and extends modules so simple! Each module also simplify many tasks in your project.
-* Data tools: You can validate and generate Java objects from GET and POST request in single line of code!
-* [Authentication Module: ](https://github.com/abdollahpour/xweb/wiki/AuthenticationModule) Ultimate solution for authentication, support create exact pattern for authentications, remember login (with cookie), Captcha support, single file or fully database support.
-* [Resource Module: ](https://github.com/abdollahpour/xweb/wiki/ResourceModule) You can easily load resource like, pictures, video and other things from outside of WEBROOT of your project. It's ideal for keeping user data. It's pretty fast, no limitation and memory overflow and it also support resume and multi connection.
-* [Rewrite/Redirect Module: ](https://github.com/abdollahpour/xweb/wiki/RewriteModule) Create rewrite with same format as Apache standards
-* [GZip Module: ](https://github.com/abdollahpour/xweb/wiki/GzipModule) Super fast gzip with caching. You can compress anything automatically.
-* [Schedule: ](https://github.com/abdollahpour/xweb/wiki/Schedule) Run specific task in specific period of time in system.
-* Validation: You can validate all the parameters also depend on user Roles with Regular Expression
-* [Wiki Module: ](https://github.com/abdollahpour/xweb-wiki) Parse and Cache data with Wiki format (MediaWiki) so simple.
-
+* Data tools: You can validate and generate Java objects from GET and POST requests in single line of code!
+* GZip: You can compress everything on the fly. It also support cache for static file.
+* Authentication: Full authentication system, support login, captcha, account retrieve, login remember, HTTP authentication and so on.
+* Template: Very simple and clear template engine support text and [XSLT](http://en.wikipedia.org/wiki/XSLT) format.
+* Resource management: Store, load and manage resources outside of your project. (Support data-resume)
+* Security tools: IP detection, Captaha code and ...
+* Rewrite/Redirect: Full rewrite/redirect engine (Same as htaccess for Apache)
+* Schedule manager: Run any specific task in any specific module in your project.
+* Email service: Access email features in entire system.
+* Wiki: Every simple and small wiki system. Support Markdom and Mediawiki
+* AND MANY OTHER COOL FEATURES!
+* 
 ## How can I use it?
 [See Wiki to make your first XWeb application](https://github.com/abdollahpour/xweb/wiki)
 
