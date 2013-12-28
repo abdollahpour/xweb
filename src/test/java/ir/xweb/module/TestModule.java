@@ -58,5 +58,14 @@ public class TestModule {
         //}
     }
 
+    public Manager getManager() {
+        return manager;
+    }
+
+    public HttpSession getSession() {
+        return session;
+    }
+
+
 }
 
