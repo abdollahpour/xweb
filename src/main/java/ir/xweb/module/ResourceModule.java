@@ -49,6 +49,10 @@ public class ResourceModule extends Module {
 
     private long startTempNumber = System.currentTimeMillis();
 
+    /**
+     * Temp directory. It can be absolute or relative path. If you use relative path
+     * will be parent folder
+     */
     public final static String PROPERTY_TEMP_DIR = "dir.temp";
 
     public final static String PROPERTY_DEFAULT_ID = "default.id";
@@ -69,7 +73,13 @@ public class ResourceModule extends Module {
 
     public final static String MODE_PRIVATE= "private";
 
-    private final File tempDir;
+    private final String tempDirPath;
+
+    /**
+     * You should not use this field directly, maybe it's not or directory does no exist anymore.
+     * We can use {@link #getTempDir() getTempDir()} instead
+     */
+    private File tempDir;
 
     private final File dataDir;
 
@@ -95,17 +105,12 @@ public class ResourceModule extends Module {
 
         super(manager, info, properties);
 
-        File tempDir;
-        try {
-            tempDir = Files.createTempDirectory("PDROID" + System.currentTimeMillis()).toFile();
-        } catch (Exception ex) {
-            tempDir = new File(
-                    System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis());
-        }
+        // create and init temp dir
+        this.tempDirPath = properties.getString(PROPERTY_TEMP_DIR, null);
 
-        this.tempDir = properties.getFile(PROPERTY_TEMP_DIR, tempDir);
-
-        this.dataDir = properties.getFile(PROPERTY_DATA_DIR, new File(tempDir, "data"));
+        // We don't wanna create temp dir when we don't need it
+        this.dataDir = properties.containsKey(PROPERTY_DATA_DIR) ?
+                properties.getFile(PROPERTY_DATA_DIR, (File)null) : getTempDirFromSystem();
         if((!this.dataDir.exists() && !this.dataDir.mkdirs()) || !this.dataDir.canWrite()) {
             throw new IllegalArgumentException("Data is not accessible: " + this.dataDir);
         }
@@ -344,7 +349,7 @@ public class ResourceModule extends Module {
 
     public File initTempFile() {
         startTempNumber++;
-        final File file = new File(this.tempDir, Long.toString(startTempNumber));
+        final File file = new File(getTempDir(), Long.toString(startTempNumber));
         return file;
     }
 
@@ -384,8 +389,13 @@ public class ResourceModule extends Module {
         }*/
     }
 
+    /**
+     * Create Unique directory inside temp directory
+     * @return
+     * @throws IOException
+     */
     public File initTempDir() throws IOException {
-        final File file = new File(this.tempDir, Long.toString(System.currentTimeMillis()));
+        final File file = new File(getTempDir(), Long.toString(System.currentTimeMillis()));
         if(!file.exists() && !file.mkdirs()) {
             throw new IOException("Can not create temp dir. Please set '" + PROPERTY_TEMP_DIR + "' property. " + file);
         }
@@ -485,8 +495,33 @@ public class ResourceModule extends Module {
         return dataDir;
     }
 
+    /**
+     * Get temp directory. If temp directory removed by system, it will make new one.
+     * @return
+     */
     public File getTempDir() {
-        return tempDir;
+        if(this.tempDir == null || !this.tempDir.exists()) {
+            if(tempDirPath != null) {
+                final File d = new File(tempDirPath);
+                if(d.isAbsolute()) {
+                    tempDir = d;
+                } else {
+                    tempDir = new File(this.dataDir, d.getPath());
+                }
+            } else {
+                this.tempDir = getTempDirFromSystem();
+            }
+        }
+        return this.tempDir;
+    }
+
+    private File getTempDirFromSystem() {
+        try {
+            return Files.createTempDirectory("" + System.currentTimeMillis()).toFile();
+        } catch (Exception ex) {
+            return new File(
+                    System.getProperty("java.io.tmpdir") + File.separator + System.currentTimeMillis());
+        }
     }
 
     public File initResourceDir(String id, String path) {
