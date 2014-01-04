@@ -14,6 +14,7 @@ import java.lang.System;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -160,31 +161,46 @@ public class Manager {
                                 final Element schedule = (Element)o2;
 
                                 final String unit = schedule.getAttributeValue("unit");
-                                int start = Integer.parseInt(schedule.getAttributeValue("start"));
-                                int period = Integer.parseInt(schedule.getAttributeValue("period"));
+                                final String start = schedule.getAttributeValue("start");
+                                final String period = schedule.getAttributeValue("period");
                                 final String query = schedule.getAttributeValue("query");
 
-                                if("month".equalsIgnoreCase(unit)) {
-                                    start = start * 30 * 24 * 60 * 60 * 1000;
-                                    period = period * 30 * 24 * 60 * 60 * 1000;
-                                } else if("day".equalsIgnoreCase(unit)) {
-                                    start = start * 24 * 60 * 60 * 1000;
-                                    period = period * 24 * 60 * 60 * 1000;
-                                } else if("hour".equalsIgnoreCase(unit)) {
-                                    start = start * 60 * 60 * 1000;
-                                    period = period * 60 * 60 * 1000;
-                                } else if("minuet".equalsIgnoreCase(unit)) {
-                                    start = start * 60 * 1000;
-                                    period = period * 60 * 1000;
-                                } else if(unit == null) { // hour by default
-                                    start = start * 24 * 60 * 60 * 1000;
-                                    period = period * 24 * 60 * 60 * 1000;
+                                if(start == null && period == null) {
+                                    throw new IllegalArgumentException("On of start or period should define for schedule");
                                 }
 
-                                // system load
-                                start += 2000;
+                                int factor = 1;
+                                if(unit == null) {
+                                    if("month".equalsIgnoreCase(unit)) {
+                                        factor = 30 * 24 * 60 * 60 * 1000;
+                                    } else if("day".equalsIgnoreCase(unit)) {
+                                        factor = 24 * 60 * 60 * 1000;
+                                    } else if("hour".equalsIgnoreCase(unit)) {
+                                        factor = 60 * 60 * 1000;
+                                    } else if("minute".equalsIgnoreCase(unit)) {
+                                        factor = 60 * 1000;
+                                    }
+                                }
 
-                                addSchedule(module, query, start, period);
+                                long s = 0;
+                                long p = 0;
+
+                                if(start != null) {
+                                    try {
+                                        // simple number mode
+                                        s = Integer.parseInt(start) * factor;
+                                    } catch (Throwable t) {
+                                        s = getStart(start);
+                                    }
+                                }
+                                // system load
+                                s += 2000;
+
+                                if(period != null) {
+                                    p = Integer.parseInt(period) * factor;
+                                }
+
+                                addSchedule(module, query, s, p);
                             }
                         }
 
@@ -337,7 +353,7 @@ public class Manager {
         return params;
     }
 
-    private void addSchedule(final Module module, final String queryString, int start, int period) throws IOException {
+    private void addSchedule(final Module module, final String queryString, long start, long period) throws IOException {
         final ModuleParam param = new ModuleParam(getUrlParameters(queryString));
 
         try {
@@ -353,7 +369,11 @@ public class Manager {
             };
 
             final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-            scheduler.scheduleAtFixedRate(runnable, start, period, TimeUnit.MILLISECONDS);
+            if(period > 0) {
+                scheduler.scheduleAtFixedRate(runnable, start, period, TimeUnit.MILLISECONDS);
+            } else {
+                scheduler.schedule(runnable, start, TimeUnit.MILLISECONDS);
+            }
 
             schedulers.add(scheduler);
         } catch (Exception ex) {
@@ -396,6 +416,86 @@ public class Manager {
         @Override
         public List<ModuleInfoRole> getRoles() {
             return new ArrayList<ModuleInfoRole>(this.roles);
+        }
+    }
+
+    private long getStart(final String text) {
+        final long now = new Date().getTime();
+
+        final Calendar c = Calendar.getInstance();
+        c.setTime(new Date());
+
+        Calendar c1;
+
+        c1 = dateFor("HH:mm", text);
+        if(c1 != null) {
+            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
+            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
+
+            if(c.getTime().before(new Date(now))) {
+                c.add(Calendar.DAY_OF_MONTH, 1);
+            }
+            return c.getTimeInMillis() - now;
+        }
+
+        c1 = dateFor("EEE HH:mm", text);
+        if(c1 != null) {
+            c.set(Calendar.DAY_OF_WEEK, c1.get(Calendar.DAY_OF_WEEK));
+            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
+            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
+
+            if(c.getTime().before(new Date(now))) {
+                c.add(Calendar.WEEK_OF_MONTH, 1);
+            }
+            return c.getTimeInMillis() - now;
+        }
+
+        c1 = dateFor("dd HH:mm", text);
+        if(c1 != null) {
+            c.set(Calendar.DAY_OF_MONTH, c1.get(Calendar.DAY_OF_MONTH));
+            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
+            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
+
+            if(c.getTime().before(new Date(now))) {
+                c.add(Calendar.MONTH, 1);
+            }
+            return c.getTimeInMillis() - now;
+        }
+
+        c1 = dateFor("MM-dd HH:mm", text);
+        if(c1 != null) {
+            c.set(Calendar.MONTH, c1.get(Calendar.MONTH));
+            c.set(Calendar.DAY_OF_MONTH, c1.get(Calendar.DAY_OF_MONTH));
+            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
+            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
+
+            if(c.getTime().before(new Date(now))) {
+                c.add(Calendar.YEAR, 1);
+            }
+            return c.getTimeInMillis() - now;
+        }
+
+        c1 = dateFor("yyyy-MM-dd HH:mm", text);
+        if(c1 != null) {
+            if(c1.getTime().after(new Date(now))) {
+                return c1.getTimeInMillis() - now;
+            }
+        } else {
+            throw new IllegalArgumentException("Format not support: " + text);
+        }
+
+        return 0;
+    }
+
+    private Calendar dateFor(final String pattern, final String text) {
+        try {
+            final SimpleDateFormat f = new SimpleDateFormat(pattern);
+            final Date date = f.parse(text);
+            final Calendar c = Calendar.getInstance();
+            c.setTime(date);
+            return c;
+        } catch (Exception ex) {
+            return null;
         }
     }
 
