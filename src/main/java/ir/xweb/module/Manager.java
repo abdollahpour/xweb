@@ -170,7 +170,7 @@ public class Manager {
                                 }
 
                                 int factor = 1;
-                                if(unit == null) {
+                                if(unit != null) {
                                     if("month".equalsIgnoreCase(unit)) {
                                         factor = 30 * 24 * 60 * 60 * 1000;
                                     } else if("day".equalsIgnoreCase(unit)) {
@@ -179,7 +179,13 @@ public class Manager {
                                         factor = 60 * 60 * 1000;
                                     } else if("minute".equalsIgnoreCase(unit)) {
                                         factor = 60 * 1000;
+                                    } else if("milli".equalsIgnoreCase(unit)) {
+                                        factor = 1;
+                                    } else {
+                                        throw new IllegalArgumentException("Illegal unit");
                                     }
+                                } else {
+                                    factor = 60 * 60 * 1000;
                                 }
 
                                 long s = 0;
