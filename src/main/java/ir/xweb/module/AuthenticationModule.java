@@ -44,11 +44,11 @@ public class AuthenticationModule extends Module {
 
     public final static String PARAM_COOKIE_AGE = "cookie-age";
 
-    public final static String PARAM_XML_SOURCE = "xml-source";
+    public final static String PARAM_XML_SOURCE = "source.xml";
 
-    public final static String PARAM_JSON_SOURCE = "json-source";
+    public final static String PARAM_JSON_SOURCE = "source.json";
 
-    public final static String PARAM_TEXT_SOURCE = "text-source";
+    public final static String PARAM_TEXT_SOURCE = "source.text";
 
     public final static String PARAM_DEFAULT = "default";
 
@@ -108,7 +108,7 @@ public class AuthenticationModule extends Module {
                     final Element u = (Element) list.get(i);
 
                     final String username = u.getAttributeValue("username");
-                    final String password = u.getAttributeValue("password");
+                    final String password = Tools.md5(u.getAttributeValue("password"));
                     final String role = u.getAttributeValue("role");
 
                     final XWebUser user = new XWebUser() {
@@ -152,7 +152,7 @@ public class AuthenticationModule extends Module {
                     final JSONObject u = array.getJSONObject(i);
 
                     final String username = u.getString("username");
-                    final String password = u.getString("password");
+                    final String password =Tools.md5(u.getString("password"));
                     final String role = u.getString("role");
 
                     XWebUser user = new XWebUser() {
@@ -198,7 +198,7 @@ public class AuthenticationModule extends Module {
                         final String[] parts = line.split("\t");
                         if(parts.length == 3) {
                             final String username = parts[0];
-                            final String password = parts[1];
+                            final String password = Tools.md5(parts[1]);
                             final String role = parts[2];
 
                             XWebUser user = new XWebUser() {
@@ -281,7 +281,7 @@ public class AuthenticationModule extends Module {
 
 
         // login with cookie
-        String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
+        final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
             logger.debug("Try to login with cookie. UUID: " + uuid);
             user = getUserWithUUID(context, uuid);
@@ -377,10 +377,10 @@ public class AuthenticationModule extends Module {
          */
 
         if("login".equals(action)) {
-            String identifier = params.validate("id", null, true).getString(null);
+            final String identifier = params.validate("id", null, true).getString(null);
             // Password hashed with MD5
-            String password = params.validate("password", null, true).getString(null);
-            String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
+            final String password = params.validate("password", null, true).getString(null);
+            final String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
 
             CaptchaModule.validateOrThrow(request, captcha);
 
@@ -421,6 +421,12 @@ public class AuthenticationModule extends Module {
     }
 
     public XWebUser getUserWithId(ServletContext context, String userId, String pass) {
+        final XWebUser user = defaultSource.get(userId);
+        if(user != null) {
+            if(user.getExtra().equals(pass)) {
+                return user;
+            }
+        }
         return null;
     }
 
