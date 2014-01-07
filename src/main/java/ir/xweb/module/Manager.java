@@ -160,7 +160,6 @@ public class Manager {
                             for(Object o2:roleElements) {
                                 final Element schedule = (Element)o2;
 
-                                final String unit = schedule.getAttributeValue("unit");
                                 final String start = schedule.getAttributeValue("start");
                                 final String period = schedule.getAttributeValue("period");
                                 final String query = schedule.getAttributeValue("query");
@@ -179,7 +178,7 @@ public class Manager {
                                 s += 2000;
 
                                 if(period != null) {
-                                    p = getPeroid(period);
+                                    p = getPeriod(period);
                                 }
 
                                 addSchedule(module, query, s, p);
@@ -460,7 +459,7 @@ public class Manager {
         return 0;
     }
 
-    private long getPeroid(final String text) {
+    private long getPeriod(final String text) {
         try {
             return (long) (Float.parseFloat(text) * 60 * 1000D);
         } catch (Exception ex) {}
