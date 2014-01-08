@@ -60,7 +60,7 @@ public class AuthenticationModule extends Module {
 
     private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
 
-    private final Map<String, XWebUser> defaultSource = new HashMap<String, XWebUser>();
+    private final Map<String, DefaultUser> defaultSource = new HashMap<String, DefaultUser>();
 
     private final int cookieAge;
 
@@ -107,28 +107,18 @@ public class AuthenticationModule extends Module {
                 for (int i = 0; i < list.size(); i++) {
                     final Element u = (Element) list.get(i);
 
-                    final String username = u.getAttributeValue("username");
+                    final String id = u.getAttributeValue("id");
                     final String password = Tools.md5(u.getAttributeValue("password"));
                     final String role = u.getAttributeValue("role");
+                    final String uuid = u.getAttributeValue("uuid");
 
-                    final XWebUser user = new XWebUser() {
-                        @Override
-                        public String getId() {
-                            return username;
-                        }
+                    final DefaultUser user = new DefaultUser();
+                    user.id = id;
+                    user.password = password;
+                    user.role = role;
+                    user.uuid = uuid;
 
-                        @Override
-                        public String getRole() {
-                            return role;
-                        }
-
-                        @Override
-                        public Object getExtra() {
-                            return password;
-                        }
-                    };
-
-                    defaultSource.put(username, user);
+                    defaultSource.put(id, user);
                 }
 
             } catch (IOException ex) {
@@ -151,28 +141,18 @@ public class AuthenticationModule extends Module {
                 for (int i = 0; i < array.length(); i++) {
                     final JSONObject u = array.getJSONObject(i);
 
-                    final String username = u.getString("username");
-                    final String password =Tools.md5(u.getString("password"));
+                    final String id = u.getString("id");
+                    final String password = Tools.md5(u.getString("password"));
                     final String role = u.getString("role");
+                    final String uuid = u.getString("uuid");
 
-                    XWebUser user = new XWebUser() {
-                        @Override
-                        public String getId() {
-                            return username;
-                        }
+                    final DefaultUser user = new DefaultUser();
+                    user.id = id;
+                    user.password = password;
+                    user.role = role;
+                    user.uuid = uuid;
 
-                        @Override
-                        public String getRole() {
-                            return password;
-                        }
-
-                        @Override
-                        public Object getExtra() {
-                            return role;
-                        }
-                    };
-
-                    defaultSource.put(username, user);
+                    defaultSource.put(id, user);
                 }
             } catch (IOException ex) {
                 logger.error("Error to access json source", ex);
@@ -197,28 +177,18 @@ public class AuthenticationModule extends Module {
                     if(line.length() > 0) {
                         final String[] parts = line.split("\t");
                         if(parts.length == 3) {
-                            final String username = parts[0];
+                            final String id = parts[0];
                             final String password = Tools.md5(parts[1]);
                             final String role = parts[2];
+                            final String uuid = parts.length > 3 ? null : parts[3];
 
-                            XWebUser user = new XWebUser() {
-                                @Override
-                                public String getId() {
-                                    return username;
-                                }
+                            final DefaultUser user = new DefaultUser();
+                            user.id = id;
+                            user.password = password;
+                            user.role = role;
+                            user.uuid = uuid;
 
-                                @Override
-                                public String getRole() {
-                                    return role;
-                                }
-
-                                @Override
-                                public Object getExtra() {
-                                    return password;
-                                }
-                            };
-
-                            defaultSource.put(username, user);
+                            defaultSource.put(id, user);
                         } else {
                             logger.error("Illegal line text user source");
                         }
@@ -284,7 +254,7 @@ public class AuthenticationModule extends Module {
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
             logger.debug("Try to login with cookie. UUID: " + uuid);
-            user = getUserWithUUID(context, uuid);
+            user = getUserWithUUID(uuid);
             if(user != null) {
                 logger.debug("User successfully login with UUID: " + uuid);
                 session.setAttribute(SESSION_USER, user);
@@ -303,7 +273,7 @@ public class AuthenticationModule extends Module {
                 String base64Token = header.substring(6);
                 String token = new String(Base64.decode(base64Token));
 
-                user = getUserWithUUID (context, uuid);
+                user = getUserWithUUID(uuid);
                 if(user != null) {
                     logger.debug("User successfully login with HTTP authentication: " + token);
                     session.setAttribute(SESSION_USER, user);
@@ -388,13 +358,13 @@ public class AuthenticationModule extends Module {
 
             final boolean remember = "true".equals(params.getString("remember", "false"));
             // (user, temporary password, is temporary password (false by default))
-            final XWebUser user = getUserWithId(context, identifier, password);
+            final XWebUser user = getUserWithId(identifier, password);
 
             if (user != null) {
                 request.getSession().setAttribute(SESSION_USER, user);
 
                 if(remember) {
-                    final String uuid = generateUUID(context, identifier);
+                    final String uuid = generateUUID(identifier);
 
                     if(uuid != null) {
                         CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
@@ -416,22 +386,59 @@ public class AuthenticationModule extends Module {
         }
     }
 
-    public XWebUser getUserWithUUID(ServletContext context, String uuid) {
+    public XWebUser getUserWithUUID(final String uuid) {
+        for(DefaultUser u:defaultSource.values()) {
+            if(u.uuid != null && u.uuid.equals(uuid)) {
+                return u;
+            }
+        }
         return null;
     }
 
-    public XWebUser getUserWithId(ServletContext context, String userId, String pass) {
-        final XWebUser user = defaultSource.get(userId);
+
+    public XWebUser getUserWithId(final String userId, final String pass) {
+        final DefaultUser user = defaultSource.get(userId);
         if(user != null) {
-            if(user.getExtra().equals(pass)) {
+            if(user.password.equals(pass)) {
                 return user;
             }
         }
         return null;
     }
 
-    public String generateUUID(ServletContext context, String userId) {
+    public String generateUUID(final String userId) {
+        final DefaultUser user = defaultSource.get(userId);
+        if(user != null) {
+            return user.uuid;
+        }
         return null;
+    }
+
+    private class DefaultUser implements XWebUser {
+
+        String id;
+
+        String password;
+
+        String uuid;
+
+        String role;
+
+        @Override
+        public String getId() {
+            return id;
+        }
+
+        @Override
+        public String getRole() {
+            return role;
+        }
+
+        @Override
+        public Object getExtra() {
+            return null;
+        }
+
     }
 
 }
