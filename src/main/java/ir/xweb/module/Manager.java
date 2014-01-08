@@ -160,7 +160,6 @@ public class Manager {
                             for(Object o2:roleElements) {
                                 final Element schedule = (Element)o2;
 
-                                final String unit = schedule.getAttributeValue("unit");
                                 final String start = schedule.getAttributeValue("start");
                                 final String period = schedule.getAttributeValue("period");
                                 final String query = schedule.getAttributeValue("query");
@@ -169,41 +168,17 @@ public class Manager {
                                     throw new IllegalArgumentException("On of start or period should define for schedule");
                                 }
 
-                                int factor = 1;
-                                if(unit != null) {
-                                    if("month".equalsIgnoreCase(unit)) {
-                                        factor = 30 * 24 * 60 * 60 * 1000;
-                                    } else if("day".equalsIgnoreCase(unit)) {
-                                        factor = 24 * 60 * 60 * 1000;
-                                    } else if("hour".equalsIgnoreCase(unit)) {
-                                        factor = 60 * 60 * 1000;
-                                    } else if("minute".equalsIgnoreCase(unit)) {
-                                        factor = 60 * 1000;
-                                    } else if("milli".equalsIgnoreCase(unit)) {
-                                        factor = 1;
-                                    } else {
-                                        throw new IllegalArgumentException("Illegal unit");
-                                    }
-                                } else {
-                                    factor = 60 * 60 * 1000;
-                                }
-
                                 long s = 0;
                                 long p = 0;
 
                                 if(start != null) {
-                                    try {
-                                        // simple number mode
-                                        s = Integer.parseInt(start) * factor;
-                                    } catch (Throwable t) {
-                                        s = getStart(start);
-                                    }
+                                    s = getStart(start);
                                 }
                                 // system load
                                 s += 2000;
 
                                 if(period != null) {
-                                    p = Integer.parseInt(period) * factor;
+                                    p = getPeriod(period);
                                 }
 
                                 addSchedule(module, query, s, p);
@@ -481,13 +456,40 @@ public class Manager {
             return c.getTimeInMillis() - now;
         }
 
-        c1 = dateFor("yyyy-MM-dd HH:mm", text);
-        if(c1 != null) {
-            if(c1.getTime().after(new Date(now))) {
-                return c1.getTimeInMillis() - now;
-            }
-        } else {
-            throw new IllegalArgumentException("Format not support: " + text);
+        return 0;
+    }
+
+    private long getPeriod(final String text) {
+        try {
+            return (long) (Float.parseFloat(text) * 60 * 1000D);
+        } catch (Exception ex) {}
+
+        if(text.endsWith("hour")) {
+            final String t = text.substring(0, text.length() - 4).trim();
+            int hour = t.length() == 0 ? 1 : Integer.parseInt(t);
+            return hour * 60 * 60 * 1000L;
+        }
+
+        if(text.endsWith("week")) {
+            final String t = text.substring(0, text.length() - 4).trim();
+            int week = t.length() == 0 ? 1 : Integer.parseInt(t);
+            return week * 7 * 24 * 60 * 60 * 1000L;
+        }
+
+        // TODO: We can not handle month in this way, month should calculate (29~31),
+        // we need to remove the schedule and setup new one every month
+        if(text.endsWith("month")) {
+            final String t = text.substring(0, text.length() - 5).trim();
+            int month = t.length() == 0 ? 1 : Integer.parseInt(t);
+            return month * 30 * 24 * 60 * 60 * 1000L;
+        }
+
+        // TODO: We can not handle year in this way (365~366),
+        // we need to remove the schedule and setup new one every year
+        if(text.endsWith("year")) {
+            final String t = text.substring(0, text.length() - 4).trim();
+            int year = t.length() == 0 ? 1 : Integer.parseInt(t);
+            return year * 365 * 24 * 60 * 60 * 1000L;
         }
 
         return 0;
