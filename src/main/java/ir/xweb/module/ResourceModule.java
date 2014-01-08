@@ -515,6 +515,10 @@ public class ResourceModule extends Module {
         return this.tempDir;
     }
 
+    public File getTemplateDir() {
+        return this.templateDir;
+    }
+
     private File getTempDirFromSystem() {
         try {
             return Files.createTempDirectory("" + System.currentTimeMillis()).toFile();
