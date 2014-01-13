@@ -194,6 +194,14 @@ public class ModuleParam implements Map<String, String> {
         return data.containsKey(key);
     }
 
+    public boolean hasValueFor(final Object key) {
+        final String v = data.get(key);
+        if(v != null) {
+            return v.trim().length() > 0;
+        }
+        return false;
+    }
+
     @Override
     public boolean containsValue(Object value) {
         return data.containsValue(value);

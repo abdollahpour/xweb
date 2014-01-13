@@ -92,7 +92,7 @@ public class TestAuthenticationModule {
 
         final AuthenticationModule module = new AuthenticationModule(manager, moduleInfo, moduleParam) {
             @Override
-            public XWebUser getUserWithId(ServletContext context, String userId, String pass) {
+            public XWebUser getUserWithId(String userId, String pass) {
                 return null;
             }
         };
@@ -138,7 +138,7 @@ public class TestAuthenticationModule {
 
         final AuthenticationModule module = new AuthenticationModule(manager, moduleInfo, moduleParam) {
             @Override
-            public XWebUser getUserWithId(ServletContext context, String userId, String pass) {
+            public XWebUser getUserWithId(String userId, String pass) {
                 return user;
             }
         };

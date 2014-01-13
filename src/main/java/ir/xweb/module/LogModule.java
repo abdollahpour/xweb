@@ -24,7 +24,7 @@ public class LogModule extends Module {
 
     private final static Logger logger = LoggerFactory.getLogger(LogModule.class);
 
-    private final static String SESSION_LAST_POSITION = "session_module_log_position";
+    private final static String SESSION_LAST_POSITION = "module_log_position_";
 
     private final static int MAX_READ = 30 * 1024;
 
@@ -43,11 +43,14 @@ public class LogModule extends Module {
 
     @Override
     public void process(
-            ServletContext context,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            ModuleParam params,
-            HashMap<String, FileItem> files) throws IOException {
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final ModuleParam params,
+            final HashMap<String, FileItem> files) throws IOException {
+
+        /** We have different log history for different IDs, so we can have different HTMLs **/
+        final String id = params.getString("id", "0");
 
         if(log != null && log.exists()) {
             response.setContentType("text/plain");
@@ -55,15 +58,15 @@ public class LogModule extends Module {
             long last = log.lastModified();
             long len = log.length();
 
-            Long position = (Long) request.getSession().getAttribute(SESSION_LAST_POSITION);
+            Long position = (Long) request.getSession().getAttribute(SESSION_LAST_POSITION + id);
 
             // init
             if(position == null) {
                 position = Math.max(0, len - MAX_READ);
             }
 
-            PrintWriter writer = response.getWriter();
-            FileReader reader = new FileReader(log);
+            final PrintWriter writer = response.getWriter();
+            final FileReader reader = new FileReader(log);
             if(position > 0) {
                 reader.skip(position);
             }
@@ -76,7 +79,7 @@ public class LogModule extends Module {
                 position += size;
             }
 
-            request.getSession().setAttribute(SESSION_LAST_POSITION, position);
+            request.getSession().setAttribute(SESSION_LAST_POSITION + id, position);
 
             reader.close();
         } else {

@@ -350,7 +350,15 @@ public class ResourceModule extends Module {
     public File initTempFile() {
         startTempNumber++;
         final File file = new File(getTempDir(), Long.toString(startTempNumber));
-        return file;
+        if(!file.exists()) {
+            try {
+                file.createNewFile();
+                return file;
+            } catch (Exception ex) {
+                logger.error("Error to init temp file: " + file, ex);
+            }
+        }
+        return null;
     }
 
     /**
@@ -501,16 +509,19 @@ public class ResourceModule extends Module {
      */
     public File getTempDir() {
         if(this.tempDir == null || !this.tempDir.exists()) {
-            if(tempDirPath != null) {
-                final File d = new File(tempDirPath);
+            if(this.tempDirPath != null) {
+                final File d = new File(this.tempDirPath);
                 if(d.isAbsolute()) {
-                    tempDir = d;
+                    this.tempDir = d;
                 } else {
-                    tempDir = new File(this.dataDir, d.getPath());
+                    this.tempDir = new File(this.dataDir, d.getPath());
                 }
             } else {
                 this.tempDir = getTempDirFromSystem();
             }
+
+            // create temp dir
+            this.tempDir.mkdirs();
         }
         return this.tempDir;
     }
