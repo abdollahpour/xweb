@@ -50,7 +50,7 @@ public class LogModule extends Module {
             final HashMap<String, FileItem> files) throws IOException {
 
         /** We have different log history for different IDs, so we can have different HTMLs **/
-        final int id = params.getInt("id", 0);
+        final String id = params.getString("id", "0");
 
         if(log != null && log.exists()) {
             response.setContentType("text/plain");
