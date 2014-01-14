@@ -108,34 +108,11 @@ public class Tools {
         return null;
     }
 
-    /*public static Map<String, List<String>> getUrlParameters(final String url) throws UnsupportedEncodingException {
-        Map<String, List<String>> params = new HashMap<String, List<String>>();
-        String[] urlParts = url.split("\\?");
-        if (urlParts.length > 1) {
-            String query = urlParts[1];
-            for (String param : query.split("&")) {
-                String pair[] = param.split("=");
-                String key = URLDecoder.decode(pair[0], "UTF-8");
-                String value = "";
-                if (pair.length > 1) {
-                    value = URLDecoder.decode(pair[1], "UTF-8");
-                }
-                List<String> values = params.get(key);
-                if (values == null) {
-                    values = new ArrayList<String>();
-                    System.out.println("key: " + key + " value: " + values);
-                    params.put(key, values);
-                }
-                values.add(value);
-            }
-        }
-        return params;
-    }*/
-
     public static HashMap<String, List<String>> parseQueryString(String queryString) {
         if (queryString == null) {
             throw new IllegalArgumentException("null queryString");
         }
+
         HashMap<String, List<String>> ht = new HashMap<String, List<String>>();
         StringBuffer sb = new StringBuffer();
         StringTokenizer st = new StringTokenizer(queryString, "&");
@@ -193,7 +170,19 @@ public class Tools {
         return sb.toString();
     }
 
+    /**
+     * Calculate file checksum
+     * @param file Source file
+     * @return Hex string for checksum
+     * @throws IOException
+     */
     public static String checkSum(final File file) throws IOException {
+        if(file == null) {
+            throw new IllegalArgumentException("null file");
+        }
+        if(!file.exists()) {
+            throw new IllegalArgumentException("File does not exist: " + file);
+        }
 
         FileInputStream fis = null;
         try {

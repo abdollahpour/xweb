@@ -127,7 +127,6 @@ public class Module {
 
         // Check for roles
         try {
-            //System.out.println(role + " : " + roleManager.hasPermission(params, role));
             if(!roleManager.hasPermission(params, role)) {
                 if(role == null) {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have permission to access with this role: " + role);
