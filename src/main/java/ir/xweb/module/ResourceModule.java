@@ -181,7 +181,7 @@ public class ResourceModule extends Module {
                     } else {
                         logger.info("Try to access resource that is protected by user session is not active: " + path);
                     }
-                } else if(isAdmin(context, user)) {
+                } else if(isAdmin(user)) {
                     file = getFile(id, path);
                 } else {
                     logger.info("Try to access resource that is private by user session is not active: " + path);
@@ -210,7 +210,7 @@ public class ResourceModule extends Module {
                 try {
                     // store count
                     if(store) {
-                        storeResourceUsage(context, path);
+                        storeResourceUsage(path);
                         //dataSource.setData(context, ResourceDataSource.DATA_SOURCE_STORE, path);
                     }
 
@@ -336,7 +336,7 @@ public class ResourceModule extends Module {
             throw new IllegalArgumentException("Illegal path: " + path);
         }
 
-        File f = new File(this.dataDir, getUserDirectory(context, id) + File.separator + path);
+        File f = new File(this.dataDir, getUserDirectory(id) + File.separator + path);
         if(f.exists()) {
             return f;
         }
