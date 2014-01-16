@@ -37,11 +37,11 @@ public class TestDataTools {
     }
 
     @Test
-    public void writeWriter() throws IOException {
-        HashMap map = new HashMap();
+    public void testWriterJson() throws IOException {
+        final HashMap map = new HashMap();
         map.put("count", 10);
 
-        List list = Arrays.asList(new User(), new User());
+        final List list = Arrays.asList(new User(), new User());
         map.put("users", list);
 
         System.out.println("Role: null");
@@ -55,6 +55,20 @@ public class TestDataTools {
         System.out.println("Role: user");
         tools.write(response, "json", "user", map);
         System.out.println();
+    }
+
+    @Test
+    public void testWriterXml() throws IOException {
+        final User user = new User();
+        user.email = "ha.hamed@gmail.com";
+
+        final HashMap map = new HashMap();
+        map.put("count", 10);
+        map.put("size", 101);
+        map.put("list", Arrays.asList("this", "is", "test", 123, new Integer(456), user));
+
+        final DataTools d = new DataTools();
+        System.out.println(d.write("xml", null, map));
     }
 
     @Test
