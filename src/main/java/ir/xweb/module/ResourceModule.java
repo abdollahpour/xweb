@@ -832,15 +832,15 @@ public class ResourceModule extends Module {
         return result == null ? key : result;
     }
 
-    protected boolean isAdmin(ServletContext context, XWebUser user) {
+    protected boolean isAdmin(final XWebUser user) {
         return false;
     }
 
-    protected void storeResourceUsage(ServletContext context, String path) {
+    protected void storeResourceUsage(final String path) {
 
     }
 
-    protected String getUserDirectory(final ServletContext context, final String id) {
+    protected String getUserDirectory(final String id) {
         return id;
     }
 
