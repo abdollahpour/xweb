@@ -1,5 +1,6 @@
 package ir.xweb.module;
 
+import ir.xweb.data.DataTools;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.MimeType;
 import ir.xweb.util.Tools;
@@ -663,7 +664,9 @@ public class ResourceModule extends Module {
         final File xsltFile = getTemplateFile(template, language, ".xsl");
         if(xsltFile != null) {
             try {
-                final String xml = paramToXml(params);
+                final DataTools dataTools = new DataTools();
+
+                final String xml = dataTools.write("xml", null, params);
                 final String html = applyXslt(xsltFile, xml);
 
                 return html;
@@ -717,7 +720,7 @@ public class ResourceModule extends Module {
         return w.toString();
     }
 
-    private String paramToXml(final Map<String, String> params) throws IOException {
+    /*private String paramToXml(final Map<String, String> params) throws IOException {
         final Element root = new Element("params");
 
         for(Map.Entry<String, String> e:params.entrySet()) {
@@ -733,7 +736,7 @@ public class ResourceModule extends Module {
         xmlOutput.output(new Document(root), w);
 
         return w.toString();
-    }
+    }*/
 
     private File getTemplateFile(
             final String template,
