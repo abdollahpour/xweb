@@ -6,10 +6,6 @@ import ir.xweb.util.MimeType;
 import ir.xweb.util.Tools;
 import ir.xweb.util.XmlBundle;
 import org.apache.commons.fileupload.FileItem;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -32,8 +28,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -43,8 +37,6 @@ public class ResourceModule extends Module {
     private final static Logger logger = LoggerFactory.getLogger("ResourceModule");
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss zzz", Locale.ENGLISH);
-
-    private final int BUFFER_SIZE = 256;
 
     private final static String DEFAULT_BUNDLE = "bundle";
 
@@ -679,7 +671,7 @@ public class ResourceModule extends Module {
         final File textFile = getTemplateFile(template, language, ".txt");
         if(textFile != null) {
             try {
-                final String text = applyText(xsltFile, params);
+                final String text = applyText(textFile, params);
 
                 return text;
             } catch (Exception ex) {
