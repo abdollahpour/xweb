@@ -349,7 +349,7 @@ public class DataTools {
             return data;
         } else if(object instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) object;
-            final Map<String, Object> data = new HashMap<String, Object>();
+            final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
             for(Map.Entry<?, ?> e:map.entrySet()) {
                 data.put(e.getKey().toString(), convert(e.getValue(), role));
