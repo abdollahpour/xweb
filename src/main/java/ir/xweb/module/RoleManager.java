@@ -32,7 +32,6 @@ public class RoleManager {
             for(ModuleInfoRole v:roles) {
                 boolean roleMatch;
                 if(role == null) {
-                    //System.out.println("is null " + "".matches(v.getRole()));
                     roleMatch = (v.getRole().length() == 0) || "".matches(v.getRole());
                 } else {
                     roleMatch = role.matches(v.getRole());
@@ -46,7 +45,6 @@ public class RoleManager {
                         paramMatches = false;
 
                         for(String paramName:v.getParams()) {
-                            //System.out.println(paramName);
                             if(params.containsKey(paramName)) {
                                 paramMatches = true;
                                 break;
@@ -55,8 +53,6 @@ public class RoleManager {
                     } else {
                         paramMatches = true;
                     }
-
-                    //System.out.println(role + " " + paramMatches);
 
                     if(paramMatches) {
                         String eval = v.getEval();
@@ -73,8 +69,6 @@ public class RoleManager {
 
                             eval = eval.replace("%" + p + "%", "'" + value + "'");
                         }
-
-                        //System.out.println(role + " " + eval + " " + result(engine.eval(eval)));
 
                         boolean result = result(engine.eval(eval));
                         if(result == false) {

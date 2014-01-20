@@ -1,14 +1,11 @@
 package ir.xweb.module;
 
+import ir.xweb.data.DataTools;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.MimeType;
 import ir.xweb.util.Tools;
 import ir.xweb.util.XmlBundle;
 import org.apache.commons.fileupload.FileItem;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
@@ -31,8 +28,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -42,8 +37,6 @@ public class ResourceModule extends Module {
     private final static Logger logger = LoggerFactory.getLogger("ResourceModule");
 
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy hh:mm:ss zzz", Locale.ENGLISH);
-
-    private final int BUFFER_SIZE = 256;
 
     private final static String DEFAULT_BUNDLE = "bundle";
 
@@ -180,7 +173,7 @@ public class ResourceModule extends Module {
                     } else {
                         logger.info("Try to access resource that is protected by user session is not active: " + path);
                     }
-                } else if(isAdmin(context, user)) {
+                } else if(isAdmin(user)) {
                     file = getFile(id, path);
                 } else {
                     logger.info("Try to access resource that is private by user session is not active: " + path);
@@ -209,7 +202,7 @@ public class ResourceModule extends Module {
                 try {
                     // store count
                     if(store) {
-                        storeResourceUsage(context, path);
+                        storeResourceUsage(path);
                         //dataSource.setData(context, ResourceDataSource.DATA_SOURCE_STORE, path);
                     }
 
@@ -335,7 +328,7 @@ public class ResourceModule extends Module {
             throw new IllegalArgumentException("Illegal path: " + path);
         }
 
-        File f = new File(this.dataDir, getUserDirectory(context, id) + File.separator + path);
+        File f = new File(this.dataDir, getUserDirectory(id) + File.separator + path);
         if(f.exists()) {
             return f;
         }
@@ -663,7 +656,9 @@ public class ResourceModule extends Module {
         final File xsltFile = getTemplateFile(template, language, ".xsl");
         if(xsltFile != null) {
             try {
-                final String xml = paramToXml(params);
+                final DataTools dataTools = new DataTools();
+
+                final String xml = dataTools.write("xml", null, params);
                 final String html = applyXslt(xsltFile, xml);
 
                 return html;
@@ -676,7 +671,7 @@ public class ResourceModule extends Module {
         final File textFile = getTemplateFile(template, language, ".txt");
         if(textFile != null) {
             try {
-                final String text = applyText(xsltFile, params);
+                final String text = applyText(textFile, params);
 
                 return text;
             } catch (Exception ex) {
@@ -717,7 +712,7 @@ public class ResourceModule extends Module {
         return w.toString();
     }
 
-    private String paramToXml(final Map<String, String> params) throws IOException {
+    /*private String paramToXml(final Map<String, String> params) throws IOException {
         final Element root = new Element("params");
 
         for(Map.Entry<String, String> e:params.entrySet()) {
@@ -733,7 +728,7 @@ public class ResourceModule extends Module {
         xmlOutput.output(new Document(root), w);
 
         return w.toString();
-    }
+    }*/
 
     private File getTemplateFile(
             final String template,
@@ -829,15 +824,15 @@ public class ResourceModule extends Module {
         return result == null ? key : result;
     }
 
-    protected boolean isAdmin(ServletContext context, XWebUser user) {
+    protected boolean isAdmin(final XWebUser user) {
         return false;
     }
 
-    protected void storeResourceUsage(ServletContext context, String path) {
+    protected void storeResourceUsage(final String path) {
 
     }
 
-    protected String getUserDirectory(final ServletContext context, final String id) {
+    protected String getUserDirectory(final String id) {
         return id;
     }
 

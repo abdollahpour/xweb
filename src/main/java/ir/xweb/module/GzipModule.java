@@ -199,7 +199,6 @@ public class GzipModule extends Module {
         @Override
         public ServletInputStream getInputStream() throws IOException {
             if(inputStream == null) {
-                System.out.println("ddddddddddddddd1");
                 inputStream = new FileServletInputStream(zipFile);
             }
             return inputStream;
@@ -213,7 +212,6 @@ public class GzipModule extends Module {
         @Override
         public BufferedReader getReader() throws IOException {
             if(this.reader == null) {
-                System.out.println("ddddddddddddddd2");
                 this.reader = new BufferedReader(new InputStreamReader(getInputStream(), getRequest().getCharacterEncoding()));
             }
             return this.reader;

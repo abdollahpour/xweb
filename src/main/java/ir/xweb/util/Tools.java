@@ -42,14 +42,38 @@ public class Tools {
 		return separated[0].length();
 	}
 
+    /**
+     * @deprecated please use {@link #gzip(java.io.File, java.io.File) zip(java.io.File, java.io.File)}
+     */
+    @Deprecated
+    public static void zipFile(File src, File dist) throws IOException {
+        gzip(src, dist);
+    }
 
-    public static void zipFile(File src, File dest) throws IOException {
+    /**
+     * Compress one specific file with gzip
+     * @param src Source file
+     * @param dist Destination file. Parent directory of this file should exist
+     * @throws IOException
+     */
+    public static void gzip(final File src, final File dist) throws IOException {
+        if(src == null) {
+            throw new IllegalArgumentException("null src");
+        }
+        if(!src.exists() || !src.isFile()) {
+            throw new IllegalArgumentException("Src file does not exist of it's not file");
+        }
+
+        if(dist == null) {
+            throw new IllegalArgumentException("dist src");
+        }
+
         FileInputStream fis = null;
         GZIPOutputStream gzos = null;
 
         try {
             fis = new FileInputStream(src);
-            gzos = new GZIPOutputStream(new FileOutputStream(dest));
+            gzos = new GZIPOutputStream(new FileOutputStream(dist));
 
             int size;
             byte[] buffer = new byte[20480];
@@ -84,34 +108,11 @@ public class Tools {
         return null;
     }
 
-    /*public static Map<String, List<String>> getUrlParameters(final String url) throws UnsupportedEncodingException {
-        Map<String, List<String>> params = new HashMap<String, List<String>>();
-        String[] urlParts = url.split("\\?");
-        if (urlParts.length > 1) {
-            String query = urlParts[1];
-            for (String param : query.split("&")) {
-                String pair[] = param.split("=");
-                String key = URLDecoder.decode(pair[0], "UTF-8");
-                String value = "";
-                if (pair.length > 1) {
-                    value = URLDecoder.decode(pair[1], "UTF-8");
-                }
-                List<String> values = params.get(key);
-                if (values == null) {
-                    values = new ArrayList<String>();
-                    System.out.println("key: " + key + " value: " + values);
-                    params.put(key, values);
-                }
-                values.add(value);
-            }
-        }
-        return params;
-    }*/
-
     public static HashMap<String, List<String>> parseQueryString(String queryString) {
         if (queryString == null) {
             throw new IllegalArgumentException("null queryString");
         }
+
         HashMap<String, List<String>> ht = new HashMap<String, List<String>>();
         StringBuffer sb = new StringBuffer();
         StringTokenizer st = new StringTokenizer(queryString, "&");
@@ -167,6 +168,52 @@ public class Tools {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Calculate file checksum
+     * @param file Source file
+     * @return Hex string for checksum
+     * @throws IOException
+     */
+    public static String checkSum(final File file) throws IOException {
+        if(file == null) {
+            throw new IllegalArgumentException("null file");
+        }
+        if(!file.exists()) {
+            throw new IllegalArgumentException("File does not exist: " + file);
+        }
+
+        FileInputStream fis = null;
+        try {
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            fis = new FileInputStream(file);
+
+            byte[] array = new byte[10240];
+            int size;
+
+            while((size = fis.read(array)) > 0) {
+                md.update(array, 0, size);
+            }
+
+            byte[] mdbytes = md.digest();
+
+            //convert the byte to hex format
+            StringBuffer sb = new StringBuffer("");
+            for (int i = 0; i < mdbytes.length; i++) {
+                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+
+            return sb.toString();
+        } catch (NoSuchAlgorithmException ex) {
+            throw new IOException(ex);
+        } finally {
+            if(fis != null) {
+                try {
+                    fis.close();
+                } catch (Exception ex) {}
+            }
+        }
     }
 
     public static String md5(String pass)  {
