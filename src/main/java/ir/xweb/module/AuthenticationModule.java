@@ -212,7 +212,7 @@ public class AuthenticationModule extends Module {
 
         HttpSession session = request.getSession();
 
-        XWebUser user = (XWebUser) session.getAttribute(SESSION_USER);
+        XWebUser user = getUser(request);
 
         // pre-check to speedup checking
         if(user != null) {
@@ -257,7 +257,7 @@ public class AuthenticationModule extends Module {
             user = getUserWithUUID(uuid);
             if(user != null) {
                 logger.debug("User successfully login with UUID: " + uuid);
-                session.setAttribute(SESSION_USER, user);
+                setUser(request, user);
                 filterChain.doFilter(request, response);
                 return;
             } else {
@@ -276,7 +276,7 @@ public class AuthenticationModule extends Module {
                 user = getUserWithUUID(uuid);
                 if(user != null) {
                     logger.debug("User successfully login with HTTP authentication: " + token);
-                    session.setAttribute(SESSION_USER, user);
+                    setUser(request, user);
                     filterChain.doFilter(request, response);
                     return;
                 } else {
@@ -361,7 +361,7 @@ public class AuthenticationModule extends Module {
             final XWebUser user = getUserWithId(identifier, password);
 
             if (user != null) {
-                request.getSession().setAttribute(SESSION_USER, user);
+                setUser(request, user);
 
                 if(remember) {
                     final String uuid = generateUUID(identifier);
@@ -404,6 +404,19 @@ public class AuthenticationModule extends Module {
             }
         }
         return null;
+    }
+
+    public XWebUser getUser(final HttpServletRequest request) {
+        final XWebUser user = (XWebUser) request.getSession().getAttribute(SESSION_USER);
+        return user;
+    }
+
+    private void setUser(final HttpServletRequest request, final XWebUser user) {
+        request.getSession().setAttribute(SESSION_USER, user);
+    }
+
+    public boolean isAuthenticated(final HttpServletRequest request) {
+        return request.getSession().getAttribute(SESSION_USER) != null;
     }
 
     public String generateUUID(final String userId) {
