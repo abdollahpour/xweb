@@ -299,9 +299,9 @@ public class DataTools {
         final boolean isAnnoted = c.isAnnotationPresent(XWebData.class);
 
         if(isAnnoted) {
-            String name = object.getClass().getAnnotation(XWebData.class).name();
+            final String name = object.getClass().getAnnotation(XWebData.class).name();
 
-            final AnnotedMap data = new AnnotedMap(name);
+            final AnnotedMap data = new AnnotedMap(name.length() == 0 ? object.getClass().getSimpleName() : name);
 
             final Method[] methods = c.getMethods();
             for(Method m:methods) {
@@ -349,7 +349,7 @@ public class DataTools {
             return data;
         } else if(object instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) object;
-            final Map<String, Object> data = new HashMap<String, Object>();
+            final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
             for(Map.Entry<?, ?> e:map.entrySet()) {
                 data.put(e.getKey().toString(), convert(e.getValue(), role));
@@ -446,10 +446,10 @@ public class DataTools {
                 }
 
                 return json;
-            } else if(object instanceof List) {
+            } else if(object instanceof Collection) {
                 final JSONArray array = new JSONArray();
 
-                final List<?> list = (List<?>) object;
+                final Collection<?> list = (Collection<?>) object;
                 for(Object o:list) {
                     array.put(write(o));
                 }
@@ -470,6 +470,7 @@ public class DataTools {
 
         private final String mimeType = MimeType.get("xml");
 
+        @Override
         public void write(final Writer writer, final Object object) throws IOException {
             //final String key = map.keySet().iterator().next().toString();
             //final Object value = map.get(key);
@@ -491,6 +492,14 @@ public class DataTools {
                     xmlOutput.setFormat(Format.getCompactFormat());
                     xmlOutput.output(document, writer);
                 }
+            } else if(object instanceof Collection) {
+                final Element root = new Element("data");
+                write(root, object);
+
+                final Document document = new Document(root);
+                final XMLOutputter xmlOutput = new XMLOutputter();
+                xmlOutput.setFormat(Format.getCompactFormat());
+                xmlOutput.output(document, writer);
             } else {
                 writer.write(object.toString());
             }
@@ -505,25 +514,29 @@ public class DataTools {
                     write(element, e.getValue());
                     parent.addContent(element);
                 }
-            } else if(object instanceof List) {
-                final List<?> list = (List<?>) object;
+            } else if(object instanceof Collection) {
+                final Collection<?> list = (Collection<?>) object;
 
                 for(Object o:list) {
-                    String key;
+                    String key = null;
                     if(o instanceof AnnotedMap) {
-                        key = ((AnnotedMap)o).name;
-                    } else if(o instanceof String) {
-                        key = "string";
-                    } else if(o instanceof Integer) {
-                        key = "integer";
-                    } else if(o instanceof Float) {
-                        key = "float";
-                    } else if(o instanceof Long) {
-                        key = "long";
-                    } else if(o instanceof Double) {
-                        key = "double";
-                    } else {
-                        key = o.getClass().getName();
+                        key = ((AnnotedMap)o).name.toLowerCase();
+                    }
+
+                    if(key == null || key.length() == 0) {
+                        if(o instanceof String) {
+                            key = "string";
+                        } else if(o instanceof Integer) {
+                            key = "integer";
+                        } else if(o instanceof Float) {
+                            key = "float";
+                        } else if(o instanceof Long) {
+                            key = "long";
+                        } else if(o instanceof Double) {
+                            key = "double";
+                        } else {
+                            key = o.getClass().getSimpleName();
+                        }
                     }
 
                     Element e = new Element(key);

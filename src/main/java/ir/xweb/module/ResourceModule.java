@@ -647,6 +647,25 @@ public class ResourceModule extends Module {
         return new Long(value);
     }
 
+    public String applyXmlTemplate(
+            final String template,
+            final String language,
+            final String xml) {
+        // find XSLT template
+        final File xsltFile = getTemplateFile(template, language, ".xsl");
+        if(xsltFile != null) {
+            try {
+                final String html = applyXslt(xsltFile, xml);
+
+                return html;
+            } catch (Exception ex) {
+                logger.error("Error to apply XSLT template: " + xsltFile);
+            }
+        }
+
+        return null;
+    }
+
     public String applyTemplate(
             final String template,
             final String language,

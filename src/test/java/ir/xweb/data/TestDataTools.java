@@ -58,7 +58,7 @@ public class TestDataTools {
     }
 
     @Test
-    public void testWriterXml() throws IOException {
+    public void testWriterXml1() throws IOException {
         final User user = new User();
         user.email = "ha.hamed@gmail.com";
 
@@ -69,6 +69,18 @@ public class TestDataTools {
 
         final DataTools d = new DataTools();
         System.out.println(d.write("xml", null, map));
+    }
+
+    @Test
+    public void testWriterXml2() throws IOException {
+        final List list = new ArrayList();
+        list.add("item1");
+        list.add("item2");
+        list.add("item3");
+        list.add(Collections.singletonMap("key", "value"));
+
+        final DataTools d = new DataTools();
+        System.out.println(d.write("xml", null, list));
     }
 
     @Test
