@@ -93,8 +93,12 @@ public class Module {
 		                
 		                params.put(fieldname, fieldvalue);
 		            } else {
-		                String fieldname = item.getFieldName();
-		            	files.put(fieldname, item);
+                        final String filename = item.getName();
+                        /** FormData for HTML5 will send files but with empty files name! **/
+                        if(filename != null && filename.length() > 0) {
+                            String fieldname = item.getFieldName();
+                            files.put(fieldname, item);
+                        }
 		            }
 		        }
 		    } catch (FileUploadException e) {
