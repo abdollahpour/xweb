@@ -35,7 +35,7 @@ public class Manager {
 	
 	private final static Logger logger = LoggerFactory.getLogger("Manager");
 
-    private final static String VALIDATOR_NAME = "[a-zA-Z0-9_]{1,30}";
+    private final static String DEFAULT_PEROPERTOES_PERFIX = "default.";
 
 	private final LinkedHashMap<String, Module> modules = new LinkedHashMap<String, Module>();
 
@@ -125,6 +125,14 @@ public class Manager {
                     }
 
                     final Map<String, String> properties = new HashMap<String, String>();
+
+                    // add default parameters first. These parameters can override by module properties
+                    for(Map.Entry<String, String> e:this.properties.entrySet()) {
+                        if(e.getKey().startsWith(DEFAULT_PEROPERTOES_PERFIX)) {
+                            properties.put(e.getKey().substring(DEFAULT_PEROPERTOES_PERFIX.length()), e.getValue());
+                        }
+                    }
+
                     final Element propertiesElement = model.getChild("properties");
                     if(propertiesElement != null) {
                         final List<?> propertyElements = propertiesElement.getChildren("property");
