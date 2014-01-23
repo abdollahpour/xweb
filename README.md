@@ -21,8 +21,15 @@ Let's look at the main features of XWeb framework:
 * Wiki: Every simple and small wiki system. Support Markdom and Mediawiki
 * AND MANY OTHER COOL FEATURES!
 
+## Install
+Because XWeb is not available in maven repository, you need to clone and install it in your local maven repository
+```bash
+$ git clone git@github.com:abdollahpour/xweb.git
+$ mvn clean install -Dmaven.test.skip=true
+```
+
 ## How can I use it?
-[See Wiki to make your first XWeb application](https://github.com/abdollahpour/xweb/wiki)
+[See Wiki to make your first XWeb applicationn](https://github.com/abdollahpour/xweb/wiki)
 
 ## HTML5 client
 You can also simply create HTML5 client for you application
