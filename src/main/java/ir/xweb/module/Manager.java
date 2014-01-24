@@ -113,10 +113,14 @@ public class Manager {
                         for(Object o2:roleElements) {
                             final Element role = (Element)o2;
 
+                            /* value is deprecated */
+                            final String value = role.getAttributeValue("value");
+                            final String _for = role.getAttributeValue("for");
+
                             final Role r = new Role(
                                     role.getAttributeValue("param"),
                                     role.getAttributeValue("eval"),
-                                    role.getAttributeValue("value"),
+                                    _for == null ? value : _for,
                                     role.getAttributeValue("definite")
                             );
 
