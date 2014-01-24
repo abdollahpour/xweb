@@ -1,3 +1,9 @@
+/**
+ * XWeb project
+ * https://github.com/abdollahpour/xweb
+ * Hamed Abdollahpour - 2013
+ */
+
 package ir.xweb.module;
 
 import ir.xweb.data.DataTools;
@@ -8,11 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-/**
- * Please use DataModule instead
- */
-@Deprecated
-public class PagingModule extends Module {
+public class DataModule extends Module {
 
     public final static String PARAM_PAGE_SIZE = "size";
 
@@ -26,9 +28,11 @@ public class PagingModule extends Module {
 
     private final String format;
 
+    private ResourceModule resourceModule;
+
     private final DataTools dataTools = new DataTools();
 
-    public PagingModule(
+    public DataModule(
             final Manager manager,
             final ModuleInfo info,
             final ModuleParam properties) throws ModuleException {
@@ -37,6 +41,51 @@ public class PagingModule extends Module {
 
         pageSize = properties.getInt(PARAM_PAGE_SIZE, DEFAULT_PAGE_SIZE);
         format = properties.getString(PARAM_PAGE_FORMAT, DEFAULT_PAGE_FORMAT);
+    }
+
+    public void write(
+            final HttpServletResponse response,
+            final String format,
+            final Object object) throws IOException {
+        write(response, format, null, null, null, object);
+    }
+
+    public void write(
+            final HttpServletResponse response,
+            final String format,
+            final String role,
+            final String template,
+            final Object object) throws IOException {
+        write(response, format, role, template, null, object);
+    }
+
+    public void write(
+            final HttpServletResponse response,
+            final String format,
+            final String role,
+            final String template,
+            final String language,
+            final Object object) throws IOException {
+
+        if("html".equals(format)) {
+            if(template == null) {
+                throw new IllegalArgumentException("Template null, you need template for HTML format");
+            }
+            if(resourceModule == null) {
+                resourceModule = getManager().getModuleOrThrow(ResourceModule.class);
+            }
+
+            final String xml = dataTools.write("xml", role, object);
+            final String html = resourceModule.applyXmlTemplate(template, language, xml);
+
+            if(!response.containsHeader("Content-Type")) {
+                response.addHeader("Content-Type", "text/html");
+                response.setCharacterEncoding("UTF-8");
+            }
+            response.getWriter().write(html);
+        } else {
+            dataTools.write(response, format, role, object);
+        }
     }
 
     public void writePage(
