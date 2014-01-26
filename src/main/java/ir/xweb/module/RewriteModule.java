@@ -302,7 +302,6 @@ public class RewriteModule extends Module {
             final HttpServletResponse response,
             final FilterChain chain) throws IOException, ServletException {
 
-        System.out.println("request1: " + request.getRequestURI());
         UrlRewriter urlRewriter = getUrlRewriter(request, response, chain);
 
         //final HttpServletRequest hsRequest = (HttpServletRequest) request;
@@ -314,9 +313,7 @@ public class RewriteModule extends Module {
         if (urlRewriter != null) {
 
             // process the request
-            System.out.println("request2: " + request.getRequestURI());
             requestRewritten = urlRewriter.processRequest(request, urlRewriteWrappedResponse, chain);
-            System.out.println("request3: " + request.getRequestURI());
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("urlRewriter engine not loaded ignoring request (could be a conf file problem)");
