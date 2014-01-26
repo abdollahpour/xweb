@@ -21,17 +21,17 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 public class Module {
 
-    private Manager manager;
+    private final Manager manager;
 
-	private ModuleInfo info;
+	private final ModuleInfo info;
 
-    private ModuleParam properties;
+    private final ModuleParam properties;
 
-    private RoleManager roleManager;
+    private final RoleManager roleManager;
 
     private Map<String, ModuleInfoValidator> validators = new HashMap<String, ModuleInfoValidator>();
 
-    private List<String> requireParams;
+    private final List<String> requireParams;
 
     public Module(Manager manager, ModuleInfo info, ModuleParam properties) throws ModuleException {
         if(manager == null) {

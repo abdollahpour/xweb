@@ -56,7 +56,7 @@ public class XWebFilter implements Filter {
                 if(request instanceof HttpServletRequest) {
                     if(response instanceof HttpServletResponse) {
                         try {
-                            Chain chain = new Chain();
+                            final Chain chain = new Chain();
                             chain.chainedRequest = req;
                             chain.chainedResponse = resp;
 

@@ -205,12 +205,10 @@ public class AuthenticationModule extends Module {
 
     @Override
     public void doFilter(
-            ServletContext context,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws IOException, ServletException {
-
-        HttpSession session = request.getSession();
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final FilterChain filterChain) throws IOException, ServletException {
 
         XWebUser user = getUser(request);
 
@@ -229,28 +227,10 @@ public class AuthenticationModule extends Module {
             throw new IOException(ex);
         }
 
-        // we don't care about context path, so we trunk it
-        final String path = uri.getPath().substring(request.getContextPath().length());
-
-        if(uri.equals(redirect)){
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-
-
-        if(check != null && !path.matches(check)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        if(ignore != null && path.matches(ignore)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-
-        // login with cookie
+        /*
+        * Login with Cookie
+        * No matter it's defined with check pattern or not, we try to login with cookie first!
+         */
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
             logger.debug("Try to login with cookie. UUID: " + uuid);
@@ -263,6 +243,24 @@ public class AuthenticationModule extends Module {
             } else {
                 logger.debug("UUID not valid for login (maybe expired: " + uuid);
             }
+        }
+
+        // we don't care about context path, so we trunk it
+        final String path = uri.getPath().substring(request.getContextPath().length());
+
+        if(uri.equals(redirect)){
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if(check != null && !path.matches(check)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if(ignore != null && path.matches(ignore)) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
         String header = request.getHeader("Authorization");
