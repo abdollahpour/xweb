@@ -29,11 +29,15 @@ public class Module {
 
     private final RoleManager roleManager;
 
-    private Map<String, ModuleInfoValidator> validators = new HashMap<String, ModuleInfoValidator>();
-
     private final List<String> requireParams;
 
-    public Module(Manager manager, ModuleInfo info, ModuleParam properties) throws ModuleException {
+    private Map<String, ModuleInfoValidator> validators = new HashMap<String, ModuleInfoValidator>();
+
+    public Module(
+            final Manager manager,
+            final ModuleInfo info,
+            final ModuleParam properties) throws ModuleException {
+
         if(manager == null) {
             throw new IllegalArgumentException("null manager");
         }
@@ -66,15 +70,15 @@ public class Module {
 	}
 	
 	public void process(
-			ServletContext context, 
-			HttpServletRequest request, 
-			HttpServletResponse response,
-            String role) throws IOException {
+			final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final String role) throws IOException {
 		
-		String contentType = request.getHeader("Content-Type");
-		
-		HashMap<String, String> params = new HashMap<String, String>();
-		HashMap<String, FileItem> files = new HashMap<String, FileItem>();
+		final String contentType = request.getHeader("Content-Type");
+
+        final HashMap<String, String> params = new HashMap<String, String>();
+        final HashMap<String, FileItem> files = new HashMap<String, FileItem>();
 		
 		if(contentType != null && contentType.indexOf("multipart/form-data") > -1) {
 			try {
@@ -90,7 +94,7 @@ public class Module {
 
                         fieldname = new String (fieldname.getBytes ("iso-8859-1"), "UTF-8");
                         fieldvalue = new String (fieldvalue.getBytes ("iso-8859-1"), "UTF-8");
-		                
+
 		                params.put(fieldname, fieldvalue);
 		            } else {
                         final String filename = item.getName();
@@ -112,7 +116,7 @@ public class Module {
 			params.put(name, value);
 		}
 
-        ModuleParam moduleParam = new ModuleParam(params);
+        final ModuleParam moduleParam = new ModuleParam(params);
 
         // validate params
         List<String> requires = new ArrayList<String>(requireParams);
@@ -162,6 +166,7 @@ public class Module {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws IOException, ServletException {
+
         filterChain.doFilter(request, response);
     }
 

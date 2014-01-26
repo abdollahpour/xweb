@@ -219,7 +219,7 @@ public class AuthenticationModule extends Module {
         }
 
         // check for permission patterns
-        URI uri = null;
+        URI uri;
         try {
             uri = new URI(request.getRequestURI());
         } catch (Exception ex) {

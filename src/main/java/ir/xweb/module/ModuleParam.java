@@ -1,3 +1,9 @@
+/**
+ * XWeb project
+ * Created by Hamed Abdollahpour
+ * https://github.com/abdollahpour/xweb
+ */
+
 package ir.xweb.module;
 
 import java.io.File;
@@ -7,53 +13,101 @@ import java.util.*;
 
 public class ModuleParam implements Map<String, String> {
 
-    private Map<String, String> data;
+    private final Map<String, String> data;
 
-    public ModuleParam(Map<String, String> data) {
-        this.data = data;
+    private final List<String> defaults;
+
+    protected ModuleParam() {
+        this(null, null);
+    }
+
+    protected ModuleParam(final Map<String, String> data) {
+        this(data, null);
+    }
+
+    protected ModuleParam(final Map<String, String> data, final List<String> defaults) {
+        this.data = data != null ? data : new HashMap<String, String>();
+        this.defaults = defaults != null ? defaults : new ArrayList<String>();
+    }
+
+    protected void put(final String name, final String value, final boolean isDefault) {
+        final String oldValue = data.put(name, value);
+        if(isDefault) {
+            defaults.add(name);
+        } else if(oldValue != null) {
+            defaults.remove(name);
+        }
     }
 
     public String get(String name, String def) {
         return getString(name, def);
     }
 
-    public String getString(String name, String def) {
+    public String getString(final String name, final String def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : s;
     }
 
-    public Integer getInt(String name, Integer def) {
+    public String getString(final String name) {
+        return getString(name, null);
+    }
+
+    public Integer getInt(final String name, final Integer def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Integer.parseInt(s);
     }
 
-    public Float getFloat(String name, Float def) {
+    public Integer getInt(final String name) {
+        return getInt(name, null);
+    }
+
+    public Float getFloat(final String name, final Float def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Float.parseFloat(s);
     }
 
-    public Double getDouble(String name, Double def) {
+    public Float getFloat(final String name) {
+        return getFloat(name, null);
+    }
+
+    public Double getDouble(final String name, final Double def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Double.parseDouble(s);
     }
 
-    public Long getLong(String name, Long def) {
+    public Double getDouble(final String name) {
+        return getDouble(name, null);
+    }
+
+    public Long getLong(final String name, final Long def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Long.parseLong(s);
     }
 
-    public Byte getByte(String name, Byte def) {
+    public Long getLong(final String name) {
+        return getLong(name, null);
+    }
+
+    public Byte getByte(final String name, final Byte def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Byte.parseByte(s);
     }
 
-    public Boolean getBoolean(String name, Boolean def) {
+    public Byte getByte(final String name) {
+        return getByte(name, null);
+    }
+
+    public Boolean getBoolean(final String name, final Boolean def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Boolean.parseBoolean(s);
     }
 
-    public URL getURL(String name, URL def) {
-        String s = data.get(name);
+    public Boolean getBoolean(final String name) {
+        return getBoolean(name, null);
+    }
+
+    public URL getURL(final String name, final URL def) throws IllegalArgumentException {
+        final String s = data.get(name);
         try {
             return (s == null || s.length() == 0) ? def : new URL(s);
         } catch (Exception ex) {
@@ -61,17 +115,16 @@ public class ModuleParam implements Map<String, String> {
         }
     }
 
-    public File getFile(String name, File def) {
+    public File getFile(final String name, final File def) {
         String path = getString(name, null);
         return path == null ? def : new File(path);
     }
 
-    public File getFile(String name, String defPath) {
-        String path = getString(name, defPath);
-        return path == null ? null : new File(path);
+    public File getFile(final String name) {
+        return getFile(name, null);
     }
 
-    public Locale getLocale(String name, Locale def) {
+    public Locale getLocale(final String name, final Locale def) {
         String s = data.get(name);
         if((s == null || s.length() == 0)) {
             return def;
@@ -82,6 +135,10 @@ public class ModuleParam implements Map<String, String> {
             throw new IllegalArgumentException("Locale is not valid. Name:" + name + ", Value: " + s);
         }
         return locale;
+    }
+
+    public Locale getLocale(final String name) {
+        return getLocale(name, null);
     }
 
     public <T> T get(Class<T> clazz, String name) {
@@ -139,7 +196,7 @@ public class ModuleParam implements Map<String, String> {
         }
     }
 
-    public ValidModuleParam validate2(String name, Collection<?> values, boolean required) throws ModuleException {
+    /*public ValidModuleParam validate2(String name, Collection<?> values, boolean required) throws ModuleException {
         if(name == null) {
             throw new IllegalArgumentException("null name");
         }
@@ -155,7 +212,7 @@ public class ModuleParam implements Map<String, String> {
         }
 
         return new ValidModuleParam(data, name);
-    }
+    }*/
 
     public ValidModuleParam exists(String name) throws ModuleException {
         return validate(name, null, true);
@@ -176,7 +233,7 @@ public class ModuleParam implements Map<String, String> {
             }
         }
 
-        return new ValidModuleParam(data, name);
+        return new ValidModuleParam(data, defaults, name);
     }
 
     @Override
@@ -235,6 +292,10 @@ public class ModuleParam implements Map<String, String> {
     @Override
     public Set<String> keySet() {
         return data.keySet();
+    }
+
+    public boolean isDefaultProperties(final String name) {
+        return defaults.contains(name);
     }
 
     @Override

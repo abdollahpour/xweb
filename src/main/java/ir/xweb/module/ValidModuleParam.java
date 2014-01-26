@@ -1,17 +1,16 @@
 package ir.xweb.module;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public class ValidModuleParam extends ModuleParam {
 
-    //private Map<String, String> data = null;
+    private final String name;
 
-    private String name;
-
-    protected ValidModuleParam(Map<String, String> data, String name) {
-        super(data);
+    protected ValidModuleParam(final Map<String, String> data, final List<String> defaults, final String name) {
+        super(data, defaults);
         this.name = name;
     }
 
@@ -92,7 +91,7 @@ public class ValidModuleParam extends ModuleParam {
     }
 
     public Boolean getBoolean() {
-        return getBoolean(null);
+        return getBoolean(name, null);
     }
 
 }

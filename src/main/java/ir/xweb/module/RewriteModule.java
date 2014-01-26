@@ -176,18 +176,20 @@ public class RewriteModule extends Module {
         Element urlrewrite = new Element("urlrewrite");
 
         for(String key:pro.keySet()) {
-            String value = pro.getString(key, null);
+            if(!pro.isDefaultProperties(key)) {
+                String value = pro.getString(key, null);
 
-            Element rule = new Element("rule");
-            urlrewrite.addContent(rule);
+                Element rule = new Element("rule");
+                urlrewrite.addContent(rule);
 
-            Element from = new Element("from");
-            from.setText(key);
-            rule.addContent(from);
+                Element from = new Element("from");
+                from.setText(key);
+                rule.addContent(from);
 
-            Element to = new Element("to");
-            to.setText(value);
-            rule.addContent(to);
+                Element to = new Element("to");
+                to.setText(value);
+                rule.addContent(to);
+            }
         }
 
         Document doc = new Document(urlrewrite);
@@ -300,6 +302,7 @@ public class RewriteModule extends Module {
             final HttpServletResponse response,
             final FilterChain chain) throws IOException, ServletException {
 
+        System.out.println("request1: " + request.getRequestURI());
         UrlRewriter urlRewriter = getUrlRewriter(request, response, chain);
 
         //final HttpServletRequest hsRequest = (HttpServletRequest) request;
@@ -311,8 +314,9 @@ public class RewriteModule extends Module {
         if (urlRewriter != null) {
 
             // process the request
+            System.out.println("request2: " + request.getRequestURI());
             requestRewritten = urlRewriter.processRequest(request, urlRewriteWrappedResponse, chain);
-
+            System.out.println("request3: " + request.getRequestURI());
         } else {
             if (logger.isDebugEnabled()) {
                 logger.debug("urlRewriter engine not loaded ignoring request (could be a conf file problem)");

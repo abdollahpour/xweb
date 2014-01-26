@@ -35,11 +35,11 @@ public class Manager {
 	
 	private final static Logger logger = LoggerFactory.getLogger("Manager");
 
-    private final static String DEFAULT_PEROPERTOES_PERFIX = "default.";
+    private final static String DEFAULT_PROPERTIES_PREFIX = "default.";
 
 	private final LinkedHashMap<String, Module> modules = new LinkedHashMap<String, Module>();
 
-    private final Map<String, String> properties = new HashMap<String, String>();
+    private final Map<String, String> generalProperties = new HashMap<String, String>();
 
     private final ServletContext context;
 
@@ -60,7 +60,7 @@ public class Manager {
             final Document document = builder.build(in);
             final Element root = document.getRootElement();
 
-            Map<String, String> env = getEnvMap(properties);
+            Map<String, String> env = getEnvMap(generalProperties);
 
             final Element envPropertiesElement = root.getChild("properties");
             if(envPropertiesElement != null) {
@@ -70,16 +70,16 @@ public class Manager {
                     String key = property.getAttributeValue("key");
                     String value = property.getAttributeValue("value");
                     if(value != null) {
-                        properties.put(key, value);
+                        generalProperties.put(key, value);
                     } else {
                         String text = applyEnvironmentVariable(env, property.getText());
-                        properties.put(key, text);
+                        generalProperties.put(key, text);
                     }
                 }
             }
 
-            // Update environment variables with new system properties
-            env = getEnvMap(properties);
+            // Update environment variables with new system generalProperties
+            env = getEnvMap(generalProperties);
 
             Element modulesElement = root.getChild("modules");
             if(modulesElement != null) {
@@ -128,12 +128,13 @@ public class Manager {
                         }
                     }
 
-                    final Map<String, String> properties = new HashMap<String, String>();
+                    //final Map<String, String> properties = new HashMap<String, String>();
+                    final ModuleParam properties = new ModuleParam();
 
-                    // add default parameters first. These parameters can override by module properties
-                    for(Map.Entry<String, String> e:this.properties.entrySet()) {
-                        if(e.getKey().startsWith(DEFAULT_PEROPERTOES_PERFIX)) {
-                            properties.put(e.getKey().substring(DEFAULT_PEROPERTOES_PERFIX.length()), e.getValue());
+                    // add default parameters first. These parameters can override by module generalProperties
+                    for(Map.Entry<String, String> e:this.generalProperties.entrySet()) {
+                        if(e.getKey().startsWith(DEFAULT_PROPERTIES_PREFIX)) {
+                            properties.put(e.getKey().substring(DEFAULT_PROPERTIES_PREFIX.length()), e.getValue(), true);
                         }
                     }
 
@@ -162,8 +163,7 @@ public class Manager {
 
                         final Class<?> c = Class.forName(className, false, classLoader);
                         final Constructor<?> cons = c.getConstructor(Manager.class, ModuleInfo.class, ModuleParam.class);
-                        final Module module = (Module) cons.newInstance(this, info, new ModuleParam(properties));
-
+                        final Module module = (Module) cons.newInstance(this, info, properties);
 
                         // Add schedules now
                         final Element schedulesElement = model.getChild("schedules");
@@ -243,7 +243,7 @@ public class Manager {
 	}
 
     public String getProperty(final String name) {
-        return properties == null ? null : properties.get(name);
+        return generalProperties == null ? null : generalProperties.get(name);
     }
 	
 	public Map<String, Module> getModules() {
@@ -312,7 +312,7 @@ public class Manager {
 
         env.put("xweb.root", context.getRealPath("/"));
 
-        // add global properties
+        // add global generalProperties
         env.putAll(properties);
 
         return env;
