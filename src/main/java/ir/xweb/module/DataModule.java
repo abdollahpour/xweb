@@ -16,9 +16,9 @@ import java.util.List;
 
 public class DataModule extends Module {
 
-    public final static String PARAM_PAGE_SIZE = "size";
+    public final static String PARAM_PAGE_SIZE = "paging.size";
 
-    public final static String PARAM_PAGE_FORMAT = "format";
+    public final static String PARAM_PAGE_FORMAT = "paging.format";
 
     public final static int DEFAULT_PAGE_SIZE = 100;
 
@@ -88,25 +88,28 @@ public class DataModule extends Module {
         }
     }
 
-    public void writePage(
+    /*public void writePage(
             final HttpServletResponse response,
             final ModuleParam params,
             final List<?> objects) throws IOException {
         writePage(response, params, objects, null);
-    }
+    }*/
 
     public void writePage(
             final HttpServletResponse response,
             final ModuleParam params,
-            final List<?> objects,
-            final String role) throws IOException {
+            final String format,
+            final String role,
+            final String template,
+            final String language,
+            final List<?> objects) throws IOException {
 
-        final int page = params.getInt("page", 0);
+        final int page = params.getInt("page", 1);
         final int size = params.getInt("size", this.pageSize);
-        final String format = params.getString("format", this.format);
+        //final String format = params.getString("format", this.format);
 
-        final int s = Math.min(Math.max(page, 0) * size, objects.size());
-        final int l = Math.max(Math.min(size, 0), objects.size() - s);
+        final int from = Math.min(Math.max(page - 1, 0) * size, objects.size());
+        final int to = Math.min(size, objects.size() - from) + from;
 
         int count = objects.size() / size;
         if(count * size < objects.size()) {
@@ -114,34 +117,40 @@ public class DataModule extends Module {
         }
 
         final List<Integer> pages = new ArrayList<Integer>();
-        pages.add(0);
+        pages.add(1);
         if(count < 4) {
-            for(int i=1; i<count; i++) {
+            for(int i=2; i<=count; i++) {
                 pages.add(i);
             }
         }
         else {
-            int center = count / 2;
-            if(center < 2) {
-                center = 2;
+            int center = Math.min(Math.max(3, page), count - 2);
+
+            if(center > 3) {
+                pages.add(0);
             }
 
             pages.add(center - 1);
             pages.add(center);
             pages.add(center + 1);
-            pages.add(count - 1);
+
+            if(center < count - 2) {
+                pages.add(0);
+            }
+
+            pages.add(count);
         }
 
         final HashMap<Object, Object> results = new HashMap<Object, Object>();
-        results.put("start", s);
+        results.put("start", from);
         results.put("size", size);
-        results.put("data", objects.subList(s, s + l));
-        results.put("more", objects.size() > s + l);
+        results.put("data", objects.subList(from, to));
+        results.put("more", objects.size() < to);
         results.put("page", page);
         results.put("pages", pages);
         results.put("count", count);
 
-        dataTools.write(response, format, role, results);
+        write(response, format, role, template, language, results);
     }
 
 }
