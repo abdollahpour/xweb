@@ -142,10 +142,13 @@ public class DataModule extends Module {
         }
 
         final HashMap<Object, Object> results = new HashMap<Object, Object>();
-        results.put("start", from);
-        results.put("size", size);
+        results.put("from", from + 1);
+        results.put("to", to);
+        results.put("size", objects.size());
+
         results.put("data", objects.subList(from, to));
         results.put("more", objects.size() < to);
+
         results.put("page", page);
         results.put("pages", pages);
         results.put("count", count);
