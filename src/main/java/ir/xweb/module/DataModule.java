@@ -98,6 +98,22 @@ public class DataModule extends Module {
     public void writePage(
             final HttpServletResponse response,
             final ModuleParam params,
+            final String role,
+            final List<?> objects) throws IOException {
+
+        writePage(
+                response,
+                params,
+                params.getString("format", this.format),
+                role,
+                params.getString("template", null),
+                params.getString("language", null),
+                objects);
+    }
+
+    public void writePage(
+            final HttpServletResponse response,
+            final ModuleParam params,
             final String format,
             final String role,
             final String template,
