@@ -102,8 +102,7 @@ public class ResourceModule extends Module {
         this.tempDirPath = properties.getString(PROPERTY_TEMP_DIR, null);
 
         // We don't wanna create temp dir when we don't need it
-        this.dataDir = properties.containsKey(PROPERTY_DATA_DIR) ?
-                properties.getFile(PROPERTY_DATA_DIR, (File)null) : getTempDirFromSystem();
+        this.dataDir = properties.getFile(PROPERTY_DATA_DIR, getTempDirFromSystem());
         if((!this.dataDir.exists() && !this.dataDir.mkdirs()) || !this.dataDir.canWrite()) {
             throw new IllegalArgumentException("Data is not accessible: " + this.dataDir);
         }
