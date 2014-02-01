@@ -10,6 +10,7 @@ import java.io.File;
 import java.lang.String;
 import java.net.URL;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class ModuleParam implements Map<String, String> {
 
@@ -52,6 +53,15 @@ public class ModuleParam implements Map<String, String> {
         return getString(name, null);
     }
 
+    public String[] getStrings(final String name, final char separator) {
+        final String value = this.data.get(name);
+        if(value != null && value.length() > 0) {
+            final String[] strings = value.split(Pattern.quote(Character.toString(separator)));
+            return strings;
+        }
+        return new String[0];
+    }
+
     public Integer getInt(final String name, final Integer def) {
         String s = data.get(name);
         return (s == null || s.length() == 0) ? def : Integer.parseInt(s);
@@ -86,6 +96,15 @@ public class ModuleParam implements Map<String, String> {
 
     public Long getLong(final String name) {
         return getLong(name, null);
+    }
+
+    public Long[] getLongs(final String name, final char separator) {
+        final String[] strings = getStrings(name, separator);
+        final Long[] longs = new Long[strings.length];
+        for(int i=0; i<strings.length; i++) {
+            longs[i] = Long.parseLong(strings[i]);
+        }
+        return new Long[0];
     }
 
     public Byte getByte(final String name, final Byte def) {
