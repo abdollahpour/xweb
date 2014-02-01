@@ -104,7 +104,7 @@ public class ModuleParam implements Map<String, String> {
         for(int i=0; i<strings.length; i++) {
             longs[i] = Long.parseLong(strings[i]);
         }
-        return new Long[0];
+        return longs;
     }
 
     public Byte getByte(final String name, final Byte def) {
