@@ -24,11 +24,13 @@ public class LogModule extends Module {
 
     private final static Logger logger = LoggerFactory.getLogger(LogModule.class);
 
+    private final static String PARAM_LOG_FILE = "file.log";
+
     private final static String SESSION_LAST_POSITION = "module_log_position_";
 
     private final static int MAX_READ = 30 * 1024;
 
-    private File log;
+    private final File log;
 
     public LogModule(
             final Manager manager,
@@ -37,8 +39,7 @@ public class LogModule extends Module {
 
         super(manager, info, properties);
 
-        String path = properties.getString("path", null);
-        log = new File(path);
+        log = properties.getFile(PARAM_LOG_FILE);
     }
 
     @Override
