@@ -163,7 +163,8 @@ public class DataModule extends Module {
         results.put("size", objects.size());
 
         results.put("data", objects.subList(from, to));
-        results.put("more", objects.size() < to);
+        //System.out.println(from + " " + to + " " + objects.size());
+        results.put("more", to != objects.size());
 
         results.put("page", page);
         results.put("pages", pages);

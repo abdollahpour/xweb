@@ -14,6 +14,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import ir.xweb.util.Tools;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -95,7 +96,8 @@ public class Module {
                         fieldname = new String (fieldname.getBytes ("iso-8859-1"), "UTF-8");
                         fieldvalue = new String (fieldvalue.getBytes ("iso-8859-1"), "UTF-8");
 
-		                params.put(fieldname, fieldvalue);
+                        final String old = params.get(fieldname);
+                        params.put(fieldname, old == null ? fieldvalue : old + "," + fieldvalue);
 		            } else {
                         final String filename = item.getName();
                         /** FormData for HTML5 will send files but with empty files name! **/
@@ -108,12 +110,12 @@ public class Module {
 		    } catch (FileUploadException e) {
 		    }
 		}
-		
-		Enumeration<?> names = request.getParameterNames();
+
+        final Enumeration<?> names = request.getParameterNames();
 		while(names.hasMoreElements()) {
-			String name = names.nextElement().toString();
-			String value = request.getParameter(name);
-			params.put(name, value);
+			final String name = names.nextElement().toString();
+            final String[] value = request.getParameterValues(name);
+			params.put(name, Tools.implode(Arrays.asList(value), ","));
 		}
 
         final ModuleParam moduleParam = new ModuleParam(params);
@@ -122,7 +124,7 @@ public class Module {
         List<String> requires = new ArrayList<String>(requireParams);
 
         for(String name:params.keySet()) {
-            ModuleInfoValidator validator = validators.get(name);
+            final ModuleInfoValidator validator = validators.get(name);
             if(validator != null) {
                 moduleParam.validate(name, validator.getRegex(), validator.isRequire());
                 requires.remove(name);
