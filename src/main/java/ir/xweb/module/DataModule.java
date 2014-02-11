@@ -134,7 +134,7 @@ public class DataModule extends Module {
 
         final List<Integer> pages = new ArrayList<Integer>();
         pages.add(1);
-        if(count < 4) {
+        if(count < 5) {
             for(int i=2; i<=count; i++) {
                 pages.add(i);
             }
@@ -169,6 +169,14 @@ public class DataModule extends Module {
         results.put("page", page);
         results.put("pages", pages);
         results.put("count", count);
+
+        // these parameters just reply back to response
+        if(params.containsKey("by")) {
+            results.put("by", params.getString("by"));
+        }
+        if(params.containsKey("for")) {
+            results.put("for", params.getString("for"));
+        }
 
         write(response, format, role, template, language, results);
     }
