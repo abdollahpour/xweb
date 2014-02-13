@@ -171,11 +171,14 @@ public class DataModule extends Module {
         results.put("count", count);
 
         // these parameters just reply back to response
-        if(params.containsKey("by")) {
+        if(params.hasValueFor("by")) {
             results.put("by", params.getString("by"));
         }
-        if(params.containsKey("for")) {
+        if(params.hasValueFor("for")) {
             results.put("for", params.getString("for"));
+        }
+        if(params.hasValueFor("with")) {
+            results.put("with", params.getString("with"));
         }
 
         write(response, format, role, template, language, results);
