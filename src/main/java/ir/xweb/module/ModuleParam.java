@@ -9,6 +9,7 @@ package ir.xweb.module;
 import java.io.File;
 import java.lang.String;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -158,6 +159,23 @@ public class ModuleParam implements Map<String, String> {
 
     public Locale getLocale(final String name) {
         return getLocale(name, null);
+    }
+
+    public Date getDate(final String name, final String pattern, final Date def) {
+        return getDate(name, pattern, null, def);
+    }
+
+    public Date getDate(final String name, final String pattern, final TimeZone zone, final Date def) {
+        final SimpleDateFormat format = new SimpleDateFormat(pattern);
+        if(zone != null) {
+            format.setTimeZone(zone);
+        }
+        final String s = data.get(name);
+        try {
+            return (s == null || s.length() == 0) ? def : format.parse(s);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Value for " + name + " (" + s + ") is not valid for " + pattern + " pattern", ex);
+        }
     }
 
     public <T> T get(Class<T> clazz, String name) {

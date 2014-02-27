@@ -1,9 +1,8 @@
 package ir.xweb.module;
 
 import java.net.URL;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ValidModuleParam extends ModuleParam {
 
@@ -92,6 +91,31 @@ public class ValidModuleParam extends ModuleParam {
 
     public Boolean getBoolean() {
         return getBoolean(name, null);
+    }
+
+    public Date getDate(final String pattern) {
+        return getDate(name, pattern, null, null);
+    }
+
+    public Date getDate(final String pattern, final Date def) {
+        return getDate(name, pattern, null, def);
+    }
+
+    public Date getDate(final String pattern, final TimeZone zone) {
+        return null;
+    }
+
+    public Date getDate(final String pattern, final TimeZone zone, final Date def) {
+        final SimpleDateFormat format = new SimpleDateFormat(pattern);
+        if(zone != null) {
+            format.setTimeZone(zone);
+        }
+        final String s = getString();
+        try {
+            return (s == null || s.length() == 0) ? def : format.parse(s);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException("Value for " + name + " (" + s + ") is not valid for " + pattern + " pattern", ex);
+        }
     }
 
 }
