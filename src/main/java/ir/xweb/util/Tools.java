@@ -99,75 +99,129 @@ public class Tools {
         }
     }
 
-    public static String getUrlParam(final String queryString, final String name) throws UnsupportedEncodingException {
-        Map<String, List<String>> params = parseQueryString(queryString);
-        List<String> values = params.get(name);
-        if(values != null && values.size() > 0) {
-            return values.get(0);
+    public static String getUrlParam(final String queryString, final String encoding, final String name) throws UnsupportedEncodingException {
+        final Map<String, String[]> params = parseQueryString(queryString, encoding);
+        final String[] values = params.get(name);
+        if(values != null && values.length > 0) {
+            return values[0];
         }
         return null;
     }
 
+    @Deprecated
     public static HashMap<String, List<String>> parseQueryString(String queryString) {
-        if (queryString == null) {
-            throw new IllegalArgumentException("null queryString");
+        final Map<String, String[]> params = parseQueryString(queryString, "utf-8");
+        final HashMap<String, List<String>> map = new HashMap<String, List<String>>(params.size());
+
+        for(Map.Entry<String, String[]> e:params.entrySet()) {
+            map.put(e.getKey(), Arrays.asList(e.getValue()));
         }
 
-        HashMap<String, List<String>> ht = new HashMap<String, List<String>>();
-        StringBuffer sb = new StringBuffer();
-        StringTokenizer st = new StringTokenizer(queryString, "&");
-        while (st.hasMoreTokens()) {
-            String pair = st.nextToken();
-            int pos = pair.indexOf('=');
-            if (pos == -1) {
-                // XXX
-                // should give more detail about the illegal argument
-                throw new IllegalArgumentException();
-            }
-            String key = parseName(pair.substring(0, pos), sb);
-            String val = parseName(pair.substring(pos+1, pair.length()), sb);
-
-            List<String> list = ht.get(key);
-            if (!ht.containsKey(key)) {
-                list = new ArrayList<String>();
-                ht.put(key, list);
-            }
-            list.add(val);
-        }
-        return ht;
+        return map;
     }
 
-    private static String parseName(String s, StringBuffer sb) {
-        sb.setLength(0);
-        for (int i = 0; i < s.length(); i++) {
-            char c = s.charAt(i);
-            switch (c) {
-                case '+':
-                    sb.append(' ');
-                    break;
-                case '%':
-                    try {
-                        sb.append((char) Integer.parseInt(s.substring(i+1, i+3),
-                                16));
-                        i += 2;
-                    } catch (NumberFormatException e) {
-                        // XXX
-                        // need to be more specific about illegal arg
-                        throw new IllegalArgumentException();
-                    } catch (StringIndexOutOfBoundsException e) {
-                        String rest  = s.substring(i);
-                        sb.append(rest);
-                        if (rest.length()==2)
-                            i++;
-                    }
+    public static Map<String,String[]> parseQueryString(
+            final String data,
+            final String encoding) {
 
-                    break;
-                default:
-                    sb.append(c);
-                    break;
+        if ((data != null) && (data.length() > 0)) {
+
+            final Map<String, String[]> map = new HashMap<String, String[]>();
+
+            // use the specified encoding to extract bytes out of the
+            // given string so that the encoding is not lost. If an
+            // encoding is not specified, let it use platform default
+            byte[] bytes = null;
+            try {
+                if (encoding == null) {
+                    bytes = data.getBytes();
+                } else {
+                    bytes = data.getBytes(encoding);
+                }
+                parseParameters(map, bytes, encoding);
+
+                return map;
+            } catch (UnsupportedEncodingException ex) {
+                throw new IllegalArgumentException(ex);
+            }
+
+        }
+
+        return Collections.emptyMap();
+    }
+
+    private static void parseParameters(
+            final Map<String,String[]> map,
+            final byte[] data,
+            final String encoding) throws UnsupportedEncodingException {
+
+        if (data != null && data.length > 0) {
+            int    ix = 0;
+            int    ox = 0;
+            String key = null;
+            String value = null;
+            while (ix < data.length) {
+                byte c = data[ix++];
+                switch ((char) c) {
+                    case '&':
+                        value = new String(data, 0, ox, encoding);
+                        if (key != null) {
+                            putMapEntry(map, key, value);
+                            key = null;
+                        }
+                        ox = 0;
+                        break;
+                    case '=':
+                        if (key == null) {
+                            key = new String(data, 0, ox, encoding);
+                            ox = 0;
+                        } else {
+                            data[ox++] = c;
+                        }
+                        break;
+                    case '+':
+                        data[ox++] = (byte)' ';
+                        break;
+                    case '%':
+                        data[ox++] = (byte)((convertHexDigit(data[ix++]) << 4)
+                                + convertHexDigit(data[ix++]));
+                        break;
+                    default:
+                        data[ox++] = c;
+                }
+            }
+            //The last value does not end in '&'.  So save it now.
+            if (key != null) {
+                value = new String(data, 0, ox, encoding);
+                putMapEntry(map, key, value);
             }
         }
-        return sb.toString();
+
+    }
+
+    private static byte convertHexDigit(final byte b) {
+        if ((b >= '0') && (b <= '9')) return (byte)(b - '0');
+        if ((b >= 'a') && (b <= 'f')) return (byte)(b - 'a' + 10);
+        if ((b >= 'A') && (b <= 'F')) return (byte)(b - 'A' + 10);
+        throw new IllegalArgumentException();
+    }
+
+    private static void putMapEntry(
+            final Map<String, String[]> map,
+            final String name,
+            final String value) {
+
+        String[] newValues = null;
+        final String[] oldValues = map.get(name);
+        if (oldValues == null) {
+            newValues = new String[1];
+            newValues[0] = value;
+        } else {
+            newValues = new String[oldValues.length + 1];
+            System.arraycopy(oldValues, 0, newValues, 0, oldValues.length);
+            newValues[oldValues.length] = value;
+        }
+        map.put(name, newValues);
     }
 
     /**
