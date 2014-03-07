@@ -338,9 +338,9 @@ public class Tools {
         return f;
     }
 
-    public static String implode(final Collection<String> c, final String glue) {
+    public static String implode(final Collection<?> c, final String glue) {
         final StringBuffer b = new StringBuffer();
-        for(String s:c) {
+        for(Object s:c) {
             if(b.length() != 0) {
                 b.append(glue);
             }

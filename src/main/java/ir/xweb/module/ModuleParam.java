@@ -6,6 +6,8 @@
 
 package ir.xweb.module;
 
+import ir.xweb.util.Tools;
+
 import java.io.File;
 import java.lang.String;
 import java.net.URL;
@@ -55,9 +57,15 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public String[] getStrings(final String name, final char separator) {
+        return getStrings(name, new char[]{separator});
+    }
+
+    public String[] getStrings(final String name, final char[] separator) {
         final String value = this.data.get(name);
         if(value != null && value.length() > 0) {
-            final String[] strings = value.split(Pattern.quote(Character.toString(separator)));
+            final String imploded = Tools.implode(Arrays.asList(separator), "");
+            final String regex = "[" + imploded.replaceAll("([^a-zA-z0-9])", "\\\\$1") + "]+";
+            final String[] strings = value.split(regex);
             return strings;
         }
         return new String[0];
@@ -99,13 +107,17 @@ public class ModuleParam implements Map<String, String> {
         return getLong(name, null);
     }
 
-    public Long[] getLongs(final String name, final char separator) {
+    public Long[] getLongs(final String name, final char[] separator) {
         final String[] strings = getStrings(name, separator);
         final Long[] longs = new Long[strings.length];
         for(int i=0; i<strings.length; i++) {
             longs[i] = Long.parseLong(strings[i]);
         }
         return longs;
+    }
+
+    public Long[] getLongs(final String name, final char separator) {
+        return getLongs(name, new char[]{separator});
     }
 
     public Byte getByte(final String name, final Byte def) {
