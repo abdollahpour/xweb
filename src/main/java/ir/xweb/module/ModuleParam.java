@@ -56,11 +56,7 @@ public class ModuleParam implements Map<String, String> {
         return getString(name, null);
     }
 
-    public String[] getStrings(final String name, final char separator) {
-        return getStrings(name, new char[]{separator});
-    }
-
-    public String[] getStrings(final String name, final char[] separator) {
+    public String[] getStrings(final String name, final char... separator) {
         final String value = this.data.get(name);
         if(value != null && value.length() > 0) {
             final String imploded = Tools.implode(Arrays.asList(separator), "");
@@ -107,17 +103,13 @@ public class ModuleParam implements Map<String, String> {
         return getLong(name, null);
     }
 
-    public Long[] getLongs(final String name, final char[] separator) {
+    public Long[] getLongs(final String name, final char... separator) {
         final String[] strings = getStrings(name, separator);
         final Long[] longs = new Long[strings.length];
         for(int i=0; i<strings.length; i++) {
             longs[i] = Long.parseLong(strings[i]);
         }
         return longs;
-    }
-
-    public Long[] getLongs(final String name, final char separator) {
-        return getLongs(name, new char[]{separator});
     }
 
     public Byte getByte(final String name, final Byte def) {

@@ -338,6 +338,18 @@ public class Tools {
         return f;
     }
 
+    public static String implode(final String glue, final Object... parts) {
+        final StringBuffer b = new StringBuffer();
+        for(Object s:parts) {
+            if(b.length() != 0) {
+                b.append(glue);
+            }
+            b.append(s);
+        }
+        return b.toString();
+    }
+
+    @Deprecated
     public static String implode(final Collection<?> c, final String glue) {
         final StringBuffer b = new StringBuffer();
         for(Object s:c) {
