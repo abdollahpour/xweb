@@ -392,7 +392,7 @@ public class Tools {
         return f;
     }
 
-    public static String implode(final String glue, final Object... parts) {
+    public static String implode(final String glue, final Collection<?> parts) {
         final StringBuffer b = new StringBuffer();
         for(Object s:parts) {
             if(b.length() != 0) {
@@ -401,6 +401,10 @@ public class Tools {
             b.append(s);
         }
         return b.toString();
+    }
+
+    public static String implode(final String glue, final Object... parts) {
+        return implode(glue, Arrays.asList(parts));
     }
 
     @Deprecated
