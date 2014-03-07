@@ -59,7 +59,7 @@ public class ModuleParam implements Map<String, String> {
     public String[] getStrings(final String name, final char... separator) {
         final String value = this.data.get(name);
         if(value != null && value.length() > 0) {
-            final String imploded = Tools.implode(Arrays.asList(separator), "");
+            final String imploded = new String(separator);
             final String regex = "[" + imploded.replaceAll("([^a-zA-z0-9])", "\\\\$1") + "]+";
             final String[] strings = value.split(regex);
             return strings;
