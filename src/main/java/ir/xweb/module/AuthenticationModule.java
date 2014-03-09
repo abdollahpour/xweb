@@ -409,7 +409,12 @@ public class AuthenticationModule extends Module {
         return user;
     }
 
-    private void setUser(final HttpServletRequest request, final XWebUser user) {
+    /**
+     * Set user as authenticated user
+     * @param request
+     * @param user
+     */
+    public void setUser(final HttpServletRequest request, final XWebUser user) {
         request.getSession().setAttribute(SESSION_USER, user);
     }
 
