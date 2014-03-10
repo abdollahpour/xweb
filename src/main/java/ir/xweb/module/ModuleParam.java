@@ -6,18 +6,17 @@
 
 package ir.xweb.module;
 
-import ir.xweb.util.Tools;
-
 import java.io.File;
 import java.lang.String;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class ModuleParam implements Map<String, String> {
 
     private final Map<String, String> data;
+
+    private final Map<String, ModuleParam> data2;
 
     private final List<String> defaults;
 
@@ -31,6 +30,7 @@ public class ModuleParam implements Map<String, String> {
 
     protected ModuleParam(final Map<String, String> data, final List<String> defaults) {
         this.data = data != null ? data : new HashMap<String, String>();
+        this.data2 = new HashMap<String, ModuleParam>();
         this.defaults = defaults != null ? defaults : new ArrayList<String>();
     }
 
@@ -259,13 +259,15 @@ public class ModuleParam implements Map<String, String> {
         return validate(name, null, true);
     }
 
-    public ValidModuleParam validate(String name, String regex, boolean required) throws ModuleException {
+    public ValidModuleParam validate(final String name, final String regex, final boolean required) throws ModuleException {
         if(name == null) {
             throw new IllegalArgumentException("null name");
         }
         String value = data.get(name);
         if(required && (value == null || value.length() == 0)) {
-            throw new ModuleException("Illegal parameter: " + name);
+            if(!data2.containsKey(name)) {
+                throw new ModuleException("Illegal parameter: " + name);
+            }
         }
 
         if(regex != null && (value != null && value.length() > 0)) {
@@ -289,7 +291,7 @@ public class ModuleParam implements Map<String, String> {
 
     @Override
     public boolean containsKey(Object key) {
-        return data.containsKey(key);
+        return data.containsKey(key) || data2.containsKey(key);
     }
 
     public boolean hasValueFor(final Object key) {
@@ -297,14 +299,19 @@ public class ModuleParam implements Map<String, String> {
         if(v != null) {
             return v.trim().length() > 0;
         }
-        return false;
+        return data2.containsKey(key);
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return data.containsValue(value);
+        return data.containsValue(value) || data2.containsValue(value);
     }
 
+    /**
+     * This method just return string values not sub ModuleParam(s)
+     * @param key
+     * @return
+     */
     @Override
     public String get(Object key) {
         return data.get(key);
