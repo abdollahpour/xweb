@@ -29,6 +29,7 @@ import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.management.relation.Role;
 import javax.servlet.ServletContext;
 
 public class Manager {
@@ -106,7 +107,7 @@ public class Manager {
                         }
                     }
 
-                    final List<Role> roles = new ArrayList<Role>();
+                    final List<ModuleInfoRole> roles = new ArrayList<ModuleInfoRole>();
                     final Element rolesElement = model.getChild("roles");
                     if(rolesElement != null) {
                         final List<?> roleElements = rolesElement.getChildren("role");
@@ -114,15 +115,33 @@ public class Manager {
                             final Element role = (Element)o2;
 
                             /* value is deprecated */
-                            final String value = role.getAttributeValue("value");
-                            final String _for = role.getAttributeValue("for");
+                            final String param = role.getAttributeValue("param");
+                            final String match = role.getAttributeValue("match");
+                            final String accept = role.getAttributeValue("accept");
+                            final String reject = role.getAttributeValue("reject");
 
-                            final Role r = new Role(
-                                    role.getAttributeValue("param"),
-                                    role.getAttributeValue("eval"),
-                                    _for == null ? value : _for,
-                                    role.getAttributeValue("definite")
-                            );
+                            final ModuleInfoRole r = new ModuleInfoRole() {
+
+                                @Override
+                                public String param() {
+                                    return param;
+                                }
+
+                                @Override
+                                public String match() {
+                                    return match;
+                                }
+
+                                @Override
+                                public String accept() {
+                                    return accept;
+                                }
+
+                                @Override
+                                public String reject() {
+                                    return reject;
+                                }
+                            };
 
                             roles.add(r);
                         }
@@ -382,9 +401,14 @@ public class Manager {
 
         final List<Validator> validators;
 
-        final List<Role> roles;
+        final List<ModuleInfoRole> roles;
 		
-		public Info(final String name, final String author, final List<Validator> validators, final List<Role> roles) {
+		public Info(
+                final String name,
+                final String author,
+                final List<Validator> validators,
+                final List<ModuleInfoRole> roles) {
+
 			this.name = name;
 			this.author = author;
 			this.validators = validators;
@@ -550,49 +574,6 @@ public class Manager {
         @Override
         public boolean isRequire() {
             return this.require;
-        }
-    }
-
-    private class Role implements ModuleInfoRole {
-
-        final List<String> params;
-
-        final String role;
-
-        final String eval;
-
-        final Boolean definite;
-
-        Role(final String param, final String eval, final String role, final String definite) {
-            if(eval == null || role == null) {
-                throw new IllegalArgumentException(param + ", " + eval + ", " + role);
-            }
-
-
-            this.params = (param == null || param.length() == 0) ? Collections.EMPTY_LIST : Arrays.asList(param.split("[,;]"));
-            this.eval = eval;
-            this.role = role;
-            this.definite = "true".equalsIgnoreCase(definite);
-        }
-
-        @Override
-        public List<String> getParams() {
-            return this.params;
-        }
-
-        @Override
-        public String getRole() {
-            return this.role;
-        }
-
-        @Override
-        public String getEval() {
-            return this.eval;
-        }
-
-        @Override
-        public boolean definite() {
-            return this.definite;
         }
     }
 
