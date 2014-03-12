@@ -1,15 +1,13 @@
 package ir.xweb.module;
 
-import java.util.List;
-
 public interface ModuleInfoRole {
 
-    List<String> getParams();
+    String param();
 
-    String getRole();
+    String match();
 
-    String getEval();
+    String accept();
 
-    boolean definite();
+    String reject();
 
 }
