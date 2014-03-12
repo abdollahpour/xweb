@@ -127,6 +127,10 @@ public class DataModule extends Module {
             final String language,
             final List<?> objects) throws IOException {
 
+        if(objects == null) {
+            throw new IllegalArgumentException("null objects");
+        }
+
         final int page = params.getInt("page", 1);
         final int size = params.getInt("size", this.pageSize);
         //final String format = params.getString("format", this.format);

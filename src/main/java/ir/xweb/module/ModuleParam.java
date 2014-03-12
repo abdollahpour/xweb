@@ -69,7 +69,7 @@ public class ModuleParam implements Map<String, String> {
 
     public Integer getInt(final String name, final Integer def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Integer.parseInt(s);
+        return (s == null || s.length() == 0) ? def : new Integer(Integer.parseInt(s));
     }
 
     public Integer getInt(final String name) {
@@ -78,7 +78,7 @@ public class ModuleParam implements Map<String, String> {
 
     public Float getFloat(final String name, final Float def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Float.parseFloat(s);
+        return (s == null || s.length() == 0) ? def : new Float(Float.parseFloat(s));
     }
 
     public Float getFloat(final String name) {
@@ -87,7 +87,7 @@ public class ModuleParam implements Map<String, String> {
 
     public Double getDouble(final String name, final Double def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Double.parseDouble(s);
+        return (s == null || s.length() == 0) ? def : new Double(Double.parseDouble(s));
     }
 
     public Double getDouble(final String name) {
@@ -96,11 +96,11 @@ public class ModuleParam implements Map<String, String> {
 
     public Long getLong(final String name, final Long def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Long.parseLong(s);
+        return (s == null || s.length() == 0) ? def : new Long(Long.parseLong(s));
     }
 
     public Long getLong(final String name) {
-        return getLong(name, null);
+        return getLong(name, (Long)null);
     }
 
     public Long[] getLongs(final String name, final char... separator) {
@@ -114,7 +114,7 @@ public class ModuleParam implements Map<String, String> {
 
     public Byte getByte(final String name, final Byte def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Byte.parseByte(s);
+        return (s == null || s.length() == 0) ? def : new Byte(Byte.parseByte(s));
     }
 
     public Byte getByte(final String name) {
@@ -123,7 +123,7 @@ public class ModuleParam implements Map<String, String> {
 
     public Boolean getBoolean(final String name, final Boolean def) {
         String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : Boolean.parseBoolean(s);
+        return (s == null || s.length() == 0) ? def : new Boolean(Boolean.parseBoolean(s));
     }
 
     public Boolean getBoolean(final String name) {
@@ -182,6 +182,7 @@ public class ModuleParam implements Map<String, String> {
         }
     }
 
+    @Deprecated
     public <T> T get(Class<T> clazz, String name) {
         String value = get(name);
         if(value == null) {
