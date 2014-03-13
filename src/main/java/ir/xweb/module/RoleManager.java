@@ -14,7 +14,7 @@ public class RoleManager {
 
     public boolean hasPermission(final Map<String, String> params, final String role) throws ScriptException {
         final String _role = role == null ? "" : role;
-        
+
         for(ModuleInfoRole r:roles) {
             for(Map.Entry<String, String> e:params.entrySet()) {
                 if(e.getKey().matches(r.param())) {

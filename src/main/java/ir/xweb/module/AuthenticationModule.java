@@ -344,11 +344,11 @@ public class AuthenticationModule extends Module {
          * temp_pass: generate temporary password for simple authenticate transactions
          */
 
-        if("login".equals(action)) {
-            final String identifier = params.validate("id", null, true).getString(null);
+        if(params.containsKey("login")) {
+            final String identifier = params.getString("login");
             // Password hashed with MD5
-            final String password = params.validate("password", null, true).getString(null);
-            final String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString(null);
+            final String password = params.exists("password").getString();
+            final String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString();
 
             CaptchaModule.validateOrThrow(request, captcha);
 
@@ -378,7 +378,7 @@ public class AuthenticationModule extends Module {
             } else {
                 throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
             }
-        } else if("logout".equals(action)) {
+        } else if(params.containsKey("logout")) {
             request.getSession().invalidate();
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
