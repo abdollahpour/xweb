@@ -10,6 +10,7 @@ import ir.xweb.data.DataTools;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +21,13 @@ public class DataModule extends Module {
 
     public final static String PARAM_PAGE_FORMAT = "paging.format";
 
+    public final static String PARAM_DATE_FORMAT = "date_format";
+
     public final static int DEFAULT_PAGE_SIZE = 100;
 
     public final static String DEFAULT_PAGE_FORMAT = "json";
+
+    public final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
     private final int pageSize;
 
@@ -30,7 +35,7 @@ public class DataModule extends Module {
 
     private ResourceModule resourceModule;
 
-    private final DataTools dataTools = new DataTools();
+    private final DataTools dataTools;
 
     public DataModule(
             final Manager manager,
@@ -39,8 +44,10 @@ public class DataModule extends Module {
 
         super(manager, info, properties);
 
+        dataTools = new DataTools();
         pageSize = properties.getInt(PARAM_PAGE_SIZE, DEFAULT_PAGE_SIZE);
         format = properties.getString(PARAM_PAGE_FORMAT, DEFAULT_PAGE_FORMAT);
+        dataTools.setDateFormat(new SimpleDateFormat(properties.getString(PARAM_DATE_FORMAT, DEFAULT_DATE_FORMAT)));
     }
 
     public void write(
@@ -119,6 +126,10 @@ public class DataModule extends Module {
             final String template,
             final String language,
             final List<?> objects) throws IOException {
+
+        if(objects == null) {
+            throw new IllegalArgumentException("null objects");
+        }
 
         final int page = params.getInt("page", 1);
         final int size = params.getInt("size", this.pageSize);
