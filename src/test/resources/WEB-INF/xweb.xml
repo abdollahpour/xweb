@@ -18,6 +18,19 @@
 			<name>reply</name>
 			<class>ir.xweb.module.ReplyModule</class>
 		</module>
+		<module>
+			<name>empty</name>
+			<class>ir.xweb.module.EmptyModule</class>
+			<validators>
+				<validator param="param1" regex="value1" />
+			</validators>
+			<roles>
+				<role or="1" param="param1" accept="admin" />
+				<role or="1" param="param1" accept="user" />
+				<role and="2" param="param2" match="value2" accept="user" />
+				<role and="2" param="param2" accept="admin" />
+			</roles>
+		</module>
 	</modules>
 
 </xweb>

@@ -107,43 +107,53 @@ public class Manager {
                         }
                     }
 
-                    final List<ModuleInfoRole> roles = new ArrayList<ModuleInfoRole>();
+                    final List<Role> roles = new ArrayList<Role>();
                     final Element rolesElement = model.getChild("roles");
                     if(rolesElement != null) {
                         final List<?> roleElements = rolesElement.getChildren("role");
                         for(Object o2:roleElements) {
                             final Element role = (Element)o2;
 
-                            /* value is deprecated */
-                            final String param = role.getAttributeValue("param");
-                            final String match = role.getAttributeValue("match");
-                            final String accept = role.getAttributeValue("accept");
-                            final String reject = role.getAttributeValue("reject");
+                            final Role r = new Role(
+                                    role.getAttributeValue("param"),
+                                    role.getAttributeValue("match"),
+                                    role.getAttributeValue("accept"),
+                                    role.getAttributeValue("reject"),
+                                    role.getAttributeValue("or"),
+                                    role.getAttributeValue("and")
+                            );
 
-                            final ModuleInfoRole r = new ModuleInfoRole() {
+                            boolean add = true;
 
-                                @Override
-                                public String param() {
-                                    return param;
+                            if(r.and != null) {
+                                for(Role a:roles) {
+                                    if(a.and != null && a.and.equals(r.and)) {
+                                        if(a.ands == null) {
+                                            a.ands = new ArrayList<ModuleInfoRole>();
+                                        }
+                                        a.ands.add(r);
+                                        add = false;
+                                        break;
+                                    }
                                 }
+                            }
 
-                                @Override
-                                public String match() {
-                                    return match;
+                            if(r.or != null) {
+                                for(Role a:roles) {
+                                    if(a.or != null && a.or.equals(r.or)) {
+                                        if(a.ors == null) {
+                                            a.ors = new ArrayList<ModuleInfoRole>();
+                                        }
+                                        a.ors.add(r);
+                                        add = false;
+                                        break;
+                                    }
                                 }
+                            }
 
-                                @Override
-                                public String accept() {
-                                    return accept;
-                                }
-
-                                @Override
-                                public String reject() {
-                                    return reject;
-                                }
-                            };
-
-                            roles.add(r);
+                            if(add) {
+                                roles.add(r);
+                            }
                         }
                     }
 
@@ -178,7 +188,7 @@ public class Manager {
                     }
 
                     try {
-                        final Info info = new Info(name, author, validators, roles);
+                        final Info info = new Info(name, author, validators, new ArrayList<ModuleInfoRole>(roles));
 
                         final Class<?> c = Class.forName(className, false, classLoader);
                         final Constructor<?> cons = c.getConstructor(Manager.class, ModuleInfo.class, ModuleParam.class);
@@ -393,7 +403,7 @@ public class Manager {
         }
     }
 	
-	class Info implements ModuleInfo {
+	private class Info implements ModuleInfo {
 
         final String name;
 
@@ -433,6 +443,71 @@ public class Manager {
         @Override
         public List<ModuleInfoRole> getRoles() {
             return new ArrayList<ModuleInfoRole>(this.roles);
+        }
+    }
+
+    private class Role implements ModuleInfoRole {
+
+        String param;
+
+        String match;
+
+        String accept;
+
+        String reject;
+
+        String or;
+
+        String and;
+
+        List<ModuleInfoRole> ors;
+
+        List<ModuleInfoRole> ands;
+
+        public Role(
+                final String param,
+                final String match,
+                final String accept,
+                final String reject,
+                final String or,
+                final String and) {
+
+            this.param = param;
+            this.match = match;
+            this.accept = accept;
+            this.reject = reject;
+            this.or = or;
+            this.and = and;
+        }
+
+        @Override
+        public String param() {
+            return this.param;
+        }
+
+        @Override
+        public String match() {
+            return this.match;
+        }
+
+        @Override
+        public String accept() {
+            return this.accept;
+        }
+
+        @Override
+        public String reject() {
+            return this.reject;
+        }
+
+        @Override
+        public List<ModuleInfoRole> or() {
+            return ors;
+        }
+
+        @Override
+        public List<ModuleInfoRole> and() {
+            return ands;
         }
     }
 

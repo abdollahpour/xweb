@@ -50,7 +50,6 @@ public class TestModule {
 
         final Map<String, Module> modules = manager.getModules();
         for(Module module:modules.values()) {
-            System.out.println(module);
             module.init(servletContext);
         }
         //for(Module module:module.values()) {

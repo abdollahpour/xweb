@@ -195,8 +195,8 @@ public class Module {
 		return false;
 	}*/
 	
-	public boolean hasPermission(String role) {
-		return true;
+	public RoleManager getRoleManager() {
+		return roleManager;
 	}
 
     public ServletContext getContext() {
