@@ -27,7 +27,7 @@ public class Validator {
     public final static String VALIDATOR_ASSOCIATION = "^[A-Za-z0-9!@#$%^&*()_]{6,20}$";
 
 	public final static String VALIDATOR_NUMBER   = "^[A-Za-z0-9!@#$%^&*()_]{6,20}$";
-	
+
 	public static boolean validate(final String regex, final String text, final boolean required) {
 		if(regex == null) {
 			throw new IllegalArgumentException("null regex");

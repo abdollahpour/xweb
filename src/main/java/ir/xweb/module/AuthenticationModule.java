@@ -335,7 +335,7 @@ public class AuthenticationModule extends Module {
             final ModuleParam params,
             final HashMap<String, FileItem> files) throws IOException {
 
-        String action  = params.validate("action", "login|check|logout", true).getString(null);
+        final String action  = params.getString("action");
         logger.debug("Login module request for action = " + action);
 
         /**
@@ -344,7 +344,7 @@ public class AuthenticationModule extends Module {
          * temp_pass: generate temporary password for simple authenticate transactions
          */
 
-        if(params.containsKey("login")) {
+        if(params.containsKey("login") || "login".equals(action) /* Deprecated */) {
             final String identifier = params.getString("login");
             // Password hashed with MD5
             final String password = params.exists("password").getString();
@@ -378,7 +378,7 @@ public class AuthenticationModule extends Module {
             } else {
                 throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
             }
-        } else if(params.containsKey("logout")) {
+        } else if(params.containsKey("logout") || "logout".equals(action) /* Deprecated */) {
             request.getSession().invalidate();
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
