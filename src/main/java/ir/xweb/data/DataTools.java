@@ -352,7 +352,11 @@ public class DataTools {
             final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
             for(Map.Entry<?, ?> e:map.entrySet()) {
-                data.put(e.getKey().toString(), convert(e.getValue(), role));
+                if(e.getValue() != null) {
+                    data.put(e.getKey().toString(), convert(e.getValue(), role));
+                } else {
+                    data.put(e.getKey().toString(), "null");
+                }
             }
 
             return data;
