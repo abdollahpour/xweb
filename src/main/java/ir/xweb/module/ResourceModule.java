@@ -339,18 +339,14 @@ public class ResourceModule extends Module {
         return getFile(user.getId(), path);
     }
 
-    public File initTempFile() {
-        startTempNumber++;
-        final File file = new File(getTempDir(), Long.toString(startTempNumber));
-        if(!file.exists()) {
-            try {
-                file.createNewFile();
-                return file;
-            } catch (Exception ex) {
-                logger.error("Error to init temp file: " + file, ex);
-            }
-        }
-        return null;
+    public File initTempFile() throws IOException {
+        File file;
+        do {
+            file = new File(getTempDir(), Long.toString(++startTempNumber));
+        } while (file.exists());
+
+        file.createNewFile();
+        return file;
     }
 
     /**
@@ -360,33 +356,12 @@ public class ResourceModule extends Module {
      */
     public File initTempFile(InputStream is) throws IOException {
         if(is == null) {
-            throw new IllegalArgumentException("Inputstream null");
+            throw new IllegalArgumentException("null stream");
         }
         final File file = initTempFile();
         Files.copy(is, file.toPath());
 
         return file;
-
-        /*FileOutputStream fos = null;
-
-        try {
-            fos = new FileOutputStream(file);
-            int size;
-            byte[] buffer = new byte[1024];
-
-            while((size = is.read(buffer)) > 0) {
-                fos.write(buffer, 0, size);
-            }
-
-            return file;
-        } finally {
-            if(fos != null) {
-                try {
-                    fos.flush();
-                    fos.close();
-                } catch (Exception ex) {}
-            }
-        }*/
     }
 
     /**
@@ -395,10 +370,15 @@ public class ResourceModule extends Module {
      * @throws IOException
      */
     public File initTempDir() throws IOException {
-        final File file = new File(getTempDir(), Long.toString(System.currentTimeMillis()));
-        if(!file.exists() && !file.mkdirs()) {
+        File file;
+        do {
+            file = new File(getTempDir(), Long.toString(++startTempNumber));
+        } while (file.exists());
+
+        if(!file.mkdirs()) {
             throw new IOException("Can not create temp dir. Please set '" + PROPERTY_TEMP_DIR + "' property. " + file);
         }
+
         return file;
     }
 
