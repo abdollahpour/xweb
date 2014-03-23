@@ -174,23 +174,12 @@ public class DataModule extends Module {
         results.put("size", objects.size());
 
         results.put("data", objects.subList(from, to));
-        //System.out.println(from + " " + to + " " + objects.size());
+        results.put("params", params);
         results.put("more", to != objects.size());
 
         results.put("page", page);
         results.put("pages", pages);
         results.put("count", count);
-
-        // these parameters just reply back to response
-        if(params.hasValueFor("by")) {
-            results.put("by", params.getString("by"));
-        }
-        if(params.hasValueFor("for")) {
-            results.put("for", params.getString("for"));
-        }
-        if(params.hasValueFor("with")) {
-            results.put("with", params.getString("with"));
-        }
 
         write(response, format, role, template, language, results);
     }
