@@ -84,10 +84,9 @@ public class DataTools {
             final String role) throws IOException {
 
         try {
-            final String r = (role == null ? null : (role + ","));
             final List<?> keys = new ArrayList<Object>(data.keySet());
 
-            Field[] fields = object.getClass().getFields();
+            final Field[] fields = object.getClass().getFields();
 
             for(Field f:fields) {
                 String name = f.getName();
@@ -95,11 +94,11 @@ public class DataTools {
 
                 if(f.isAnnotationPresent(XWebDataElement.class)) {
                     final String aName = f.getAnnotation(XWebDataElement.class).key();
-                    final String aRole = f.getAnnotation(XWebDataElement.class).role();
+                    final String aRole = f.getAnnotation(XWebDataElement.class).write();
                     validator = f.getAnnotation(XWebDataElement.class).validator();
 
                     if(aName.length() > 0) {
-                        if(r != null && aRole.length() > 0 && (aRole + ",").indexOf(r) == -1) {
+                        if(role != null && aRole.length() > 0 && !role.matches(aRole)) {
                             throw new IllegalAccessException("No sufficient role. " + role + " not in " + aRole);
                         }
                         name = aName;
@@ -143,18 +142,18 @@ public class DataTools {
                 }
             }
 
-            Method[] methods = object.getClass().getMethods();
+            final Method[] methods = object.getClass().getMethods();
             for(Method m:methods) {
                 String name = null;
                 String validator = "";
 
                 if(m.isAnnotationPresent(XWebDataElement.class)) {
                     final String aName = m.getAnnotation(XWebDataElement.class).key();
-                    final String aRole = m.getAnnotation(XWebDataElement.class).role();
+                    final String aRole = m.getAnnotation(XWebDataElement.class).write();
                     validator = m.getAnnotation(XWebDataElement.class).validator();
 
                     if(aName.length() > 0) {
-                        if(r != null && aRole.length() > 0 && (aRole + ",").indexOf(r) == -1) {
+                        if(role != null && aRole.length() > 0 && !role.matches(aRole)) {
                             throw new IllegalAccessException("No sufficient role. " + role + " not in " + aRole);
                         }
                         name = aName;
@@ -308,9 +307,9 @@ public class DataTools {
                 if(m.isAnnotationPresent(XWebDataElement.class)) {
                     if(m.getParameterTypes().length == 0) {
                         final String aName = m.getAnnotation(XWebDataElement.class).key();
-                        final String aRole = m.getAnnotation(XWebDataElement.class).role();
+                        final String aRole = m.getAnnotation(XWebDataElement.class).read();
 
-                        if(role == null || aRole.length() == 0 || (aRole + ",").indexOf(role) > -1) {
+                        if(role == null || aRole.length() == 0 || role.matches(aRole)) {
                             Object value = m.invoke(object);
 
                             if(aName == null || aName.length() == 0) {
@@ -329,9 +328,9 @@ public class DataTools {
             for(Field f:fields) {
                 if(f.isAnnotationPresent(XWebDataElement.class)) {
                     final String aName = f.getAnnotation(XWebDataElement.class).key();
-                    final String aRole = f.getAnnotation(XWebDataElement.class).role();
+                    final String aRole = f.getAnnotation(XWebDataElement.class).read();
 
-                    if(role == null || aRole.length() == 0 || (aRole + ",").indexOf(role) > -1) {
+                    if(role == null || aRole.length() == 0 || role.matches(aRole)) {
                         final Object value = f.get(object);
 
                         if(value != null) {

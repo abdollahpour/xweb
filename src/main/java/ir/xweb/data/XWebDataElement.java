@@ -8,7 +8,9 @@ public @interface XWebDataElement {
 
     String key() default "";
 
-    String role() default "";
+    String write() default "";
+
+    String read() default "";
 
     boolean writable() default false;
 

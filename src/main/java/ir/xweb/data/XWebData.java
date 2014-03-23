@@ -8,6 +8,4 @@ public @interface XWebData {
 
     String name() default "";
 
-    String role() default "";
-
 }
