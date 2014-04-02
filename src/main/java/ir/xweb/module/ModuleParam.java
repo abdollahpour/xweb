@@ -71,7 +71,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public String getString(final String name, final String glue, final String def) {
-        final Object o = data.get(name);
+        final Object o = this.data.get(name);
         if(o != null) {
             if(o instanceof String) {
                 final String s = (String)o;
@@ -84,6 +84,8 @@ public class ModuleParam implements Map<String, Object> {
                     return Tools.implode(glue, (Collection) o);
                 }
             }
+
+            return o.toString();
         }
         return def;
     }

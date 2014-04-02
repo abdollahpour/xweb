@@ -137,7 +137,7 @@ public class Module {
         }
 
         if(moduleParam == null) {
-            moduleParam = new ModuleParam();
+            moduleParam = new ModuleParam(params);
         }
 
         // validate params

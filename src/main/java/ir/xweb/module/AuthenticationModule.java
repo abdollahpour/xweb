@@ -25,7 +25,6 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +57,8 @@ public class AuthenticationModule extends Module {
 
     public final static String PARAM_IGNORE = "ignore";
 
+    public final static String PARAM_NO_LOGIN = "nologin";
+
     private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
 
     private final Map<String, DefaultUser> defaultSource = new HashMap<String, DefaultUser>();
@@ -69,6 +70,8 @@ public class AuthenticationModule extends Module {
     private final String check;
 
     private final String ignore;
+
+    private final String nologin;
 
     public AuthenticationModule(
             final Manager manager,
@@ -82,6 +85,7 @@ public class AuthenticationModule extends Module {
         redirect = properties.getString(PARAM_REDIRECT, null);
         check = properties.getString(PARAM_CHECK, null);
         ignore = properties.getString(PARAM_IGNORE, null);
+        nologin = properties.getString(PARAM_NO_LOGIN, null);
 
         if(properties.containsKey(PARAM_XML_SOURCE)) {
             importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
@@ -336,7 +340,6 @@ public class AuthenticationModule extends Module {
             final HashMap<String, FileItem> files) throws IOException {
 
         final String action  = params.getString("action");
-        logger.debug("Login module request for action = " + action);
 
         /**
          * Actions:
@@ -358,30 +361,48 @@ public class AuthenticationModule extends Module {
             // (user, temporary password, is temporary password (false by default))
             final XWebUser user = getUserWithId(identifier, password);
 
+            // Check for login, you can not login with no login role
             if (user != null) {
-                setUser(request, user);
+                if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
+                    setUser(request, user);
 
-                if(remember) {
+                    if(remember) {
+                        final String uuid = generateUUID(identifier);
+
+                        if(uuid != null) {
+                            response.setContentType("text/plain");
+                            CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                            response.getWriter().write(uuid);
+                            response.getWriter().flush();
+                        }
+                    } else {
+                        CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
+                    }
+
+                    logger.info(identifier + " successfully login into system. Remember = " + remember);
+                } else {
                     final String uuid = generateUUID(identifier);
 
                     if(uuid != null) {
+                        response.setContentType("text/plain");
                         CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
                         response.getWriter().write(uuid);
+                        response.getWriter().flush();
+                    } else {
+                        throw new ModuleException("Can not generate UUID for: " + user.getId());
                     }
-                } else {
-                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
                 }
-
-                logger.info(identifier + " successfully login into system. Remember = " + remember);
 
                 return;
             } else {
                 throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
             }
-        } else if(params.containsKey("logout") || "logout".equals(action) /* Deprecated */) {
+        }
+        else if(params.containsKey("logout") || "logout".equals(action) /* Deprecated */) {
             request.getSession().invalidate();
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
+
     }
 
     public XWebUser getUserWithUUID(final String uuid) {
