@@ -7,6 +7,7 @@
 package ir.xweb.module;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.IllegalArgumentException;
 import java.util.*;
 
@@ -19,6 +20,9 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 public class Module {
 
@@ -80,45 +84,61 @@ public class Module {
 
         final HashMap<String, String> params = new HashMap<String, String>();
         final HashMap<String, FileItem> files = new HashMap<String, FileItem>();
-		
-		if(contentType != null && contentType.indexOf("multipart/form-data") > -1) {
-			try {
-		        List<?> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
-		        for (Object o : items) {
-		        	FileItem item = (FileItem)o;
-		            if (item.isFormField()) {
-		                String fieldname = item.getFieldName();
-		                String fieldvalue = item.getString();
 
-                        // DAMN! There's problem for Apache commons-fileupload && UTF-8. We should to fix it manually
-                        // http://stackoverflow.com/questions/546365/utf-8-text-is-garbled-when-form-is-posted-as-multipart-form-data
+        ModuleParam moduleParam = null;
 
-                        fieldname = new String (fieldname.getBytes ("iso-8859-1"), "UTF-8");
-                        fieldvalue = new String (fieldvalue.getBytes ("iso-8859-1"), "UTF-8");
+		if(contentType != null) {
+            final String ct = contentType.toLowerCase();
 
-                        final String old = params.get(fieldname);
-                        params.put(fieldname, old == null ? fieldvalue : old + "," + fieldvalue);
-		            } else {
-                        final String filename = item.getName();
-                        /** FormData for HTML5 will send files but with empty files name! **/
-                        if(filename != null && filename.length() > 0) {
+            if(ct.indexOf("multipart/form-data") > -1) {
+                try {
+                    List<?> items = new ServletFileUpload(new DiskFileItemFactory()).parseRequest(request);
+                    for (Object o : items) {
+                        FileItem item = (FileItem)o;
+                        if (item.isFormField()) {
                             String fieldname = item.getFieldName();
-                            files.put(fieldname, item);
+                            String fieldvalue = item.getString();
+
+                            // DAMN! There's problem for Apache commons-fileupload && UTF-8. We should to fix it manually
+                            // http://stackoverflow.com/questions/546365/utf-8-text-is-garbled-when-form-is-posted-as-multipart-form-data
+
+                            fieldname = new String (fieldname.getBytes ("iso-8859-1"), "UTF-8");
+                            fieldvalue = new String (fieldvalue.getBytes ("iso-8859-1"), "UTF-8");
+
+                            final String old = params.get(fieldname);
+                            params.put(fieldname, old == null ? fieldvalue : old + "," + fieldvalue);
+                        } else {
+                            final String filename = item.getName();
+                            /** FormData for HTML5 will send files but with empty files name! **/
+                            if(filename != null && filename.length() > 0) {
+                                String fieldname = item.getFieldName();
+                                files.put(fieldname, item);
+                            }
                         }
-		            }
-		        }
-		    } catch (FileUploadException e) {
-		    }
+                    }
+                } catch (FileUploadException e) {
+                }
+            }
+            else if(ct.equals("application/json")) {
+                final InputStreamReader reader = new InputStreamReader(request.getInputStream());
+                JSONTokener tokenizer = new JSONTokener(reader);
+                final JSONObject object = new JSONObject(tokenizer);
+                moduleParam = json2module(object);
+            }
 		}
 
         final Enumeration<?> names = request.getParameterNames();
-		while(names.hasMoreElements()) {
-			final String name = names.nextElement().toString();
-            final String[] value = request.getParameterValues(name);
-			params.put(name, Tools.implode(Arrays.asList(value), ","));
-		}
+        if(names != null) {
+            while(names.hasMoreElements()) {
+                final String name = names.nextElement().toString();
+                final String[] value = request.getParameterValues(name);
+                params.put(name, Tools.implode(",", value));
+            }
+        }
 
-        final ModuleParam moduleParam = new ModuleParam(params);
+        if(moduleParam == null) {
+            moduleParam = new ModuleParam();
+        }
 
         // validate params
         List<String> requires = new ArrayList<String>(requireParams);
@@ -194,6 +214,39 @@ public class Module {
 		}
 		return false;
 	}*/
+
+    private ModuleParam json2module(final JSONObject object) {
+        final ModuleParam p = new ModuleParam();
+
+        for(Iterator k = object.keys(); k.hasNext();) {
+            String key = k.next().toString();
+            final Object o = object.get(key);
+
+            if(o instanceof JSONObject) {
+                p.put(key, json2module((JSONObject)o));
+            }
+            else if(o instanceof JSONArray) {
+                p.put(key, json2module((JSONArray)o));
+            }
+            else {
+                p.put(key, o);
+            }
+        }
+
+        return p;
+    }
+
+    private Collection json2module(final JSONArray array) {
+        if(array.length() > 0) {
+            final ArrayList list = new ArrayList();
+            for(int i=0; i<array.length(); i++) {
+                list.add(array.get(i));
+            }
+
+            return list;
+        }
+        return Collections.emptyList();
+    }
 	
 	public RoleManager getRoleManager() {
 		return roleManager;

@@ -6,17 +6,22 @@
 
 package ir.xweb.module;
 
+import ir.xweb.util.Tools;
+
 import java.io.File;
 import java.lang.String;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ModuleParam implements Map<String, String> {
+public class ModuleParam implements Map<String, Object> {
 
-    private final Map<String, String> data;
-
-    private final Map<String, ModuleParam> data2;
+    /**
+     * We have 3 data, String, Colletion and ModuleParam
+     */
+    private final Map<String, Object> data;
 
     private final List<String> defaults;
 
@@ -29,13 +34,17 @@ public class ModuleParam implements Map<String, String> {
     }
 
     protected ModuleParam(final Map<String, String> data, final List<String> defaults) {
-        this.data = data != null ? data : new HashMap<String, String>();
-        this.data2 = new HashMap<String, ModuleParam>();
+        this.data = data != null ? new HashMap<String, Object>(data) : new HashMap<String, Object>();
         this.defaults = defaults != null ? defaults : new ArrayList<String>();
     }
 
+    protected ModuleParam(final ModuleParam m) {
+        this.data = m.data;
+        this.defaults = m.defaults;
+    }
+
     protected void put(final String name, final String value, final boolean isDefault) {
-        final String oldValue = data.put(name, value);
+        final Object oldValue = data.put(name, value);
         if(isDefault) {
             defaults.add(name);
         } else if(oldValue != null) {
@@ -47,9 +56,36 @@ public class ModuleParam implements Map<String, String> {
         return getString(name, def);
     }
 
+    private <T> T get(final Class<T> clazz, final String name, final T def) {
+        final Object o = this.data.get(name);
+        if(o != null) {
+            if(clazz.isInstance(o)) {
+                return clazz.cast(o);
+            }
+        }
+        return null;
+    }
+
     public String getString(final String name, final String def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : s;
+        return getString(name, null, def);
+    }
+
+    public String getString(final String name, final String glue, final String def) {
+        final Object o = data.get(name);
+        if(o != null) {
+            if(o instanceof String) {
+                final String s = (String)o;
+                if(s.length() > 0) {
+                    return s;
+                }
+            }
+            if(glue != null) {
+                if(o instanceof Collection) {
+                    return Tools.implode(glue, (Collection) o);
+                }
+            }
+        }
+        return def;
     }
 
     public String getString(final String name) {
@@ -57,19 +93,39 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public String[] getStrings(final String name, final char... separator) {
-        final String value = this.data.get(name);
+        final Collection list = get(Collection.class, name, null);
+        if(list != null && list.size() > 0) {
+            final String[] strings = new String[list.size()];
+
+            final Iterator iterator = list.iterator();
+            for(int i=0; i<strings.length; i++) {
+                strings[i] = iterator.next().toString();
+            }
+
+            return strings;
+        }
+
+        final String value = getString(name);
         if(value != null && value.length() > 0) {
             final String imploded = new String(separator);
             final String regex = "[" + imploded.replaceAll("([^a-zA-z0-9])", "\\\\$1") + "]+";
             final String[] strings = value.split(regex);
             return strings;
         }
+
         return new String[0];
     }
 
     public Integer getInt(final String name, final Integer def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Integer(Integer.parseInt(s));
+        final Integer i = get(Integer.class, name, def);
+        if(i != null) {
+            return i;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Integer.parseInt(s);
+        }
+        return def;
     }
 
     public Integer getInt(final String name) {
@@ -77,8 +133,15 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Float getFloat(final String name, final Float def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Float(Float.parseFloat(s));
+        final Float f = get(Float.class, name, def);
+        if(f != null) {
+            return f;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Float.parseFloat(s);
+        }
+        return def;
     }
 
     public Float getFloat(final String name) {
@@ -86,8 +149,15 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Double getDouble(final String name, final Double def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Double(Double.parseDouble(s));
+        final Double d = get(Double.class, name, def);
+        if(d != null) {
+            return d;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Double.parseDouble(s);
+        }
+        return def;
     }
 
     public Double getDouble(final String name) {
@@ -95,8 +165,15 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Long getLong(final String name, final Long def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Long(Long.parseLong(s));
+        final Long l = get(Long.class, name, def);
+        if(l != null) {
+            return l;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Long.parseLong(s);
+        }
+        return def;
     }
 
     public Long getLong(final String name) {
@@ -104,6 +181,20 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Long[] getLongs(final String name, final char... separator) {
+        final Collection list = get(Collection.class, name, null);
+        if(list != null && list.size() > 0) {
+            final Iterator iterator = list.iterator();
+            final Object o = iterator.next();
+            if(o instanceof Long) {
+                final Long[] longs = new Long[list.size()];
+                longs[0] = (Long)o;
+
+                for(int i=1; i<longs.length; i++) {
+                    longs[i] = (Long)iterator.next();
+                }
+            }
+        }
+
         final String[] strings = getStrings(name, separator);
         final Long[] longs = new Long[strings.length];
         for(int i=0; i<strings.length; i++) {
@@ -112,9 +203,39 @@ public class ModuleParam implements Map<String, String> {
         return longs;
     }
 
+    public Double[] getDoubles(final String name, final char... separator) {
+        final Collection list = get(Collection.class, name, null);
+        if(list != null && list.size() > 0) {
+            final Iterator iterator = list.iterator();
+            final Object o = iterator.next();
+            if(o instanceof Long) {
+                final Double[] doubles = new Double[list.size()];
+                doubles[0] = (Double)o;
+
+                for(int i=1; i<doubles.length; i++) {
+                    doubles[i] = (Double)iterator.next();
+                }
+            }
+        }
+
+        final String[] strings = getStrings(name, separator);
+        final Double[] doubles = new Double[strings.length];
+        for(int i=0; i<strings.length; i++) {
+            doubles[i] = Double.parseDouble(strings[i]);
+        }
+        return doubles;
+    }
+
     public Byte getByte(final String name, final Byte def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Byte(Byte.parseByte(s));
+        final Byte b = get(Byte.class, name, def);
+        if(b != null) {
+            return b;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Byte.parseByte(s);
+        }
+        return def;
     }
 
     public Byte getByte(final String name) {
@@ -122,8 +243,15 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Boolean getBoolean(final String name, final Boolean def) {
-        String s = data.get(name);
-        return (s == null || s.length() == 0) ? def : new Boolean(Boolean.parseBoolean(s));
+        final Boolean b = get(Boolean.class, name, def);
+        if(b != null) {
+            return b;
+        }
+        final String s = getString(name);
+        if(s != null && s.length() > 0) {
+            return Boolean.parseBoolean(s);
+        }
+        return def;
     }
 
     public Boolean getBoolean(final String name) {
@@ -131,7 +259,7 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public URL getURL(final String name, final URL def) throws IllegalArgumentException {
-        final String s = data.get(name);
+        final String s = getString(name);
         try {
             return (s == null || s.length() == 0) ? def : new URL(s);
         } catch (Exception ex) {
@@ -149,7 +277,7 @@ public class ModuleParam implements Map<String, String> {
     }
 
     public Locale getLocale(final String name, final Locale def) {
-        String s = data.get(name);
+        final String s = getString(name);
         if((s == null || s.length() == 0)) {
             return def;
         }
@@ -174,36 +302,12 @@ public class ModuleParam implements Map<String, String> {
         if(zone != null) {
             format.setTimeZone(zone);
         }
-        final String s = data.get(name);
+        final String s = getString(name);
         try {
             return (s == null || s.length() == 0) ? def : format.parse(s);
         } catch (Exception ex) {
             throw new IllegalArgumentException("Value for " + name + " (" + s + ") is not valid for " + pattern + " pattern", ex);
         }
-    }
-
-    @Deprecated
-    public <T> T get(Class<T> clazz, String name) {
-        String value = get(name);
-        if(value == null) {
-            return null;
-        }
-
-        if(clazz.equals(Integer.class)) {
-            return clazz.cast(Integer.parseInt(value));
-        } else if(clazz.equals(Float.class)) {
-            return clazz.cast(Float.parseFloat(value));
-        } else if(clazz.equals(Double.class)) {
-            return clazz.cast(Double.parseDouble(value));
-        } else if(clazz.equals(Long.class)) {
-            return clazz.cast(Long.parseLong(value));
-        } else if(clazz.equals(Boolean.class)) {
-            return clazz.cast(Boolean.parseBoolean(value));
-        } else if(clazz.equals(String.class)) {
-            return clazz.cast(value);
-        }
-
-        throw new IllegalArgumentException("type does not support: " + clazz);
     }
 
     /**
@@ -264,20 +368,21 @@ public class ModuleParam implements Map<String, String> {
         if(name == null) {
             throw new IllegalArgumentException("null name");
         }
-        String value = data.get(name);
-        if(required && (value == null || value.length() == 0)) {
-            if(!data2.containsKey(name)) {
-                throw new ModuleException("Illegal parameter: " + name);
+
+        if(required) {
+            if(!hasValueFor(name)) {
+                throw new ModuleException("Parameter required but not found: " + name);
             }
         }
 
+        final String value = getString(name);
         if(regex != null && (value != null && value.length() > 0)) {
             if(!value.matches(regex)) {
                 throw new ModuleException("Invalid parameter. name: " + name + ", value: " + value);
             }
         }
 
-        return new ValidModuleParam(data, defaults, name);
+        return new ValidModuleParam(this, name);
     }
 
     @Override
@@ -292,20 +397,24 @@ public class ModuleParam implements Map<String, String> {
 
     @Override
     public boolean containsKey(Object key) {
-        return data.containsKey(key) || data2.containsKey(key);
+        return data.containsKey(key);
     }
 
     public boolean hasValueFor(final Object key) {
-        final String v = data.get(key);
-        if(v != null) {
-            return v.trim().length() > 0;
+        final Object o = data.get(key);
+        if(o != null) {
+            // if string type, we also check empty string
+            if(o instanceof String) {
+                return ((String)o).length() > 0;
+            }
+            return true;
         }
-        return data2.containsKey(key);
+        return false;
     }
 
     @Override
     public boolean containsValue(Object value) {
-        return data.containsValue(value) || data2.containsValue(value);
+        return data.containsValue(value);
     }
 
     /**
@@ -314,22 +423,22 @@ public class ModuleParam implements Map<String, String> {
      * @return
      */
     @Override
-    public String get(Object key) {
+    public Object get(Object key) {
         return data.get(key);
     }
 
     @Override
-    public String put(String key, String value) {
+    public Object put(String key, Object value) {
         return data.put(key, value);
     }
 
     @Override
-    public String remove(Object key) {
+    public Object remove(Object key) {
         return data.remove(key);
     }
 
     @Override
-    public void putAll(Map<? extends String, ? extends String> m) {
+    public void putAll(Map<? extends String, ? extends Object> m) {
         data.putAll(m);
     }
 
@@ -348,12 +457,12 @@ public class ModuleParam implements Map<String, String> {
     }
 
     @Override
-    public Collection<String> values() {
+    public Collection<Object> values() {
         return data.values();
     }
 
     @Override
-    public Set<Entry<String, String>> entrySet() {
+    public Set<Entry<String, Object>> entrySet() {
         return data.entrySet();
     }
 }

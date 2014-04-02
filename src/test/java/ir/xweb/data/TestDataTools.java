@@ -100,7 +100,7 @@ public class TestDataTools {
     @XWebData(name = "user")
     class User {
 
-        @XWebDataElement (role = "admin", writable = true, validator = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")
+        @XWebDataElement (read = "admin", writable = true, validator = "^[_A-Za-z0-9-]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$")
         public String email;
 
         @XWebDataElement(key = "userId")

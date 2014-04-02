@@ -8,8 +8,8 @@ public class ValidModuleParam extends ModuleParam {
 
     private final String name;
 
-    protected ValidModuleParam(final Map<String, String> data, final List<String> defaults, final String name) {
-        super(data, defaults);
+    protected ValidModuleParam(final ModuleParam param, final String name) {
+        super(param);
         this.name = name;
     }
 
