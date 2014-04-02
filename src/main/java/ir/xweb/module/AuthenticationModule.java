@@ -86,6 +86,7 @@ public class AuthenticationModule extends Module {
         check = properties.getString(PARAM_CHECK, null);
         ignore = properties.getString(PARAM_IGNORE, null);
         nologin = properties.getString(PARAM_NO_LOGIN, null);
+        System.out.println("nologin: " + nologin);
 
         if(properties.containsKey(PARAM_XML_SOURCE)) {
             importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
@@ -240,10 +241,12 @@ public class AuthenticationModule extends Module {
             logger.debug("Try to login with cookie. UUID: " + uuid);
             user = getUserWithUUID(uuid);
             if(user != null) {
-                logger.debug("User successfully login with UUID: " + uuid);
-                setUser(request, user);
-                filterChain.doFilter(request, response);
-                return;
+                if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
+                    logger.debug("User successfully login with UUID: " + uuid);
+                    setUser(request, user);
+                    filterChain.doFilter(request, response);
+                    return;
+                }
             } else {
                 logger.debug("UUID not valid for login (maybe expired: " + uuid);
             }
@@ -277,10 +280,12 @@ public class AuthenticationModule extends Module {
 
                 user = getUserWithUUID(uuid);
                 if(user != null) {
-                    logger.debug("User successfully login with HTTP authentication: " + token);
-                    setUser(request, user);
-                    filterChain.doFilter(request, response);
-                    return;
+                    if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
+                        logger.debug("User successfully login with HTTP authentication: " + token);
+                        setUser(request, user);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
                 } else {
                     logger.debug("HTTP token not valid for login. maybe expired: " + token);
                 }
@@ -385,7 +390,6 @@ public class AuthenticationModule extends Module {
 
                     if(uuid != null) {
                         response.setContentType("text/plain");
-                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
                         response.getWriter().write(uuid);
                         response.getWriter().flush();
                     } else {
