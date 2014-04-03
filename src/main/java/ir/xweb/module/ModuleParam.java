@@ -95,6 +95,10 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public String[] getStrings(final String name, final char... separator) {
+        return getStrings(name, new String[0], separator);
+    }
+
+    public String[] getStrings(final String name, final String[] def, final char... separator) {
         final Collection list = get(Collection.class, name, null);
         if(list != null && list.size() > 0) {
             final String[] strings = new String[list.size()];
@@ -115,7 +119,7 @@ public class ModuleParam implements Map<String, Object> {
             return strings;
         }
 
-        return new String[0];
+        return def;
     }
 
     public Integer getInt(final String name, final Integer def) {
