@@ -139,7 +139,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Float getFloat(final String name, final Float def) {
-        final Float f = get(Float.class, name, def);
+        final Float f = get(Float.class, name, null);
         if(f != null) {
             return f;
         }
@@ -155,7 +155,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Double getDouble(final String name, final Double def) {
-        final Double d = get(Double.class, name, def);
+        final Double d = get(Double.class, name, null);
         if(d != null) {
             return d;
         }
@@ -171,7 +171,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Long getLong(final String name, final Long def) {
-        final Long l = get(Long.class, name, def);
+        final Long l = get(Long.class, name, null);
         if(l != null) {
             return l;
         }

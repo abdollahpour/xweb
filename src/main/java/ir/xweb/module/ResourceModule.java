@@ -648,7 +648,7 @@ public class ResourceModule extends Module {
     public String applyTemplate(
             final String template,
             final String language,
-            final Map<String, String> params) {
+            final Map<String, ?> params) {
 
         // find XSLT template
         final File xsltFile = getTemplateFile(template, language, ".xsl");
@@ -680,11 +680,12 @@ public class ResourceModule extends Module {
         return null;
     }
 
-    private String applyText(final File template, final Map<String, String> params) throws Exception {
+    private String applyText(final File template, final Map<String, ?> params) throws Exception {
         String text = Tools.readTextFile(template);
 
-        for(Map.Entry<String, String> e:params.entrySet()) {
-            text = text.replace("${" + e.getKey() + "}", e.getValue());
+        for(String key:params.keySet()) {
+            final Object value = params.get(key);
+            text = text.replace("${" + key + "}", value == null ? null : value.toString());
         }
 
         return text;

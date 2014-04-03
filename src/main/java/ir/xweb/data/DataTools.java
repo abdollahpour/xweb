@@ -80,7 +80,7 @@ public class DataTools {
      */
     public void write(
             final Object object,
-            final Map<String, String> data,
+            final Map<String, ?> data,
             final String role) throws IOException {
 
         try {
@@ -107,38 +107,50 @@ public class DataTools {
 
 
                 if(keys.contains(name)) {
-                    final String value = data.get(name);
+                    final Object value = data.get(name);
 
-                    // validate of require
-                    if(validator.length() > 0 && !value.matches(validator)) {
-                        throw new IllegalAccessException("Illegal value: " + value + " not match " + validator);
-                    }
+                    if(value != null) {
+                        final String s = value.toString();
 
-                    Class<?> type = f.getType();
-
-                    if(type == String.class) {
-                        f.set(object, value.toString());
-                    } else if(type == Integer.class || type == int.class) {
-                        f.set(object, Integer.valueOf(value));
-                    } else if(type == Boolean.class || type == boolean.class) {
-                        f.setBoolean(object, Boolean.parseBoolean(value));
-                    } else if(type == Byte.class || type == byte.class) {
-                        f.setByte(object, Byte.valueOf(value).byteValue());
-                    } else if(type == Character.class || type == char.class) {
-                        if(value.length() == 0) {
-                            f.setChar(object, value.charAt(0));
+                        // validate of require
+                        if(validator.length() > 0 && !s.matches(validator)) {
+                            throw new IllegalAccessException("Illegal value: " + value + " not match " + validator);
                         }
-                    } else if(type == Double.class || type == double.class) {
-                        f.setDouble(object, Double.parseDouble(value));
-                    } else if(type == Float.class || type == float.class) {
-                        f.setFloat(object, Float.parseFloat(value));
-                    } else if(type == Long.class || type == long.class) {
-                        f.setLong(object, Long.parseLong(value));
-                    } else if(type == Short.class || type == short.class) {
-                        f.setShort(object, Short.parseShort(value));
-                    }
 
-                    keys.remove(name);
+                        Class<?> type = f.getType();
+
+                        if(type == String.class) {
+                            f.set(object, value.toString());
+                        } else if(type == Integer.class || type == int.class) {
+                            if(value instanceof Integer) {
+                                f.set(object, value);
+                            } else {
+                                f.set(object, Integer.valueOf(s));
+                            }
+                        } else if(type == Boolean.class || type == boolean.class) {
+                            if(value instanceof Boolean) {
+                                f.setBoolean(object, (Boolean)value);
+                            } else {
+                                f.setBoolean(object, Boolean.parseBoolean(s));
+                            }
+                        } else if(type == Byte.class || type == byte.class) {
+                            f.set(object, (value instanceof Byte) ? value : Byte.parseByte(s));
+                        } else if(type == Character.class || type == char.class) {
+                            if(s.length() != 0) {
+                                f.set(object, (value instanceof Character) ? value : s.charAt(0));
+                            }
+                        } else if(type == Double.class || type == double.class) {
+                            f.set(object, (value instanceof Double) ? value : Double.parseDouble(s));
+                        } else if(type == Float.class || type == float.class) {
+                            f.set(object, (value instanceof Float) ? value : Float.parseFloat(s));
+                        } else if(type == Long.class || type == long.class) {
+                            f.set(object, (value instanceof Long) ? value : Long.parseLong(s));
+                        } else if(type == Short.class || type == short.class) {
+                            f.set(object, (value instanceof Short) ? value : Short.parseShort(s));
+                        }
+
+                        keys.remove(name);
+                    }
                 }
             }
 
@@ -160,7 +172,7 @@ public class DataTools {
                     }
                 }
 
-                String value = null;
+                Object value = null;
                 if(name == null) {
                     name = m.getName();
                     if(keys.contains(name)) {
@@ -177,8 +189,10 @@ public class DataTools {
                 }
 
                 if(value != null) {
+                    final String s = value.toString();
+
                     // validate of require
-                    if(validator.length() > 0 && !value.matches(validator)) {
+                    if(validator.length() > 0 && !s.matches(validator)) {
                         throw new IllegalAccessException("Illegal value: " + value + " not match " + validator);
                     }
 
@@ -187,23 +201,23 @@ public class DataTools {
                     if(type == String.class) {
                         m.invoke(object, value.toString());
                     } else if(type == Integer.class || type == int.class) {
-                        m.invoke(object, Integer.valueOf(value));
+                        m.invoke(object, (value instanceof Integer) ? value : Integer.parseInt(s));
                     } else if(type == Boolean.class || type == boolean.class) {
-                        m.invoke(object, Boolean.parseBoolean(value));
+                        m.invoke(object, (value instanceof Boolean) ? value : Boolean.parseBoolean(s));
                     } else if(type == Byte.class || type == byte.class) {
-                        m.invoke(object, Byte.valueOf(value).byteValue());
+                        m.invoke(object, (value instanceof Byte) ? value : Byte.valueOf(s).byteValue());
                     } else if(type == Character.class || type == char.class) {
-                        if(value.length() == 0) {
-                            m.invoke(object, value.charAt(0));
+                        if(s.length() == 1) {
+                            m.invoke(object, s.charAt(0));
                         }
                     } else if(type == Double.class || type == double.class) {
-                        m.invoke(object, Double.parseDouble(value));
+                        m.invoke(object, (value instanceof Double) ? value : Double.parseDouble(s));
                     } else if(type == Float.class || type == float.class) {
-                        m.invoke(object, Float.parseFloat(value));
+                        m.invoke(object, (value instanceof Float) ? value : Float.parseFloat(s));
                     } else if(type == Long.class || type == long.class) {
-                        m.invoke(object, Long.parseLong(value));
+                        m.invoke(object, (value instanceof Long) ? value : Long.parseLong(s));
                     } else if(type == Short.class || type == short.class) {
-                        m.invoke(object, Short.parseShort(value));
+                        m.invoke(object, (value instanceof Short) ? value : Short.parseShort(s));
                     }
 
                     keys.remove(name);
