@@ -63,7 +63,7 @@ public class ModuleParam implements Map<String, Object> {
                 return clazz.cast(o);
             }
         }
-        return null;
+        return def;
     }
 
     public String getString(final String name, final String def) {
@@ -183,6 +183,10 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Long[] getLongs(final String name, final char... separator) {
+        return getLongs(name, new Long[0], separator);
+    }
+
+    public Long[] getLongs(final String name, final Long[] def, final char... separator) {
         final Collection list = get(Collection.class, name, null);
         if(list != null && list.size() > 0) {
             final Iterator iterator = list.iterator();
@@ -198,14 +202,22 @@ public class ModuleParam implements Map<String, Object> {
         }
 
         final String[] strings = getStrings(name, separator);
-        final Long[] longs = new Long[strings.length];
-        for(int i=0; i<strings.length; i++) {
-            longs[i] = Long.parseLong(strings[i]);
+        if(strings != null && strings.length > 0) {
+            final Long[] longs = new Long[strings.length];
+            for(int i=0; i<strings.length; i++) {
+                longs[i] = Long.parseLong(strings[i]);
+            }
+            return longs;
         }
-        return longs;
+
+        return def;
     }
 
     public Double[] getDoubles(final String name, final char... separator) {
+        return getDoubles(name, new Double[0], separator);
+    }
+
+    public Double[] getDoubles(final String name, final Double[] def, final char... separator) {
         final Collection list = get(Collection.class, name, null);
         if(list != null && list.size() > 0) {
             final Iterator iterator = list.iterator();
@@ -221,11 +233,13 @@ public class ModuleParam implements Map<String, Object> {
         }
 
         final String[] strings = getStrings(name, separator);
-        final Double[] doubles = new Double[strings.length];
-        for(int i=0; i<strings.length; i++) {
-            doubles[i] = Double.parseDouble(strings[i]);
+        if(strings != null && strings.length > 0) {
+            final Double[] doubles = new Double[strings.length];
+            for(int i=0; i<strings.length; i++) {
+                doubles[i] = Double.parseDouble(strings[i]);
+            }
         }
-        return doubles;
+        return def;
     }
 
     public Byte getByte(final String name, final Byte def) {
