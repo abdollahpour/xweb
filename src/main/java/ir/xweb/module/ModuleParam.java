@@ -123,7 +123,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Integer getInt(final String name, final Integer def) {
-        final Integer i = get(Integer.class, name, def);
+        final Integer i = get(Integer.class, name, null);
         if(i != null) {
             return i;
         }
@@ -247,7 +247,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Byte getByte(final String name, final Byte def) {
-        final Byte b = get(Byte.class, name, def);
+        final Byte b = get(Byte.class, name, null);
         if(b != null) {
             return b;
         }
@@ -263,7 +263,7 @@ public class ModuleParam implements Map<String, Object> {
     }
 
     public Boolean getBoolean(final String name, final Boolean def) {
-        final Boolean b = get(Boolean.class, name, def);
+        final Boolean b = get(Boolean.class, name, null);
         if(b != null) {
             return b;
         }
