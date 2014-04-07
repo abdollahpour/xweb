@@ -390,7 +390,7 @@ public class DataTools {
         return object;
     }
 
-    private interface Formatter {
+    public interface Formatter {
 
         public void write(final Writer writer, final Object object) throws IOException;
 
@@ -572,7 +572,7 @@ public class DataTools {
 
     }
 
-    private class AnnotedMap extends HashMap<String, Object> {
+    public class AnnotedMap extends HashMap<String, Object> {
 
         final String name;
 

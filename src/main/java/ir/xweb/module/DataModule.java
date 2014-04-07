@@ -50,6 +50,10 @@ public class DataModule extends Module {
         dataTools.setDateFormat(new SimpleDateFormat(properties.getString(PARAM_DATE_FORMAT, DEFAULT_DATE_FORMAT)));
     }
 
+    protected DataTools.Formatter addFormater(final String name, final DataTools.Formatter formatter) {
+        return dataTools.addFormatter(name, formatter);
+    }
+
     public void write(
             final HttpServletResponse response,
             final String format,

@@ -21,6 +21,7 @@ import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -120,10 +121,14 @@ public class Module {
                 }
             }
             else if(ct.equals("application/json")) {
-                final InputStreamReader reader = new InputStreamReader(request.getInputStream());
-                JSONTokener tokenizer = new JSONTokener(reader);
-                final JSONObject object = new JSONObject(tokenizer);
-                moduleParam = json2module(object);
+                try {
+                    final InputStreamReader reader = new InputStreamReader(request.getInputStream());
+                    JSONTokener tokenizer = new JSONTokener(reader);
+                    final JSONObject object = new JSONObject(tokenizer);
+                    moduleParam = json2module(object);
+                } catch (Exception ex) {
+                    throw new ModuleException("Error to parse json post", ex);
+                }
             }
 		}
 
@@ -215,7 +220,7 @@ public class Module {
 		return false;
 	}*/
 
-    private ModuleParam json2module(final JSONObject object) {
+    private ModuleParam json2module(final JSONObject object) throws JSONException {
         final ModuleParam p = new ModuleParam();
 
         for(Iterator k = object.keys(); k.hasNext();) {
@@ -236,7 +241,7 @@ public class Module {
         return p;
     }
 
-    private Collection json2module(final JSONArray array) {
+    private Collection json2module(final JSONArray array) throws JSONException {
         if(array.length() > 0) {
             final ArrayList list = new ArrayList();
             for(int i=0; i<array.length(); i++) {
