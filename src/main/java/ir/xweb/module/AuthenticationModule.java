@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -430,8 +431,12 @@ public class AuthenticationModule extends Module {
     }
 
     public XWebUser getUser(final HttpServletRequest request) {
-        final XWebUser user = (XWebUser) request.getSession().getAttribute(SESSION_USER);
-        return user;
+        final HttpSession session = request.getSession();
+        if(session != null) {
+            final XWebUser user = (XWebUser) session.getAttribute(SESSION_USER);
+            return user;
+        }
+        return null;
     }
 
     /**

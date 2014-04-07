@@ -36,16 +36,4 @@ public class TestXmlFormater2 {
         System.out.println(d.write("xml", null, map));
     }
 
-    @Test
-    public void testWriterXml3() throws IOException {
-
-        final Map map = new HashMap();
-        map.put("test1", "value1");
-        map.put("items", new String[]{"1", "2", "3"});
-
-        final DataTools d = new DataTools();
-        d.addFormatter(DataTools.FORMAT_XML, new XmlFormatter2());
-        System.out.println(d.write("xml", null, map));
-    }
-
 }
