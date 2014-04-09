@@ -7,10 +7,6 @@
 package ir.xweb.data;
 
 import ir.xweb.util.MimeType;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,6 +36,8 @@ public class DataTools {
 
     public final static String FORMAT_XML = "xml";
 
+    public final static String FORMAT_XML2 = "xml2";
+
     private final Map<String, Formatter> formatters = new HashMap<String, Formatter>();
 
     private final HashMap<String, String> properties = new HashMap<String, String>();
@@ -50,6 +48,7 @@ public class DataTools {
         formatters.put(FORMAT_JSON, new JsonFormatter());
         formatters.put(FORMAT_JSONP, new JsonpFormatter());
         formatters.put(FORMAT_XML, new XmlFormatter());
+        formatters.put(FORMAT_XML2, new XmlFormatter2());
     }
 
     public Formatter addFormatter(final String name, final Formatter formatter) {
@@ -390,13 +389,7 @@ public class DataTools {
         return object;
     }
 
-    public interface Formatter {
 
-        public void write(final Writer writer, final Object object) throws IOException;
-
-        public String getMimeType();
-
-    }
 
     private class JsonpFormatter extends JsonFormatter {
 
@@ -428,156 +421,6 @@ public class DataTools {
         @Override
         public String getMimeType() {
             return mimeType;
-        }
-
-    }
-
-    private class JsonFormatter implements Formatter {
-
-        private final String mimeType = MimeType.get("json");
-
-        @Override
-        public void write(final Writer writer, final Object object) throws IOException {
-            try {
-                if(object instanceof Map) {
-                    JSONObject obj = (JSONObject) write(object);
-                    obj.write(writer);
-                    writer.flush();
-                } else {
-                    JSONArray array = (JSONArray) write(object);
-                    array.write(writer);
-                    writer.flush();
-                }
-            } catch (JSONException ex) {
-                throw new IOException(ex);
-            }
-        }
-
-        protected Object write(final Object object) throws JSONException {
-            if(object instanceof Map) {
-                final JSONObject json = new JSONObject();
-
-                final Map<?, ?> map = (Map<?, ?>) object;
-                for(Map.Entry<?, ?> e:map.entrySet()) {
-                    json.put(e.getKey().toString(), write(e.getValue()));
-                }
-
-                return json;
-            } else if(object instanceof Collection) {
-                final JSONArray array = new JSONArray();
-
-                final Collection<?> list = (Collection<?>) object;
-                for(Object o:list) {
-                    array.put(write(o));
-                }
-
-                return array;
-            }
-            return object;
-        }
-
-        @Override
-        public String getMimeType() {
-            return mimeType;
-        }
-
-    }
-
-    private class XmlFormatter implements Formatter {
-
-        private final String mimeType = MimeType.get("xml");
-
-        @Override
-        public void write(final Writer writer, final Object object) throws IOException {
-            //final String key = map.keySet().iterator().next().toString();
-            //final Object value = map.get(key);
-            if(object instanceof Map) {
-                final Map<?, ?> map = (Map) object;
-                if(map.size() > 0) {
-                    Element root;
-                    if(map.size() == 1) {
-                        String key = map.keySet().iterator().next().toString();
-                        root = new Element(key);
-                        write(root, map.values().iterator().next());
-                    } else {
-                        root = new Element("data");
-                        write(root, map);
-                    }
-
-                    final Document document = new Document(root);
-                    final XMLOutputter xmlOutput = new XMLOutputter();
-                    xmlOutput.setFormat(Format.getCompactFormat());
-                    xmlOutput.output(document, writer);
-                }
-            } else if(object instanceof Collection) {
-                final Element root = new Element("data");
-                write(root, object);
-
-                final Document document = new Document(root);
-                final XMLOutputter xmlOutput = new XMLOutputter();
-                xmlOutput.setFormat(Format.getCompactFormat());
-                xmlOutput.output(document, writer);
-            } else {
-                writer.write(object.toString());
-            }
-        }
-
-        private void write(Element parent, Object object) throws IOException {
-            if(object instanceof Map) {
-
-                final Map<?, ?> map =  (Map<?, ?>) object;
-                for(Map.Entry<?, ?> e:map.entrySet()) {
-                    final Element element = new Element(e.getKey().toString());
-                    write(element, e.getValue());
-                    parent.addContent(element);
-                }
-            } else if(object instanceof Collection) {
-                final Collection<?> list = (Collection<?>) object;
-
-                for(Object o:list) {
-                    String key = null;
-                    if(o instanceof AnnotedMap) {
-                        key = ((AnnotedMap)o).name.toLowerCase();
-                    }
-
-                    if(key == null || key.length() == 0) {
-                        if(o instanceof String) {
-                            key = "string";
-                        } else if(o instanceof Integer) {
-                            key = "integer";
-                        } else if(o instanceof Float) {
-                            key = "float";
-                        } else if(o instanceof Long) {
-                            key = "long";
-                        } else if(o instanceof Double) {
-                            key = "double";
-                        } else {
-                            key = o.getClass().getSimpleName();
-                        }
-                    }
-
-                    Element e = new Element(key);
-                    write(e, o);
-                    parent.addContent(e);
-                }
-            } else {
-                parent.setText(object.toString());
-            }
-        }
-
-        @Override
-        public String getMimeType() {
-            return mimeType;
-        }
-
-    }
-
-    public class AnnotedMap extends HashMap<String, Object> {
-
-        final String name;
-
-        AnnotedMap(String name) {
-            this.name = name;
         }
 
     }

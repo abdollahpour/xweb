@@ -4,7 +4,6 @@ import ir.xweb.util.MimeType;
 import org.jdom.Content;
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.Text;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
@@ -14,7 +13,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
-public class XmlFormatter2 implements DataTools.Formatter {
+public class XmlFormatter2 implements Formatter {
 
     @Override
     public void write(final Writer writer, final Object object) throws IOException {
@@ -34,8 +33,7 @@ public class XmlFormatter2 implements DataTools.Formatter {
     private Element toElement(final Object object) {
         if(object instanceof Map) {
             final Map<?, ?> map = (Map) object;
-            final String name = (object instanceof DataTools.AnnotedMap) ?
-                    ((DataTools.AnnotedMap) object).name : "Map";
+            final String name = (object instanceof AnnotedMap) ? ((AnnotedMap) object).name : "Map";
             final Element element = new Element(name);
             for(Map.Entry e:map.entrySet()) {
                 final Element sub = toElement(e.getValue());
