@@ -36,6 +36,8 @@ public class DataTools {
 
     public final static String FORMAT_XML = "xml";
 
+    public final static String FORMAT_XML1 = "xml1";
+
     public final static String FORMAT_XML2 = "xml2";
 
     private final Map<String, Formatter> formatters = new HashMap<String, Formatter>();
@@ -48,6 +50,7 @@ public class DataTools {
         formatters.put(FORMAT_JSON, new JsonFormatter());
         formatters.put(FORMAT_JSONP, new JsonpFormatter());
         formatters.put(FORMAT_XML, new XmlFormatter());
+        formatters.put(FORMAT_XML1, new XmlFormatter());
         formatters.put(FORMAT_XML2, new XmlFormatter2());
     }
 

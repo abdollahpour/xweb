@@ -15,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DataModule extends Module {
 
@@ -59,7 +60,7 @@ public class DataModule extends Module {
             final HttpServletResponse response,
             final String format,
             final Object object) throws IOException {
-        write(response, format, null, null, null, object);
+        write(response, format, null, null, null, null, object);
     }
 
     public void write(
@@ -68,7 +69,7 @@ public class DataModule extends Module {
             final String role,
             final String template,
             final Object object) throws IOException {
-        write(response, format, role, template, null, object);
+        write(response, format, role, template, null, null, object);
     }
 
     public void write(
@@ -77,6 +78,17 @@ public class DataModule extends Module {
             final String role,
             final String template,
             final String language,
+            final Object object) throws IOException {
+        write(response, format, role, template, language, null, object);
+    }
+
+    public void write(
+            final HttpServletResponse response,
+            final String format,
+            final String role,
+            final String template,
+            final String language,
+            final Map<String, ?> templateParameters,
             final Object object) throws IOException {
 
         if("html".equals(format)) {
@@ -88,7 +100,7 @@ public class DataModule extends Module {
             }
 
             final String xml = dataTools.write("xml", role, object);
-            final String html = resourceModule.applyXmlTemplate(template, language, xml);
+            final String html = resourceModule.applyXmlTemplate(template, language, templateParameters, xml);
 
             if(!response.containsHeader("Content-Type")) {
                 response.addHeader("Content-Type", "text/html");
@@ -120,6 +132,7 @@ public class DataModule extends Module {
                 role,
                 params.getString("template", null),
                 params.getString("language", null),
+                null,
                 objects);
     }
 
@@ -130,6 +143,18 @@ public class DataModule extends Module {
             final String role,
             final String template,
             final String language,
+            final List<?> objects) throws IOException {
+        writePage(response, params, format, role, template, language, null, objects);
+    }
+
+    public void writePage(
+            final HttpServletResponse response,
+            final ModuleParam params,
+            final String format,
+            final String role,
+            final String template,
+            final String language,
+            final Map<String, ?> templateParameters,
             final List<?> objects) throws IOException {
 
         if(objects == null) {
@@ -186,7 +211,7 @@ public class DataModule extends Module {
         results.put("pages", pages);
         results.put("count", count);
 
-        write(response, format, role, template, language, results);
+        write(response, format, role, template, language, templateParameters, results);
     }
 
 }

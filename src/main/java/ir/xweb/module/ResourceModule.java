@@ -9,6 +9,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
+import sun.net.www.content.audio.x_aiff;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -626,15 +627,39 @@ public class ResourceModule extends Module {
         return new Long(value);
     }
 
+    /**
+     * Apply template to XML string
+     * @param template Name of template in template dir
+     * @param language Language of template (null for default)
+     * @param xml XML String
+     * @return Transformed result
+     */
     public String applyXmlTemplate(
             final String template,
             final String language,
             final String xml) {
+        return applyXmlTemplate(template, language, null, xml);
+    }
+
+    /**
+     * Apply template to XML string
+     * @param template Name of template in template dir
+     * @param language Language of template (null for default)
+     * @param parameters XSLT extra parameters OR NULL
+     * @param xml XML String greyhounds
+     * @return Transformed result
+     */
+    public String applyXmlTemplate(
+            final String template,
+            final String language,
+            final Map<String, ?> parameters,
+            final String xml) {
+
         // find XSLT template
         final File xsltFile = getTemplateFile(template, language, ".xsl");
         if(xsltFile != null) {
             try {
-                final String html = applyXslt(xsltFile, xml);
+                final String html = applyXslt(xsltFile, xml, parameters);
 
                 return html;
             } catch (Exception ex) {
@@ -648,7 +673,24 @@ public class ResourceModule extends Module {
     public String applyTemplate(
             final String template,
             final String language,
-            final Map<String, ?> params) {
+            final Map<String, ?> requestParams) {
+
+        return applyTemplate(template, language, requestParams, null);
+    }
+
+    /**
+     * Apply XSLT or TEXT template to request parameters
+     * @param template Template name in template folder
+     * @param language Language of template (null for default)
+     * @param requestParams Request parameters
+     * @param xsltParams XSLT extra parameters OR NULL
+     * @return
+     */
+    public String applyTemplate(
+            final String template,
+            final String language,
+            final Map<String, ?> requestParams,
+            final Map<String, ?> xsltParams) {
 
         // find XSLT template
         final File xsltFile = getTemplateFile(template, language, ".xsl");
@@ -656,8 +698,8 @@ public class ResourceModule extends Module {
             try {
                 final DataTools dataTools = new DataTools();
 
-                final String xml = dataTools.write("xml", null, params);
-                final String html = applyXslt(xsltFile, xml);
+                final String xml = dataTools.write("xml", null, requestParams);
+                final String html = applyXslt(xsltFile, xml, xsltParams);
 
                 return html;
             } catch (Exception ex) {
@@ -669,7 +711,7 @@ public class ResourceModule extends Module {
         final File textFile = getTemplateFile(template, language, ".txt");
         if(textFile != null) {
             try {
-                final String text = applyText(textFile, params);
+                final String text = applyText(textFile, requestParams);
 
                 return text;
             } catch (Exception ex) {
@@ -691,7 +733,11 @@ public class ResourceModule extends Module {
         return text;
     }
 
-    private String applyXslt(final File template, final String xml) throws Exception {
+    private String applyXslt(
+            final File template,
+            final String xml,
+            final Map<String, ?> xltParams) throws Exception {
+
         final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
         final DocumentBuilder builder = factory.newDocumentBuilder();
@@ -702,6 +748,15 @@ public class ResourceModule extends Module {
         final TransformerFactory tFactory = TransformerFactory.newInstance();
         final StreamSource styleSource = new StreamSource(template);
         final Transformer transformer = tFactory.newTransformer(styleSource);
+
+        if(xltParams != null) {
+            for(Map.Entry<String, ?> e:xltParams.entrySet()) {
+                if(e.getValue() == null) {
+                    throw new IllegalArgumentException("Null XLST parameter value for: " + e.getKey());
+                }
+                transformer.setParameter(e.getKey(), e.getValue());
+            }
+        }
 
         final StringWriter w = new StringWriter();
         final DOMSource source = new DOMSource(builder.parse(is));
