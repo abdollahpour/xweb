@@ -7,6 +7,7 @@
 package ir.xweb.module;
 
 import ir.xweb.data.DataTools;
+import ir.xweb.data.Formatter;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -50,7 +51,7 @@ public class DataModule extends Module {
         dataTools.setDateFormat(new SimpleDateFormat(properties.getString(PARAM_DATE_FORMAT, DEFAULT_DATE_FORMAT)));
     }
 
-    protected DataTools.Formatter addFormater(final String name, final DataTools.Formatter formatter) {
+    protected Formatter addFormater(final String name, final Formatter formatter) {
         return dataTools.addFormatter(name, formatter);
     }
 
