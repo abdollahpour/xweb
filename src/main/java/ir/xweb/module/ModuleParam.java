@@ -25,11 +25,11 @@ public class ModuleParam implements Map<String, Object> {
 
     private final List<String> defaults;
 
-    protected ModuleParam() {
+    public ModuleParam() {
         this(null, null);
     }
 
-    protected ModuleParam(final Map<String, String> data) {
+    public ModuleParam(final Map<String, String> data) {
         this(data, null);
     }
 
