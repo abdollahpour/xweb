@@ -1,6 +1,5 @@
 package ir.xweb.module;
 
-import javax.script.ScriptException;
 import java.util.List;
 import java.util.Map;
 

@@ -256,12 +256,16 @@ public class AuthenticationModule extends Module {
         // we don't care about context path, so we trunk it
         final String path = uri.getPath().substring(request.getContextPath().length());
 
-        if(uri.equals(redirect)){
+        // We handle API requests with different authentication method (Role base)
+        boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
+
+        if(redirect != null && uri.equals(redirect)){
             filterChain.doFilter(request, response);
             return;
         }
 
-        if(check != null && !path.matches(check)) {
+        // We also check all the API calls, but permission management check by module itself
+        if(check != null && !isApiCall && !path.matches(check)) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -271,15 +275,14 @@ public class AuthenticationModule extends Module {
             return;
         }
 
-        String header = request.getHeader("Authorization");
+        final String header = request.getHeader("Authorization");
         if (header != null) {
             logger.debug("Try to authenticate by HTTP authentication");
 
             if(header.startsWith("Basic")) {
-                String base64Token = header.substring(6);
-                String token = new String(Base64.decode(base64Token));
+                final String token = header.substring(6);
 
-                user = getUserWithUUID(uuid);
+                user = getUserWithUUID(token);
                 if(user != null) {
                     if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
                         logger.debug("User successfully login with HTTP authentication: " + token);
@@ -296,9 +299,6 @@ public class AuthenticationModule extends Module {
             }
         }
 
-
-        // We handle API requests with different authentication method (Role base)
-        boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
 
         // for API call there's 3 choice for login
         // 1: Session (already login)
