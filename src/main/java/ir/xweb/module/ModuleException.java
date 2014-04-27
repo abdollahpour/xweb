@@ -96,6 +96,15 @@ public class ModuleException extends IOException {
 
     /**
      *
+     * @param throwable Error message
+     */
+    public ModuleException(final Throwable throwable)
+    {
+        this(null, null, null, throwable);
+    }
+
+    /**
+     *
      * @param errorMessage Error message for client
      */
     public ModuleException(final String errorMessage)
