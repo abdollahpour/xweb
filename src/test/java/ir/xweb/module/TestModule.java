@@ -1,3 +1,4 @@
+
 /**
  * XWeb project
  * Created by Hamed Abdollahpour
@@ -15,6 +16,8 @@ import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.mockito.Matchers.anyString;
@@ -22,34 +25,74 @@ import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+
+/**
+ * Test module unit.
+ */
 public class TestModule {
 
-    final ServletContext servletContext = mock(ServletContext.class);
+    /**
+     * test.
+     */
+    private final ServletContext servletContext;
 
-    final ModuleInfo moduleInfo = mock(ModuleInfo.class);
+    /**
+     * test.
+     */
+    private final HttpSession session;
 
-    final ModuleParam moduleParam = new ModuleParam(Collections.EMPTY_MAP);
+    /**
+     * test.
+     */
+    private final Manager manager;
 
-    final HttpSession session = mock(HttpSession.class);
+    /**
+     * Create new instance with default params.
+     */
+    public TestModule() {
+        this(null);
+    }
 
-    final Manager manager;
+    /**
+     * Create new instance with custom params or null for default params.
+     *
+     * @param config custom param
+     */
+    public TestModule(final TestModuleConfig config) {
 
-    public TestModule() throws IOException {
-        when(servletContext.getInitParameterNames()).thenReturn(Collections.emptyEnumeration());
+        // Mock objects
+        servletContext = mock(ServletContext.class);
+        session = mock(HttpSession.class);
 
+        // Setup configs
+        final TestModuleConfig p;
+        if (config != null) {
+            p = config;
+        }
+        else {
+            p = new DefaultTestModuleConfig();
+        }
+
+        // Mock methods
+        when(servletContext.getInitParameterNames()).thenReturn(
+            new IteratorEnumeration(p.servletInitParams().keySet().iterator()));
         doAnswer(new Answer<Object>() {
-            public Object answer(InvocationOnMock invocation) {
+            public Object answer(final InvocationOnMock invocation) {
                 Object[] args = invocation.getArguments();
-                final File file = new File("src/test/webapp", args[0].toString());
+                final File file = new File(p.getContextDir(), args[0].toString());
                 return file.getAbsolutePath();
             }
         }).when(servletContext).getRealPath(anyString());
 
         manager = new Manager(servletContext);
-        manager.load(getClass().getResource("/WEB-INF/xweb.xml"));
+        try {
+            manager.load(p.getXWebFile().toURI().toURL());
+        } catch (IOException ex) {
+            throw new IllegalArgumentException(ex);
+        }
 
         final Map<String, Module> modules = manager.getModules();
-        for(Module module:modules.values()) {
+        for (Module module : modules.values()) {
             module.init(servletContext);
         }
         //for(Module module:module.values()) {
@@ -57,14 +100,119 @@ public class TestModule {
         //}
     }
 
-    public Manager getManager() {
+    /**
+     * Get manager.
+     *
+     * @return manager
+     */
+    public final Manager getManager() {
         return manager;
     }
 
-    public HttpSession getSession() {
+    /**
+     * Get HTTP session.
+     *
+     * @return session
+     */
+    public final HttpSession getSession() {
         return session;
     }
 
+    /**
+     * Module test configurations.
+     */
+    public interface TestModuleConfig {
+
+        /**
+         * Servlet initialize parameters.
+         *
+         * @return Map of params
+         */
+        Map<String, String> servletInitParams();
+
+        /**
+         * Get web ROOT folder.
+         * @return web ROOT folder
+         */
+        File getContextDir();
+
+        /**
+         * xweb.xml config file.
+         * @return file path
+         */
+        File getXWebFile();
+
+    }
+
+    /**
+     * {@inheritDoc}.
+     */
+    public class DefaultTestModuleConfig implements TestModuleConfig {
+
+        @Override
+        public final Map<String, String> servletInitParams() {
+            return Collections.EMPTY_MAP;
+        }
+
+        @Override
+        public final File getContextDir() {
+            final File inTest = new File("src/test/webapp");
+            if (inTest.exists()) {
+                return inTest;
+            }
+
+            final File inMain = new File("src/main/webapp");
+            if (inTest.exists()) {
+                return inTest;
+            }
+
+            // In resources
+            return new File("src/main/resources");
+        }
+
+        @Override
+        public final File getXWebFile() {
+            final File file = new File(getContextDir(), "xweb.xml");
+            return file;
+        }
+    }
+
+    /**
+     * Iterator to Enumeration.
+     *
+     * @param <E>
+     */
+    private class IteratorEnumeration<E> implements Enumeration<E> {
+
+        /**
+         * Iterator source.
+         */
+        private final Iterator<E> iterator;
+
+        /**
+         * constructor.
+         *
+         * @param iterator iterator source.
+         */
+        public IteratorEnumeration(final Iterator<E> iterator) {
+            this.iterator = iterator;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public E nextElement() {
+            return this.iterator.next();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean hasMoreElements() {
+            return this.iterator.hasNext();
+        }
+
+    }
 
 }
 
