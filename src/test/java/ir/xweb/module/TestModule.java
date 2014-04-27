@@ -119,6 +119,15 @@ public class TestModule {
     }
 
     /**
+     * Get mocked servlet context
+     *
+     * @return mocked servlet context
+     */
+    public ServletContext getServletContext() {
+        return servletContext;
+    }
+
+    /**
      * Module test configurations.
      */
     public interface TestModuleConfig {

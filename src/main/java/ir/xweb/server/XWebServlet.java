@@ -47,44 +47,35 @@ public class XWebServlet extends HttpServlet {
             } catch (ModuleException ex) {
 
                 //int errorCode = ex.getErrorCode();
-                int responseCode = ex.getReponseCode();
+                final Integer responseCode = ex.getResponseCode();
 
-                if(responseCode == HttpServletResponse.SC_NOT_FOUND) {
-                    logger.trace("Data not found. " +
-                            "Module: " + module.getInfo().getName() +
-                            " Code: " + ex.getErrorCode(), ex);
-                } else if(module.redirectAuthFail() && responseCode == HttpServletResponse.SC_UNAUTHORIZED) {
-                    // OK!
-                    // When Authentication exception happen, we it be possible (module have this feature and
-                    // redirect URL was available) we will redirect connection to authentication page
+                // trace error or not
+                final boolean trace = (responseCode == null) ||
+                    (responseCode != HttpServletResponse.SC_NOT_FOUND) ||
+                    (responseCode != HttpServletResponse.SC_UNAUTHORIZED);
 
-                    // TODO: Not support after modular Authentication
-                    /*String redirect = manager.getProperty(Constants.AUTHENTICATION_REDIRECT);
-                    if(redirect != null) {
-                        String uri = request.getRequestURI().substring(request.getContextPath().length());
-
-                        response.sendRedirect(getServletContext().getContextPath()
-                                + redirect + "?url="
-                                + getServletContext().getContextPath()
-                                + URLEncoder.encode(uri + "?" + request.getQueryString(), "UTF-8"));
-
-                        return;
-                    }*/
-                } else {
-                    logger.error("Error in module process." +
-                            " Module: " + module.getInfo().getName() +
-                            " Code: " + ex.getErrorCode(), ex);
+                if(trace) {
+                    logger.error(responseCode + " error", ex);
                 }
 
+                // Write error to output
                 if(!response.isCommitted()) {
-                    response.addHeader("xweb-error-code", Integer.toString(ex.getErrorCode()));
-                    response.sendError(
-                            responseCode > 0 ? responseCode: HttpServletResponse.SC_BAD_REQUEST,
-                            "Error in module: " + api + " Cause: " + ex.getMessage());
+                    if (ex.getErrorCode() != null) {
+                        response.addHeader("xweb-error-code", Integer.toString(ex.getErrorCode()));
+                    }
+
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
+
+                    if(responseCode != null) {
+                        response.sendError(responseCode, ex.toString());
+                    } else {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, ex.toString());
+                    }
                 }
             } catch (Exception ex) {
                 logger.error("Error in module process. Module: " 
-                			+ module.getInfo().getName() 
+                			+ module.getInfo().getName()
             				+ " : " + ex.getMessage(), ex);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                         "Error in module: " + api + " Cause: " + ex.getMessage());

@@ -1,52 +1,149 @@
+
+/**
+ * XWeb project
+ * Created by Hamed Abdollahpour
+ * https://github.com/abdollahpour/xweb
+ */
+
 package ir.xweb.module;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import org.json.JSONObject;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+/**
+ * Module custom exception.
+ */
 public class ModuleException extends IOException {
 
-	private static final long serialVersionUID = -1278866021646593493L;
+    /**
+     * Unique serial.
+     */
+    private static final long serialVersionUID = -1278866021646593493L;
 
-	private int responceCode;
+    /**
+     * <code>HttpServletResponse</code> response code.
+     */
+    private final Integer responseCode;
 
-    private int errorCode = -1;
+    /**
+     * Error code for the client.
+     */
+    private final Integer errorCode;
 
-    public ModuleException(String message) {
-        this(HttpServletResponse.SC_BAD_REQUEST, message, null, -1);
-    }
+    /**
+     * Error message for client.
+     */
+    private final String errorMessage;
 
-    public ModuleException(int responceCode, String message) {
-        this(responceCode, message, null, -1);
-    }
 
-    public ModuleException(int responceCode, String message, Exception ex) {
-        this(responceCode, message, ex, -1);
-    }
+    /**
+     * Error message.
+     */
+    private final Throwable throwable;
 
-    public ModuleException(String message, Exception ex) {
-        this(HttpServletResponse.SC_BAD_REQUEST, message, ex, -1);
-    }
-
-    public ModuleException(int responceCode, String message, Exception ex, int errorCode) {
-        super(message, ex);
-        this.responceCode = responceCode;
+    /**
+     *
+     * @param responseCode <code>HttpServletResponse</code> response code
+     * @param errorCode Error code for the client
+     * @param errorMessage Error message for client
+     * @param throwable Error message
+     */
+    public ModuleException(
+        final Integer responseCode,
+        final Integer errorCode,
+        final String errorMessage,
+        final Throwable throwable)
+    {
+        this.responseCode = responseCode;
         this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+        this.throwable = throwable;
     }
 
-    public ModuleException(String message, Exception ex, int errorCode) {
-        this(HttpServletResponse.SC_BAD_REQUEST, message, ex, errorCode);
+    /**
+     *
+     * @param responseCode <code>HttpServletResponse</code> response code
+     * @param errorCode Error code for the client
+     * @param errorMessage Error message for client
+     */
+    public ModuleException(final int responseCode, final int errorCode, final String errorMessage)
+    {
+        this(responseCode, errorCode, errorMessage, null);
     }
 
-    public ModuleException(String message, int errorCode) {
-        this(HttpServletResponse.SC_BAD_REQUEST, message, null, errorCode);
+    /**
+     *
+     * @param responseCode <code>HttpServletResponse</code> response code
+     * @param errorMessage Error message for client
+     */
+    public ModuleException(final int responseCode, final String errorMessage)
+    {
+        this(responseCode, null, errorMessage, null);
     }
 
-    public int getReponseCode() {
-        return responceCode;
+    /**
+     *
+     * @param errorMessage Error message for client
+     * @param throwable Error message
+     */
+    public ModuleException(final String errorMessage, final Throwable throwable)
+    {
+        this(null, null, errorMessage, throwable);
     }
 
-    public int getErrorCode() {
+    /**
+     *
+     * @param errorMessage Error message for client
+     */
+    public ModuleException(final String errorMessage)
+    {
+        this(null, null, errorMessage, null);
+    }
+
+    public Integer getResponseCode() {
+        return responseCode;
+    }
+
+    public Integer getErrorCode() {
         return errorCode;
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public Throwable getThrowable() {
+        return throwable;
+    }
+
+    @Override
+    public String toString() {
+        final JSONObject object = new JSONObject();
+
+        if(errorCode != null) {
+            object.put("code", errorCode);
+        }
+        if(errorMessage != null) {
+            object.put("message", errorMessage);
+        }
+        else if(throwable != null && throwable.getMessage() != null) {
+            object.put("message", throwable.getMessage());
+        }
+        if(throwable != null) {
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            throwable.printStackTrace(pw);
+
+            object.put("trace", sw.toString());
+        }
+        return object.toString();
+    }
+
+    @Override
+    public String getMessage() {
+        return toString();
+    }
 }

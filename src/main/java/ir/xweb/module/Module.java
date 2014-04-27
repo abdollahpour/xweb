@@ -1,3 +1,4 @@
+
 /**
  * XWeb project
  * Created by Hamed Abdollahpour
@@ -269,8 +270,8 @@ public class Module {
         return this.properties;
     }
     
-    public boolean redirectAuthFail() {
-    	return false;
-    }
+    //public boolean redirectAuthFail() {
+    //	return false;
+    //}
 
 }

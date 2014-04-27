@@ -213,7 +213,6 @@ public class ResourceModule extends Module {
                     }
 
                 } catch (Exception ex) {
-                    ex.printStackTrace();
                     throw new ModuleException("", ex);
                 }
             }

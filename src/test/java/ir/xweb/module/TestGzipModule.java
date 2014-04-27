@@ -60,16 +60,16 @@ public class TestGzipModule extends TestModule {
         when(response.getWriter()).thenReturn(printWriter);
         when(response.getOutputStream()).thenReturn(servletOutputStream);
         when(response.getCharacterEncoding()).thenReturn("UTF-8");
-        when(servletContext.getRealPath(anyString())).thenReturn("");
+        when(getServletContext().getRealPath(anyString())).thenReturn("");
 
-        final ReplyModule module = manager.getModuleOrThrow(ReplyModule.class);
-        final GzipModule gzip = manager.getModuleOrThrow(GzipModule.class);
+        final ReplyModule module = getManager().getModuleOrThrow(ReplyModule.class);
+        final GzipModule gzip = getManager().getModuleOrThrow(GzipModule.class);
         final TestChain chain = new TestChain();
 
-        gzip.doFilter(servletContext, request, response, chain);
+        gzip.doFilter(getServletContext(), request, response, chain);
 
         module.process(
-                servletContext,
+                getServletContext(),
                 (HttpServletRequest) chain.request,
                 (HttpServletResponse) chain.response,
                 new ModuleParam(params), null);

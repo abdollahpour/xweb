@@ -141,13 +141,15 @@
     <!-- See http://checkstyle.sf.net/config_blocks.html -->
     <module name="AvoidNestedBlocks"/>
     <module name="EmptyBlock"/>
-    <!-- Custom -->
-    <module name="LeftCurly" />
     <module name="NeedBraces"/>
     <!--<module name="RightCurly" />-->
     <module name="RightCurly">
       <property name="option" value="alone"/>
       <property name="tokens" value="LITERAL_ELSE"/>
+    </module>
+    <module name="LeftCurly">
+      <property name="option" value="nlow"/>
+      <property name="tokens" value="METHOD_DEF"/>
     </module>
 
 

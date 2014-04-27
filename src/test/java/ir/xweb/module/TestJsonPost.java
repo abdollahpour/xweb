@@ -23,7 +23,7 @@ public class TestJsonPost extends TestModule {
         final HttpServletRequest request = mock(HttpServletRequest.class);
         final HttpServletResponse response = mock(HttpServletResponse.class);
 
-        when(request.getSession()).thenReturn(session);
+        when(request.getSession()).thenReturn(getSession());
         when(request.getHeader("Content-Type")).thenReturn("application/json");
         when(request.getInputStream()).thenReturn(new ServletInputStream() {
 
@@ -35,9 +35,9 @@ public class TestJsonPost extends TestModule {
             }
         });
 
-        final EmptyModule module = manager.getModule(EmptyModule.class);
+        final EmptyModule module = getManager().getModule(EmptyModule.class);
 
-        module.process(servletContext, request, response, null);
+        module.process(getServletContext(), request, response, null);
     }
 
 }

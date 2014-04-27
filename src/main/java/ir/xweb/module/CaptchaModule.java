@@ -215,14 +215,26 @@ public class CaptchaModule extends Module {
         // check for captcha
         if(expire != null) {
             if(System.currentTimeMillis() > expire) {
-                throw new ModuleException("Captcha code expired!", ERROR_CODE_CAPTCHA);
+                throw new ModuleException(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    ERROR_CODE_CAPTCHA,
+                    "Captcha code expired!",
+                    null);
             }
 
             if(code != Integer.parseInt(captcha)) {
-                throw new ModuleException("Illegal captcha code: " + captcha, ERROR_CODE_CAPTCHA);
+                throw new ModuleException(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    ERROR_CODE_CAPTCHA,
+                    "Illegal captcha code: " + captcha,
+                    null);
             }
         } else {
-            throw new ModuleException("Captcha code does not exist!", ERROR_CODE_CAPTCHA);
+            throw new ModuleException(
+                HttpServletResponse.SC_UNAUTHORIZED,
+                ERROR_CODE_CAPTCHA,
+                "Captcha code does not exist!",
+                null);
         }
     }
 

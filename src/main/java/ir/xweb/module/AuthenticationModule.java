@@ -431,7 +431,7 @@ public class AuthenticationModule extends Module {
     }
 
     public XWebUser getUser(final HttpServletRequest request) {
-        if(request != null) {
+        if (request != null) {
             final HttpSession session = request.getSession();
             if(session != null) {
                 final XWebUser user = (XWebUser) session.getAttribute(SESSION_USER);
