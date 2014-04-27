@@ -1,5 +1,7 @@
 # XWeb
 
+[![Build Status](https://api.travis-ci.org/abdollahpour/xweb.svg)](https://travis-ci.org/abdollahpour/xweb)
+
 ![XWeb](logo.png "XWeb project")
 
 XWeb is simple modular library to create Java based web applications. java is one of the most popular programming languages in use nowadays, with a lot of tutorials, documentation and libraries.
