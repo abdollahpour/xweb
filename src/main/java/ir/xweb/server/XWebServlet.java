@@ -51,8 +51,8 @@ public class XWebServlet extends HttpServlet {
 
                 // trace error or not
                 final boolean trace = (responseCode == null) ||
-                    (responseCode != HttpServletResponse.SC_NOT_FOUND) ||
-                    (responseCode != HttpServletResponse.SC_UNAUTHORIZED);
+                    ((responseCode != HttpServletResponse.SC_NOT_FOUND) &&
+                    (responseCode != HttpServletResponse.SC_UNAUTHORIZED));
 
                 if(trace) {
                     logger.error(responseCode + " error", ex);
@@ -77,8 +77,11 @@ public class XWebServlet extends HttpServlet {
                 logger.error("Error in module process. Module: " 
                 			+ module.getInfo().getName()
             				+ " : " + ex.getMessage(), ex);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+
+                if(!response.isCommitted()) {
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
                         "Error in module: " + api + " Cause: " + ex.getMessage());
+                }
             }
 		} else {
             logger.info("Call illegal API: " + api);

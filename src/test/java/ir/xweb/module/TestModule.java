@@ -171,8 +171,8 @@ public class TestModule {
             }
 
             final File inMain = new File("src/main/webapp");
-            if (inTest.exists()) {
-                return inTest;
+            if (inMain.exists()) {
+                return inMain;
             }
 
             // In resources
@@ -181,8 +181,21 @@ public class TestModule {
 
         @Override
         public final File getXWebFile() {
-            final File file = new File(getContextDir(), "xweb.xml");
-            return file;
+            final String[] files = new String[]{
+                "src/test/resources/WEB-INF/xweb.xml",
+                "src/test/webapp/WEB-INF/xweb.xml",
+                "src/main/resources/WEB-INF/xweb.xml",
+                "src/main/webapp/WEB-INF/xweb.xml"
+            };
+
+            for (String f:files) {
+                final File file = new File(f);
+                if(file.exists()) {
+                    return file;
+                }
+            }
+
+            return null;
         }
     }
 
