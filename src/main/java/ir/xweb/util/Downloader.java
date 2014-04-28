@@ -183,7 +183,7 @@ public class Downloader {
 
         do {
             try {
-                final URLConnection conn = (proxy == null ? this.url.openConnection() : this.url.openConnection(proxy));
+                final HttpURLConnection conn = (HttpURLConnection)(proxy == null ? this.url.openConnection() : this.url.openConnection(proxy));
 
                 if(this.timout > 0) {
                     conn.setConnectTimeout(this.timout);
@@ -214,19 +214,24 @@ public class Downloader {
                     baos.reset();
                 }
 
-                is =  conn.getInputStream();
 
-                int size;
-                byte[] buffer = new byte[10240];
+                if(conn.getResponseCode() == 200) {
+                    is = conn.getInputStream();
 
-                while((size = is.read(buffer)) > 0) {
-                    if(maxSize > 0 && size + baos.size() > maxSize) {
-                        throw new IllegalStateException("Size is more that max size");
+                    int size;
+                    byte[] buffer = new byte[10240];
+
+                    while ((size = is.read(buffer)) > 0) {
+                        if (maxSize > 0 && size + baos.size() > maxSize) {
+                            throw new IllegalStateException("Size is more that max size");
+                        }
+                        baos.write(buffer, 0, size);
                     }
-                    baos.write(buffer, 0, size);
+
+                    return baos.toByteArray();
                 }
 
-                return baos.toByteArray();
+                return null;
             } catch (SocketTimeoutException ex) {
                 if(r > 0) {
                     r--;
