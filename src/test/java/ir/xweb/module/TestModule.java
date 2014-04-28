@@ -60,6 +60,9 @@ public class TestModule {
      */
     public TestModule(final TestModuleConfig config) {
 
+        // Setup for test
+        System.setProperty("ir.xweb.test", "true");
+
         // Mock objects
         servletContext = mock(ServletContext.class);
         session = mock(HttpSession.class);

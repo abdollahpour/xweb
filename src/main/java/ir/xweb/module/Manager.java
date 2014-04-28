@@ -222,7 +222,10 @@ public class Manager {
                                     p = getPeriod(period);
                                 }
 
-                                addSchedule(module, query, s, p);
+                                // we don't add schedule in module test
+                                if(!"true".equals(System.getProperty("ir.xweb.test"))) {
+                                    addSchedule(module, query, s, p);
+                                }
                             }
                         }
 
