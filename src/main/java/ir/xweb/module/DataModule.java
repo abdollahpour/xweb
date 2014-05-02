@@ -298,7 +298,7 @@ public class DataModule extends Module {
 
         String role = null;
 
-        String format = null;
+        String format = "json";
 
         Map<String, String> templateParams = null;
 
