@@ -58,6 +58,11 @@ public class DataTools {
         return formatters.put(name, formatter);
     }
 
+    public Formatter getFormatter(final String name) {
+        final Formatter formatter = formatters.get(name);
+        return formatter;
+    }
+
     public void setDateFormat(final DateFormat dateFormat) {
         if(dateFormat == null) {
             throw new IllegalArgumentException("null dataFormat");
@@ -244,7 +249,7 @@ public class DataTools {
         Formatter formatter = formatters.get(format);
         if(formatter != null) {
             if(!response.containsHeader("Content-Type")) {
-                response.addHeader("Content-Type", formatter.getMimeType());
+                response.addHeader("Content-Type", formatter.getContentType());
                 response.setCharacterEncoding("UTF-8");
             }
         }
@@ -422,7 +427,7 @@ public class DataTools {
         }
 
         @Override
-        public String getMimeType() {
+        public String getContentType() {
             return mimeType;
         }
 

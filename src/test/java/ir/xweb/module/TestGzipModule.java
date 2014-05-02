@@ -32,7 +32,7 @@ public class TestGzipModule extends TestModule {
     }
 
     public String testGzipContent(boolean zip) throws IOException, ServletException {
-        final HashMap<String, String> params = new HashMap<String, String>();
+        final HashMap<String, Object> params = new HashMap<String, Object>();
         params.put("key1", "value1");
         params.put("key2", "value2");
         params.put("key3", "value3");

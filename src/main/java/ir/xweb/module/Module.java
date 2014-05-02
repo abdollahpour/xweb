@@ -84,7 +84,7 @@ public class Module {
 		
 		final String contentType = request.getHeader("Content-Type");
 
-        final HashMap<String, String> params = new HashMap<String, String>();
+        final HashMap<String, Object> params = new HashMap<String, Object>();
         final HashMap<String, FileItem> files = new HashMap<String, FileItem>();
 
         ModuleParam moduleParam = null;
@@ -107,7 +107,7 @@ public class Module {
                             fieldname = new String (fieldname.getBytes ("iso-8859-1"), "UTF-8");
                             fieldvalue = new String (fieldvalue.getBytes ("iso-8859-1"), "UTF-8");
 
-                            final String old = params.get(fieldname);
+                            final Object old = params.get(fieldname);
                             params.put(fieldname, old == null ? fieldvalue : old + "," + fieldvalue);
                         } else {
                             final String filename = item.getName();

@@ -40,7 +40,7 @@ public class Manager {
 
 	private final LinkedHashMap<String, Module> modules = new LinkedHashMap<String, Module>();
 
-    private final Map<String, String> generalProperties = new HashMap<String, String>();
+    private ModuleParam properties;
 
     private final ServletContext context;
 
@@ -61,26 +61,14 @@ public class Manager {
             final Document document = builder.build(in);
             final Element root = document.getRootElement();
 
-            Map<String, String> env = getEnvMap(generalProperties);
+            final Map<String, String> envParam = getEnvMap();
 
             final Element envPropertiesElement = root.getChild("properties");
             if(envPropertiesElement != null) {
-                final List<?> propertyElements = envPropertiesElement.getChildren("property");
-                for(Object o2:propertyElements) {
-                    Element property = (Element) o2;
-                    String key = property.getAttributeValue("key");
-                    String value = property.getAttributeValue("value");
-                    if(value != null) {
-                        generalProperties.put(key, value);
-                    } else {
-                        String text = applyEnvironmentVariable(env, property.getText());
-                        generalProperties.put(key, text);
-                    }
-                }
+                this.properties = (ModuleParam) getElement(null, envParam, envPropertiesElement);
             }
 
-            // Update environment variables with new system generalProperties
-            env = getEnvMap(generalProperties);
+            final ModuleParam defaultParam = getDefaultProperties(this.properties);
 
             Element modulesElement = root.getChild("modules");
             if(modulesElement != null) {
@@ -157,34 +145,12 @@ public class Manager {
                         }
                     }
 
-                    //final Map<String, String> properties = new HashMap<String, String>();
-                    final ModuleParam properties = new ModuleParam();
-
-                    // add default parameters first. These parameters can override by module generalProperties
-                    for(Map.Entry<String, String> e:this.generalProperties.entrySet()) {
-                        if(e.getKey().startsWith(DEFAULT_PROPERTIES_PREFIX)) {
-                            properties.put(e.getKey().substring(DEFAULT_PROPERTIES_PREFIX.length()), e.getValue(), true);
-                        }
-                    }
-
                     final Element propertiesElement = model.getChild("properties");
+                    final ModuleParam properties;
                     if(propertiesElement != null) {
-                        final List<?> propertyElements = propertiesElement.getChildren("property");
-                        for(Object o2:propertyElements) {
-                            final Element property = (Element)o2;
-                            final String key = property.getAttributeValue("key");
-                            if(key != null) {
-                                final String value = property.getAttributeValue("value");
-                                if(value != null) {
-                                    properties.put(key, value);
-                                } else {
-                                    final String text = applyEnvironmentVariable(env, property.getText());
-                                    properties.put(key, text);
-                                }
-                            } else {
-                                logger.warn("Key not found for property (" + name + ")");
-                            }
-                        }
+                        properties = (ModuleParam) getElement(defaultParam, envParam, propertiesElement);
+                    } else {
+                        properties = new ModuleParam();
                     }
 
                     try {
@@ -228,7 +194,6 @@ public class Manager {
                                 }
                             }
                         }
-
 
                         modules.put(name, module);
                     } catch (Exception ex) {
@@ -275,7 +240,14 @@ public class Manager {
 	}
 
     public String getProperty(final String name) {
-        return generalProperties == null ? null : generalProperties.get(name);
+        if(name == null) {
+            throw new IllegalArgumentException("null name");
+        }
+
+        if(this.properties != null) {
+            return this.properties.getString(name);
+        }
+        return null;
     }
 	
 	public Map<String, Module> getModules() {
@@ -306,8 +278,40 @@ public class Manager {
         throw new IllegalArgumentException("Module " + clazz.getName() + " not find. But it's require");
     }
 
-    private Map<String, String> getEnvMap(Map<String, String> properties) {
+    private ModuleParam getDefaultProperties(final ModuleParam def) {
+        if(def != null) {
+            final ModuleParam param = new ModuleParam();
+
+            for (Map.Entry<String, Object> e:def.entrySet()) {
+                if(e.getKey().startsWith(DEFAULT_PROPERTIES_PREFIX)) {
+                    final String k = e.getKey().substring(DEFAULT_PROPERTIES_PREFIX.length());
+
+                    final Object v;
+                    if(e.getValue() instanceof ModuleParam) {
+                        v = getDefaultProperties((ModuleParam) e.getValue());
+                    } else {
+                        v = e.getValue();
+                    }
+
+                    param.put(k, v);
+                }
+            }
+
+            if(param.size() > 0) {
+                return param;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get list of parametters from system
+     * @return
+     */
+    private Map<String, String> getEnvMap() {
         final Map<String, String> env = new HashMap<String, String>();
+
         if(System.getenv() != null) {
             env.putAll(System.getenv());
         }
@@ -344,9 +348,6 @@ public class Manager {
 
         env.put("xweb.root", context.getRealPath("/"));
 
-        // add global generalProperties
-        env.putAll(properties);
-
         return env;
     }
 
@@ -364,8 +365,8 @@ public class Manager {
         return sb.toString();
     }
 
-    public static Map<String, String> getUrlParameters(final String stringQuery) throws IOException {
-        final Map<String, String> params = new HashMap<String, String>();
+    public static Map<String, Object> getUrlParameters(final String stringQuery) throws IOException {
+        final Map<String, Object> params = new HashMap<String, Object>();
         for (String param : stringQuery.split("&")) {
             final String pair[] = param.split("=");
             final String key = URLDecoder.decode(pair[0], "UTF-8");
@@ -404,6 +405,62 @@ public class Manager {
         } catch (Exception ex) {
             logger.error("Error in maintenance task", ex);
         }
+    }
+
+    private Object getElement(final ModuleParam def, final Map<String, String> envParams, final Element element) {
+        if(element == null) {
+            throw new IllegalArgumentException("null");
+        }
+        if(element.getChildren().size() == 0) {
+            final String value = element.getAttributeValue("value");
+            if(value != null) {
+                return value;
+            } else {
+                final String text = element.getText();
+
+                return applyEnvironmentVariable(envParams, text);
+            }
+        }
+
+        final ModuleParam param = new ModuleParam(def);
+
+        for (Object o:element.getChildren()) {
+            final Element e = (Element) o;
+            final String key = e.getAttributeValue("key");
+            if (key == null) {
+                throw new IllegalArgumentException("key attribute not found");
+            }
+
+            // for array type, none of children should have key attribute
+            boolean isArray = false;
+            if (e.getChildren().size() > 0) {
+                isArray = true;
+
+                for (Object _o:e.getChildren()) {
+                    final Element _e = (Element) _o;
+                    if (_e.getAttributeValue("key") != null) {
+                        isArray = false;
+                        break;
+                    }
+                }
+            }
+
+            if (isArray) {
+                final List<Object> list = new ArrayList<Object>(e.getChildren().size());
+                for (Object _o:e.getChildren()) {
+                    final Element _e = (Element) _o;
+
+                    list.add(getElement(null, envParams, _e));
+                }
+
+                param.put(key, list);
+            }
+            else {
+                param.put(key, getElement(null, envParams, e));
+            }
+        }
+
+        return param;
     }
 	
 	private class Info implements ModuleInfo {

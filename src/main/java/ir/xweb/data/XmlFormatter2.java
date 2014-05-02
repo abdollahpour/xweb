@@ -83,7 +83,7 @@ public class XmlFormatter2 implements Formatter {
     }
 
     @Override
-    public String getMimeType() {
+    public String getContentType() {
         return MimeType.get("xml");
     }
 

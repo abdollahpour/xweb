@@ -176,7 +176,7 @@ public class RewriteModule extends Module {
         Element urlrewrite = new Element("urlrewrite");
 
         for(String key:pro.keySet()) {
-            if(!pro.isDefaultProperties(key)) {
+            //if(!pro.isDefaultProperties(key)) {
                 String value = pro.getString(key, null);
 
                 Element rule = new Element("rule");
@@ -189,7 +189,7 @@ public class RewriteModule extends Module {
                 Element to = new Element("to");
                 to.setText(value);
                 rule.addContent(to);
-            }
+            //}
         }
 
         Document doc = new Document(urlrewrite);

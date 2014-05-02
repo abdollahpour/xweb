@@ -122,7 +122,7 @@ public class TestModule {
     }
 
     /**
-     * Get mocked servlet context
+     * Get mocked servlet contextTEST
      *
      * @return mocked servlet context
      */

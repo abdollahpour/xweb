@@ -112,6 +112,67 @@ public class DataModule extends Module {
         }
     }
 
+    /**
+     * Serialize XWeb object to response.
+     *
+     * @param response http response
+     * @param config write config or null for default config
+     * @param object xweb object
+     * @throws IOException
+     */
+    public void write(
+        final HttpServletResponse response,
+        final WriteConfig config,
+        final Object object) throws IOException
+    {
+        final WriteConfig c;
+        if(config == null) {
+            c = new WriteConfig();
+        } else {
+            c = config;
+        }
+
+        if (config.format() != null) {
+            throw new IllegalArgumentException("null format");
+        }
+
+        final Formatter formatter;
+        final String contentType;
+
+        if(config.format() != null) {
+            formatter = dataTools.getFormatter(config.format());
+            contentType = formatter.getContentType();
+        } else {
+            formatter = null;
+            contentType = null;
+        }
+
+        if(format.startsWith("html")) {
+            if(c.template() == null) {
+                throw new IllegalArgumentException("Template null, you need template for HTML format");
+            }
+            if(resourceModule == null) {
+                resourceModule = getManager().getModuleOrThrow(ResourceModule.class);
+            }
+
+            final String xml = dataTools.write("xml", c.role(), object);
+            final String html = resourceModule.applyXmlTemplate(
+                c.template(), c.templateLanguage(), c.templateParams(), xml);
+
+            if(!response.containsHeader("Content-Type")) {
+                response.addHeader("Content-Type", "text/html");
+                response.setCharacterEncoding("UTF-8");
+            }
+            response.getWriter().write(html);
+        } else {
+            if(!response.containsHeader("Content-Type")) {
+                response.addHeader("Content-Type", contentType);
+            }
+
+            dataTools.write(response.getWriter(), c.format(), c.role(), object);
+        }
+    }
+
     /*public void writePage(
             final HttpServletResponse response,
             final ModuleParam params,
@@ -212,6 +273,34 @@ public class DataModule extends Module {
         results.put("count", count);
 
         write(response, format, role, template, language, templateParameters, results);
+    }
+
+    public class WriteConfig {
+
+        boolean gzip() {
+            return false;
+        }
+
+        String templateLanguage() {
+            return null;
+        }
+
+        String template() {
+            return null;
+        }
+
+        String role() {
+            return null;
+        }
+
+        String format() {
+            return "json";
+        }
+
+        Map<String, String> templateParams() {
+            return null;
+        }
+
     }
 
 }

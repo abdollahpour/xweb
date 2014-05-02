@@ -81,7 +81,7 @@ public class TestAuthenticationModule {
 
         when(request.getSession()).thenReturn(session);
 
-        final HashMap<String, String> paramsMap = new HashMap<String, String>();
+        final HashMap<String, Object> paramsMap = new HashMap<String, Object>();
         paramsMap.put("action", "login");
         paramsMap.put("id", username);
         paramsMap.put("password", password);
@@ -110,7 +110,7 @@ public class TestAuthenticationModule {
 
         when(request.getSession()).thenReturn(session);
 
-        final HashMap<String, String> paramsMap = new HashMap<String, String>();
+        final HashMap<String, Object> paramsMap = new HashMap<String, Object>();
         paramsMap.put("action", "login");
         paramsMap.put("id", username);
         paramsMap.put("password", password);

@@ -11,7 +11,7 @@ public class RoleManager {
         this.roles = roles;
     }
 
-    public boolean hasPermission(final Map<String, String> params, final String role) {
+    public boolean hasPermission(final Map<String, ?> params, final String role) {
         final String _role = role == null ? "" : role;
 
         for(ModuleInfoRole r:roles) {
@@ -23,10 +23,10 @@ public class RoleManager {
         return true; // no role
     }
 
-    private boolean hasPermission(final Map<String, String> params, final String _role, final ModuleInfoRole r) {
-        for(Map.Entry<String, String> e:params.entrySet()) {
+    private boolean hasPermission(final Map<String, ?> params, final String _role, final ModuleInfoRole r) {
+        for(Map.Entry<String, ?> e:params.entrySet()) {
             if(e.getKey().matches(r.param())) {
-                if(r.match() == null || r.match().matches(e.getValue())) {
+                if(r.match() == null || r.match().matches(e.getValue().toString())) {
                     boolean result = true;
 
                     if(r.accept() != null && !_role.matches(r.accept())) {

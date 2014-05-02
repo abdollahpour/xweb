@@ -1,36 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xweb version='1.0'>
 
-	<properties>
-		<property key='default.user'>admin@pdroid.org</property>
-		<property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
-	</properties>
+  <properties>
+    <property key='default.user'>admin@pdroid.org</property>
+    <property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
+  </properties>
 
-	<modules>
-		<module>
-			<name>gzip</name>
-			<class>ir.xweb.module.GzipModule</class>
-			<properties>
-				<property key='modules'>reply</property>
-			</properties>
-		</module>
-		<module>
-			<name>reply</name>
-			<class>ir.xweb.module.ReplyModule</class>
-		</module>
-		<module>
-			<name>empty</name>
-			<class>ir.xweb.module.EmptyModule</class>
-			<validators>
-				<validator param="param1" regex="value1" />
-			</validators>
-			<roles>
-				<role or="1" param="param1" accept="admin" />
-				<role or="1" param="param1" accept="user" />
-				<role and="2" param="param2" match="value2" accept="user" />
-				<role and="2" param="param2" accept="admin" />
-			</roles>
-		</module>
-	</modules>
+  <modules>
+    <module>
+      <name>gzip</name>
+      <class>ir.xweb.module.GzipModule</class>
+      <properties>
+        <property key='modules'>reply</property>
+      </properties>
+    </module>
+    <module>
+      <name>reply</name>
+      <class>ir.xweb.module.ReplyModule</class>
+    </module>
+    <module>
+      <name>empty</name>
+      <class>ir.xweb.module.EmptyModule</class>
+      <validators>
+        <validator param="param1" regex="value1"/>
+      </validators>
+      <roles>
+        <role or="1" param="param1" accept="admin"/>
+        <role or="1" param="param1" accept="user"/>
+        <role and="2" param="param2" match="value2" accept="user"/>
+        <role and="2" param="param2" accept="admin"/>
+      </roles>
+      <properties>
+        <property key="param1">param2</property>
+      </properties>
+    </module>
+  </modules>
 
 </xweb>

@@ -1,3 +1,4 @@
+
 package ir.xweb.data;
 
 import ir.xweb.util.MimeType;
@@ -36,16 +37,16 @@ public class JsonFormatter implements Formatter {
             final JSONObject json = new JSONObject();
 
             final Map<?, ?> map = (Map<?, ?>) object;
-            for(Map.Entry<?, ?> e:map.entrySet()) {
+            for (Map.Entry<?, ?> e:map.entrySet()) {
                 json.put(e.getKey().toString(), write(e.getValue()));
             }
 
             return json;
-        } else if(object instanceof Collection) {
+        } else if (object instanceof Collection) {
             final JSONArray array = new JSONArray();
 
             final Collection<?> list = (Collection<?>) object;
-            for(Object o:list) {
+            for (Object o:list) {
                 array.put(write(o));
             }
 
@@ -54,8 +55,11 @@ public class JsonFormatter implements Formatter {
         return object;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public String getMimeType() {
+    public String getContentType() {
         return mimeType;
     }
 

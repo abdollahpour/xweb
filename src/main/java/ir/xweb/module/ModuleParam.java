@@ -10,47 +10,45 @@ import ir.xweb.util.Tools;
 
 import java.io.File;
 import java.lang.String;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class ModuleParam implements Map<String, Object> {
+public class ModuleParam implements Map<String, Object>, Cloneable {
 
     /**
-     * We have 3 data, String, Colletion and ModuleParam
+     * We have 3 data, String, collection and ModuleParam
      */
-    private final Map<String, Object> data;
-
-    private final List<String> defaults;
+    private final HashMap<String, Object> data;
 
     public ModuleParam() {
-        this(null, null);
+        this((Map<String, Object>) null);
     }
 
-    public ModuleParam(final Map<String, String> data) {
-        this(data, null);
-    }
+    public ModuleParam(final Map<String, Object> data) {
+        if (data != null) {
+            final HashMap<String, Object> m = new HashMap<String, Object>();
+            m.putAll(data);
 
-    protected ModuleParam(final Map<String, String> data, final List<String> defaults) {
-        this.data = data != null ? new HashMap<String, Object>(data) : new HashMap<String, Object>();
-        this.defaults = defaults != null ? defaults : new ArrayList<String>();
+            this.data = (HashMap<String, Object>) m.clone();
+        }
+        else {
+            this.data = new HashMap<String, Object>();
+        }
     }
 
     protected ModuleParam(final ModuleParam m) {
-        this.data = m.data;
-        this.defaults = m.defaults;
+        this(m.data);
     }
 
-    protected void put(final String name, final String value, final boolean isDefault) {
+    /*protected void put(final String name, final String value, final boolean isDefault) {
         final Object oldValue = data.put(name, value);
         if(isDefault) {
             defaults.add(name);
         } else if(oldValue != null) {
             defaults.remove(name);
         }
-    }
+    }*/
 
     public String get(String name, String def) {
         return getString(name, def);
@@ -330,6 +328,18 @@ public class ModuleParam implements Map<String, Object> {
         }
     }
 
+    public ModuleParam getParam(final String name, final ModuleParam def) {
+        final Object o = this.data.get(name);
+        if(o != null && o instanceof ModuleParam) {
+            return (ModuleParam) o;
+        }
+        return def;
+    }
+
+    public ModuleParam getParam(final String name) {
+        return getParam(name, null);
+    }
+
     /**
      * http://stackoverflow.com/questions/3684747/how-to-validate-a-locale-in-java
      * @param locale
@@ -472,9 +482,9 @@ public class ModuleParam implements Map<String, Object> {
         return data.keySet();
     }
 
-    public boolean isDefaultProperties(final String name) {
+    /*public boolean isDefaultProperties(final String name) {
         return defaults.contains(name);
-    }
+    }*/
 
     @Override
     public Collection<Object> values() {
@@ -484,5 +494,11 @@ public class ModuleParam implements Map<String, Object> {
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return data.entrySet();
+    }
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        final ModuleParam p = new ModuleParam(this);
+        return p;
     }
 }
