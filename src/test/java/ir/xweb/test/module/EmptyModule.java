@@ -1,5 +1,11 @@
 package ir.xweb.test.module;
 
+import ir.xweb.module.DataModule;
+import ir.xweb.module.Manager;
+import ir.xweb.module.Module;
+import ir.xweb.module.ModuleException;
+import ir.xweb.module.ModuleInfo;
+import ir.xweb.module.ModuleParam;
 import org.apache.commons.fileupload.FileItem;
 
 import javax.servlet.ServletContext;
@@ -10,7 +16,9 @@ import java.util.HashMap;
 
 public class EmptyModule extends Module {
 
-    public EmptyModule(Manager manager, ModuleInfo info, ModuleParam properties) throws ModuleException {
+    public EmptyModule(Manager manager, ModuleInfo info, ModuleParam properties) throws
+        ModuleException
+    {
         super(manager, info, properties);
     }
 

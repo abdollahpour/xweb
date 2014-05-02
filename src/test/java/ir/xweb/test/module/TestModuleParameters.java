@@ -7,6 +7,9 @@
 
 package ir.xweb.test.module;
 
+import ir.xweb.module.Manager;
+import ir.xweb.module.ModuleParam;
+
 import static org.testng.Assert.*;
 
 /**

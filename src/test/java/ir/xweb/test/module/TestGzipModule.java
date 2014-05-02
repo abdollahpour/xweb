@@ -6,6 +6,8 @@
 
 package ir.xweb.test.module;
 
+import ir.xweb.module.GzipModule;
+import ir.xweb.module.ModuleParam;
 import org.testng.annotations.Test;
 
 import static org.testng.Assert.*;

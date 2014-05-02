@@ -7,6 +7,8 @@
 
 package ir.xweb.test.module;
 
+import ir.xweb.module.Manager;
+import ir.xweb.module.Module;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 

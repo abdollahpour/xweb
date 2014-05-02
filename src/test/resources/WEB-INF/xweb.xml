@@ -9,11 +9,11 @@
   <modules>
     <module>
       <name>data</name>
-      <class>ir.xweb.test.module.DataModule</class>
+      <class>ir.xweb.module.DataModule</class>
     </module>
     <module>
       <name>gzip</name>
-      <class>ir.xweb.test.module.GzipModule</class>
+      <class>ir.xweb.module.GzipModule</class>
       <properties>
         <property key='modules'>reply</property>
       </properties>

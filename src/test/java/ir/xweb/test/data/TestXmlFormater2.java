@@ -1,6 +1,8 @@
 package ir.xweb.test.data;
 
 
+import ir.xweb.data.DataTools;
+import ir.xweb.data.XmlFormatter2;
 import org.testng.annotations.Test;
 
 import java.io.IOException;

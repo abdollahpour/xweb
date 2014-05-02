@@ -6,6 +6,11 @@
 
 package ir.xweb.test.module;
 
+import ir.xweb.module.AuthenticationModule;
+import ir.xweb.module.CaptchaModule;
+import ir.xweb.module.Manager;
+import ir.xweb.module.ModuleInfo;
+import ir.xweb.module.ModuleParam;
 import ir.xweb.server.XWebUser;
 
 import static org.mockito.Mockito.*;
