@@ -56,12 +56,12 @@ public class DataModule extends Module {
         return dataTools.addFormatter(name, formatter);
     }
 
-    public void write(
+    /*public void write(
             final HttpServletResponse response,
             final String format,
             final Object object) throws IOException {
         write(response, format, null, null, null, null, object);
-    }
+    }*/
 
     public void write(
             final HttpServletResponse response,
@@ -132,15 +132,15 @@ public class DataModule extends Module {
             c = config;
         }
 
-        if (config.format() != null) {
+        if (c.format() == null) {
             throw new IllegalArgumentException("null format");
         }
 
         final Formatter formatter;
         final String contentType;
 
-        if(config.format() != null) {
-            formatter = dataTools.getFormatter(config.format());
+        if(c.format() != null) {
+            formatter = dataTools.getFormatter(c.format());
             contentType = formatter.getContentType();
         } else {
             formatter = null;

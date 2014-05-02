@@ -22,6 +22,7 @@ public class EmptyModule extends Module {
             final ModuleParam param,
             final HashMap<String, FileItem> files) throws IOException {
 
-        System.out.println(param.getStrings("test")[0]);
+        final DataModule d = getManager().getModuleOrThrow(DataModule.class);
+        d.write(response, null, param);
     }
 }

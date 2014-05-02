@@ -1,37 +1,41 @@
 package ir.xweb.module;
 
 
-import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
+
+import static org.testng.Assert.*;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TestJsonPost extends TestModule {
+class TestJsonPost extends TestModule {
 
-    public void testJsonPost() throws IOException {
+    public void test() throws IOException {
+        final String json = "{\"test\":[\"OK1\",\"OK2\"]}";
+
         // set up
         final HttpServletRequest request = mock(HttpServletRequest.class);
-        final HttpServletResponse response = mock(HttpServletResponse.class);
+        final StringReader reader = new StringReader(json);
 
         when(request.getSession()).thenReturn(getSession());
         when(request.getHeader("Content-Type")).thenReturn("application/json");
-        when(request.getInputStream()).thenReturn(new ServletInputStream() {
+        when(request.getReader()).thenReturn(new BufferedReader(reader));
 
-            StringReader reader = new StringReader("{\"test\": [\"OK1\", \"OK2\"]}");
+        final HttpServletResponse response = mock(HttpServletResponse.class);
+        final StringWriter writer = new StringWriter();
 
-            @Override
-            public int read() throws IOException {
-                return reader.read();
-            }
-        });
+        when(response.getWriter()).thenReturn(new PrintWriter(writer));
 
         final EmptyModule module = getManager().getModule(EmptyModule.class);
-
         module.process(getServletContext(), request, response, null);
+
+        assertEquals(json, writer.toString());
     }
 
 }

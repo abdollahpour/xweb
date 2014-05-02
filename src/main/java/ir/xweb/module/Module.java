@@ -9,6 +9,7 @@ package ir.xweb.module;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.IllegalArgumentException;
 import java.util.*;
 
@@ -123,7 +124,7 @@ public class Module {
             }
             else if(ct.equals("application/json")) {
                 try {
-                    final InputStreamReader reader = new InputStreamReader(request.getInputStream());
+                    final Reader reader = request.getReader();
                     JSONTokener tokenizer = new JSONTokener(reader);
                     final JSONObject object = new JSONObject(tokenizer);
                     moduleParam = json2module(object);
