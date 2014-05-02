@@ -56,12 +56,15 @@ public class DataModule extends Module {
         return dataTools.addFormatter(name, formatter);
     }
 
-    /*public void write(
+    public void write(
             final HttpServletResponse response,
             final String format,
-            final Object object) throws IOException {
-        write(response, format, null, null, null, null, object);
-    }*/
+            final Object object) throws IOException
+    {
+        final WriteConfig c = new WriteConfig();
+        c.format = format;
+        write(response, c, object);
+    }
 
     public void write(
             final HttpServletResponse response,
@@ -132,15 +135,15 @@ public class DataModule extends Module {
             c = config;
         }
 
-        if (c.format() == null) {
+        if (c.format == null) {
             throw new IllegalArgumentException("null format");
         }
 
         final Formatter formatter;
         final String contentType;
 
-        if(c.format() != null) {
-            formatter = dataTools.getFormatter(c.format());
+        if(c.format != null) {
+            formatter = dataTools.getFormatter(c.format);
             contentType = formatter.getContentType();
         } else {
             formatter = null;
@@ -148,16 +151,16 @@ public class DataModule extends Module {
         }
 
         if(format.startsWith("html")) {
-            if(c.template() == null) {
+            if(c.template == null) {
                 throw new IllegalArgumentException("Template null, you need template for HTML format");
             }
             if(resourceModule == null) {
                 resourceModule = getManager().getModuleOrThrow(ResourceModule.class);
             }
 
-            final String xml = dataTools.write("xml", c.role(), object);
+            final String xml = dataTools.write("xml", c.role, object);
             final String html = resourceModule.applyXmlTemplate(
-                c.template(), c.templateLanguage(), c.templateParams(), xml);
+                c.template, c.templateLanguage, c.templateParams, xml);
 
             if(!response.containsHeader("Content-Type")) {
                 response.addHeader("Content-Type", "text/html");
@@ -169,7 +172,7 @@ public class DataModule extends Module {
                 response.addHeader("Content-Type", contentType);
             }
 
-            dataTools.write(response.getWriter(), c.format(), c.role(), object);
+            dataTools.write(response.getWriter(), c.format, c.role, object);
         }
     }
 
@@ -277,29 +280,17 @@ public class DataModule extends Module {
 
     public class WriteConfig {
 
-        boolean gzip() {
-            return false;
-        }
+        boolean gzip = false;
 
-        String templateLanguage() {
-            return null;
-        }
+        String templateLanguage = null;
 
-        String template() {
-            return null;
-        }
+        String template = null;
 
-        String role() {
-            return null;
-        }
+        String role = null;
 
-        String format() {
-            return "json";
-        }
+        String format = null;
 
-        Map<String, String> templateParams() {
-            return null;
-        }
+        Map<String, String> templateParams = null;
 
     }
 
