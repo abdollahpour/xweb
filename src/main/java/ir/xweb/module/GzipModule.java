@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.*;
+import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,15 +53,16 @@ public class GzipModule extends Module {
 
         super(manager, info, properties);
 
-        final String modulesValue = properties.getString(PARAM_MODULES, null);
-        modules = (modulesValue == null ? null : Arrays.asList(modulesValue.split("[,;]")));
-        final String extensionsValue = properties.getString(PARAM_EXTENSIONS, null);
-        extensions = extensionsValue == null ? null : Arrays.asList(extensionsValue.split("[,;]"));
-        requests = properties.getString(PARAM_REQUESTS, null);
-        cacheDir = properties.getFile(PARAM_DIR_CACHE, (File)null);
+        this.modules = Arrays.asList(properties.getStrings(PARAM_MODULES, new String[0]));
+        this.extensions = Arrays.asList(properties.getStrings(PARAM_EXTENSIONS, new String[0]));
+        requests = properties.getString(PARAM_REQUESTS);
+        cacheDir = properties.getFile(PARAM_DIR_CACHE);
         maxSize = properties.getInt(PARAM_SIZE_MAX, 2097152); // 2MB default
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void doFilter(
             final ServletContext context,
@@ -71,43 +73,52 @@ public class GzipModule extends Module {
         HttpServletRequest chainedRequest = null;
         HttpServletResponse chainedResponse = null;
 
-        if(!response.containsHeader("Content-Encoding")) {
+        if (!response.isCommitted() && !response.containsHeader("Content-Encoding")) {
+
             // we will check for incoming request anyway
-            String contentEncoding = request.getHeader("Content-Encoding");
-            if(contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
+            final String contentEncoding = request.getHeader("Content-Encoding");
+            if (contentEncoding != null && contentEncoding.toLowerCase().indexOf("gzip") > -1) {
                 chainedRequest = new ZipRequestWrapper(request);
             }
 
-            /*URI uri = null;
-            try {
-                uri = new URI(request.getRequestURI());
-            } catch (Exception ex) {
-                // never happens
-            }*/
+            final String acceptEncoding = request.getHeader("Accept-Encoding");
+            if (acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
+                URI uri;
+                try {
+                    uri = new URI(request.getRequestURI());
+                } catch (Exception ex) {
+                    // It will never happen because it passed by http request
+                    throw new IOException(ex);
+                }
 
-
-            String acceptEncoding = request.getHeader("Accept-Encoding");
-            if(acceptEncoding != null && acceptEncoding.toLowerCase().indexOf("gzip") > -1) {
                 // we don't care about context path, so we trunk it
-                final String path = request.getRequestURI();
+                final String path = uri.getPath().substring(request.getContextPath().length());
 
+                // By regex
                 if(requests != null) {
                     if(path.matches(requests)) {
                         chainedResponse = new ZipResponseWrapper(response);
                     }
                 }
 
+                // By API call
                 if(chainedResponse == null) {
-                    // get module names
-                    boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
-                    if(isApiCall) {
-                        if(modules != null) {
-                            String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
+                    if(modules.size() > 0) {
+                        // We handle API requests with different authentication method (Role base)
+                        boolean isApiCall = path.equals(Constants.MODULE_URI_PERFIX);
+
+                        if(isApiCall) {
+                            final String moduleName = request.getParameter(Constants.MODULE_NAME_PARAMETER);
                             if(modules.contains(moduleName)) {
                                 chainedResponse = new ZipResponseWrapper(response);
                             }
                         }
-                    } else if(extensions != null) {
+                    }
+                }
+
+                // By extensions
+                if (chainedResponse == null) {
+                    if (extensions.size() > 0) {
                         File dir = new File(context.getRealPath(File.separator));
                         File file = new File(dir, path);
 

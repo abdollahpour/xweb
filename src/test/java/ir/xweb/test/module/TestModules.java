@@ -9,6 +9,7 @@ package ir.xweb.test.module;
 
 import org.testng.annotations.Test;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 
 /**
@@ -29,6 +30,13 @@ public class TestModules extends TestModule {
     public void testJsonPost() throws IOException {
         final TestJsonPost post = new TestJsonPost();
         post.test();
+    }
+
+    @Test
+    public void testGZipModule() throws IOException, ServletException {
+        final TestGzipModule gzip = new TestGzipModule(this);
+        gzip.test(true);
+        gzip.test(false);
     }
 
 }

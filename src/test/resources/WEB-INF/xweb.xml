@@ -15,7 +15,9 @@
       <name>gzip</name>
       <class>ir.xweb.module.GzipModule</class>
       <properties>
-        <property key='modules'>reply</property>
+        <property key='modules'>
+          <name>empty2</name>
+        </property>
       </properties>
     </module>
     <module>
@@ -52,11 +54,16 @@
             <integer>412</integer>
           </property>
           <property key="param42">
+        boolean gzip = false;
             <code>42.1</code>
             <code>42.2</code>
           </property>
         </property>
       </properties>
+    </module>
+    <module>
+      <name>empty2</name>
+      <class>ir.xweb.test.module.EmptyModule2</class>
     </module>
   </modules>
 

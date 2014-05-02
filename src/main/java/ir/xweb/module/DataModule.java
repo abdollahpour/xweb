@@ -172,13 +172,14 @@ public class DataModule extends Module {
             final String html = resourceModule.applyXmlTemplate(
                 c.template, c.templateLanguage, c.templateParams, xml);
 
-            if(!response.containsHeader("Content-Type")) {
+            if(!response.isCommitted() && !response.containsHeader("Content-Type")) {
                 response.addHeader("Content-Type", "text/html");
                 response.setCharacterEncoding("UTF-8");
             }
             response.getWriter().write(html);
         } else {
-            if(!response.containsHeader("Content-Type")) {
+            // add content type if it does not set yet
+            if(!response.isCommitted() && !response.containsHeader("Content-Type")) {
                 response.addHeader("Content-Type", contentType);
             }
 
@@ -289,8 +290,6 @@ public class DataModule extends Module {
     }
 
     public class WriteConfig {
-
-        boolean gzip = false;
 
         String templateLanguage = null;
 
