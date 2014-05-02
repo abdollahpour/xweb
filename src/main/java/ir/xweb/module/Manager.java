@@ -67,6 +67,15 @@ public class Manager {
                 this.properties = (ModuleParam) getElement(null, envParam, envPropertiesElement);
             }
 
+            if(this.properties != null) {
+                for (String key:this.properties.keySet()) {
+                    final String value = this.properties.getString(key);
+                    if(value != null) {
+                        envParam.put(key, value);
+                    }
+                }
+            }
+
             final ModuleParam defaultParam = getDefaultProperties(this.properties);
 
             Element modulesElement = root.getChild("modules");

@@ -2,8 +2,11 @@
 <xweb version='1.0'>
 
   <properties>
-    <property key='default.user'>admin@pdroid.org</property>
+    <property key='default.user1'>hamed1</property>
+    <property key='user2'>hamed2</property>
     <property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
+    <property key='default.defaultParam1'>defaultValue1</property>
+    <property key='default.defaultParam2'>defaultValue2</property>
   </properties>
 
   <modules>
@@ -59,6 +62,10 @@
             <code>42.2</code>
           </property>
         </property>
+        <property key="defaultParam2">overrided</property>
+        <property key="user.home">value: ${user.home}</property>
+        <property key="from.global1">${default.user1}</property>
+        <property key="from.global2">${user2}</property>
       </properties>
     </module>
     <module>
