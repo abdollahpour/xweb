@@ -9,18 +9,18 @@
   <modules>
     <module>
       <name>gzip</name>
-      <class>ir.xweb.module.GzipModule</class>
+      <class>ir.xweb.test.module.GzipModule</class>
       <properties>
         <property key='modules'>reply</property>
       </properties>
     </module>
     <module>
       <name>reply</name>
-      <class>ir.xweb.module.ReplyModule</class>
+      <class>ir.xweb.test.module.ReplyModule</class>
     </module>
     <module>
       <name>empty</name>
-      <class>ir.xweb.module.EmptyModule</class>
+      <class>ir.xweb.test.module.EmptyModule</class>
       <validators>
         <validator param="param1" regex="value1"/>
       </validators>

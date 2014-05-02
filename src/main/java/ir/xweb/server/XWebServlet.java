@@ -6,9 +6,9 @@
 
 package ir.xweb.server;
 
-import ir.xweb.module.Manager;
-import ir.xweb.module.Module;
-import ir.xweb.module.ModuleException;
+import ir.xweb.test.module.Manager;
+import ir.xweb.test.module.Module;
+import ir.xweb.test.module.ModuleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
