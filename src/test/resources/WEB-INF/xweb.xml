@@ -8,19 +8,23 @@
 
   <modules>
     <module>
+      <name>data</name>
+      <class>ir.xweb.module.DataModule</class>
+    </module>
+    <module>
       <name>gzip</name>
-      <class>ir.xweb.test.module.GzipModule</class>
+      <class>ir.xweb.module.GzipModule</class>
       <properties>
         <property key='modules'>reply</property>
       </properties>
     </module>
     <module>
       <name>reply</name>
-      <class>ir.xweb.test.module.ReplyModule</class>
+      <class>ir.xweb.module.ReplyModule</class>
     </module>
     <module>
       <name>empty</name>
-      <class>ir.xweb.test.module.EmptyModule</class>
+      <class>ir.xweb.module.EmptyModule</class>
       <validators>
         <validator param="param1" regex="value1"/>
       </validators>
@@ -31,7 +35,27 @@
         <role and="2" param="param2" accept="admin"/>
       </roles>
       <properties>
-        <property key="param1">param2</property>
+        <property key="param1">value1</property>
+        <property key="param2">
+          <property key="param21">value21</property>
+          <property key="param22">value22</property>
+        </property>
+        <property key="param3">
+          <property>value3[0]</property>
+          <property>value3[1]</property>
+          <property>value3[2]</property>
+          <property>value3[3]</property>
+        </property>
+        <property key="param4">
+          <property key="param41">
+            <integer>411</integer>
+            <integer>412</integer>
+          </property>
+          <property key="param42">
+            <code>42.1</code>
+            <code>42.2</code>
+          </property>
+        </property>
       </properties>
     </module>
   </modules>

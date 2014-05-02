@@ -1,7 +1,7 @@
 package ir.xweb.server;
 
-import ir.xweb.test.module.Manager;
-import ir.xweb.test.module.Module;
+import ir.xweb.module.Manager;
+import ir.xweb.module.Module;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
