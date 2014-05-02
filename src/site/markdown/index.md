@@ -111,7 +111,7 @@ You should put &lt;module&gt; in &lt;modules&gt; tag in xweb.xml file like this:
 * **&lt;namme&gt;:** The name of modules that should be a-z and 0-9 characters (no space)
 * **&lt;author&gt;:** All valid XML characters
 * **&lt;class&gt;:** Module full class (name). Remember that if you are using obfuscation tools (like proguard) add follow line to your configuraion:
-`-keep public class * extends ir.xweb.module.Module`
+`-keep public class * extends ir.xweb.test.module.Module`
 * **&lt;validator&gt;:** Validate all the parameters that passed to module over http (GET or POST).
  * require: Means that this parameter is mandetory or not (default is false)
  * param: Paremeter that you want to validate
