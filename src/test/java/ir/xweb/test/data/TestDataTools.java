@@ -31,7 +31,6 @@ public class TestDataTools {
         when(response.getWriter()).thenReturn(new PrintWriter(System.out));
     }
 
-    @Test
     public void testWriterJson() throws IOException {
         final HashMap map = new HashMap();
         map.put("count", 10);
@@ -52,7 +51,6 @@ public class TestDataTools {
         System.out.println();
     }
 
-    @Test
     public void testWriterXml1() throws IOException {
         final User user = new User();
         user.email = "ha.hamed@gmail.com";
@@ -66,7 +64,6 @@ public class TestDataTools {
         System.out.println(d.write("xml", null, map));
     }
 
-    @Test
     public void testWriterXml2() throws IOException {
         final List list = new ArrayList();
         list.add("item1");
@@ -78,7 +75,6 @@ public class TestDataTools {
         System.out.println(d.write("xml", null, list));
     }
 
-    @Test
     public void testUserWrite() throws IOException, IllegalAccessException, InvocationTargetException, InstantiationException {
         /*final String email = "ha.hamed@gmail.com";
 
