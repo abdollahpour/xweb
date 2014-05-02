@@ -344,15 +344,13 @@ public class AuthenticationModule extends Module {
             final ModuleParam params,
             final HashMap<String, FileItem> files) throws IOException {
 
-        final String action  = params.getString("action");
-
         /**
          * Actions:
          * login: Fully login into system. User need to enter captcha code also
          * temp_pass: generate temporary password for simple authenticate transactions
          */
 
-        if(params.containsKey("login") || "login".equals(action) /* Deprecated */) {
+        if(params.hasValueFor("login")) {
             final String identifier = params.getString("login");
             // Password hashed with MD5
             final String password = params.exists("password").getString();
@@ -402,7 +400,7 @@ public class AuthenticationModule extends Module {
                 throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
             }
         }
-        else if(params.containsKey("logout") || "logout".equals(action) /* Deprecated */) {
+        else if(params.containsKey("logout")) {
             request.getSession().invalidate();
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
