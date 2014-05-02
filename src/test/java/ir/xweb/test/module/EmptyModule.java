@@ -31,6 +31,6 @@ public class EmptyModule extends Module {
             final HashMap<String, FileItem> files) throws IOException {
 
         final DataModule d = getManager().getModuleOrThrow(DataModule.class);
-        d.write(response, null, param);
+        d.write(response, param);
     }
 }

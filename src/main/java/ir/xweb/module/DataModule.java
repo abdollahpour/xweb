@@ -116,6 +116,16 @@ public class DataModule extends Module {
     }
 
     /**
+     * Write XWeb object with default configs.
+     * @param response Http response
+     * @param object XWeb object
+     * @throws IOException Any error happens
+     */
+    public void write(final HttpServletResponse response, final Object object) throws IOException {
+        write(response, (WriteConfig) null, object);
+    }
+
+    /**
      * Serialize XWeb object to response.
      *
      * @param response http response
