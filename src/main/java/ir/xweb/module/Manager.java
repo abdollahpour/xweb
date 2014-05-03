@@ -276,6 +276,16 @@ public class Manager {
         return null;
     }
 
+    public <T> T getImplemented(final Class<T> clazz) {
+        //String name = clazz.getName();
+        for(Module m:modules.values()) {
+            if(clazz.isAssignableFrom(m.getClass())) {
+                return (T)m;
+            }
+        }
+        return null;
+    }
+
     public <T extends Module> T getModuleOrThrow(final Class<T> clazz) {
         //String name = clazz.getName();
         for(Module m:modules.values()) {
@@ -284,6 +294,16 @@ public class Manager {
             }
         }
         throw new IllegalArgumentException("Module " + clazz.getName() + " not find. But it's require");
+    }
+
+    public <T> T getImplementedOrThrow(final Class<T> clazz) {
+        //String name = clazz.getName();
+        for(Module m:modules.values()) {
+            if(clazz.isAssignableFrom(m.getClass())) {
+                return (T)m;
+            }
+        }
+        throw new IllegalArgumentException("Module with " + clazz.getName() + " interface not find. But it's require");
     }
 
     private ModuleParam getDefaultProperties(final ModuleParam def) {

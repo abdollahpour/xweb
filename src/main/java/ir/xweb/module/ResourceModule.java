@@ -1,3 +1,10 @@
+
+/**
+ * XWeb project
+ * Created by Hamed Abdollahpour
+ * https://github.com/abdollahpour/xweb
+ */
+
 package ir.xweb.module;
 
 import ir.xweb.data.DataTools;
@@ -56,9 +63,9 @@ public class ResourceModule extends Module {
 
     public final static String PROPERTY_RESOURCE_BUNDLE_DIR   = "dir.bundle";
 
-    public final static String PROPERTY_STORE_PATTERN   = "store.pattern";
-
     public final static String PROPERTY_DEFAULT_LANGUAGE = "default.language";
+
+    public final static String PARAM_DATA = "data";
 
     public final static String MODE_PUBLIC = "public";
 
@@ -83,13 +90,15 @@ public class ResourceModule extends Module {
 
     private final String defaultId;
 
-    private final String storePattern;
-
     private final String defaultLanguage;
 
     private ServletContext context;
 
     private final Map<String, XmlBundle> bundles = new HashMap<String, XmlBundle>();
+
+    private ResourceData dataSource;
+
+    private final String dataName;
 
     public ResourceModule(
             final Manager manager,
@@ -122,14 +131,14 @@ public class ResourceModule extends Module {
             }
         }
 
-        this.storePattern = properties.getString(PROPERTY_STORE_PATTERN, null);
-
         // deprecated
         this.defaultId = properties.getString(PROPERTY_DEFAULT_ID, null);
 
         this.defaultLanguage = properties.getString(
                 PROPERTY_DEFAULT_LANGUAGE,
                 getManager().getProperty(PROPERTY_DEFAULT_LANGUAGE));
+
+        this.dataName = properties.getString(PARAM_DATA);
     }
 
     @Override
@@ -184,25 +193,17 @@ public class ResourceModule extends Module {
                 throw new ModuleException(HttpServletResponse.SC_NOT_FOUND, "Resource not found: " + path);
             } else {
                 // check to store
-                boolean store = false;
-                //DataSource dataSource = getManager().getDataSource("data-resource");
+                boolean store = true;
 
-                //if(dataSource != null) {
-                    if(storePattern != null && path.matches(storePattern)) {
-                        if (request.getHeader("Range") != null) {
-                            // record it just for the first section of file
-                            store = request.getHeader("Range").startsWith("bytes=0") || request.getHeader("Range").startsWith("bytes=-");
-                        } else {
-                            store = true;
-                        }
-                    }
-                //}
+                if (request.getHeader("Range") != null) {
+                    // record it just for the first section of file
+                    store = request.getHeader("Range").startsWith("bytes=0") || request.getHeader("Range").startsWith("bytes=-");
+                }
 
                 try {
                     // store count
                     if(store) {
-                        storeResourceUsage(path);
-                        //dataSource.setData(context, ResourceDataSource.DATA_SOURCE_STORE, path);
+                        getDataSource().storeResourceUsage(path);
                     }
 
                     if (request.getHeader("Range") != null) {
@@ -880,12 +881,41 @@ public class ResourceModule extends Module {
         return false;
     }
 
-    protected void storeResourceUsage(final String path) {
-
-    }
-
     protected String getUserDirectory(final String id) {
         return id;
+    }
+
+    private ResourceData getDataSource() {
+        // setup datasource
+        if(dataSource == null) {
+            if(dataName != null) {
+                final Module module = getManager().getModule(dataName);
+                if(module == null) {
+                    throw new IllegalStateException("Module \"" + dataName + "\" require for "
+                                                        + "DataSource but not found!");
+                }
+                if(!(module instanceof AuthenticationData )) {
+                    throw new IllegalArgumentException("Module \"" + dataName + "\""
+                                                           + "should implement "
+                                                           + "ResourceData "
+                                                           + "interface to be used as "
+                                                           + "DataSource");
+                }
+                dataSource = (ResourceData) module;
+            } else {
+                dataSource = getManager().getImplemented(ResourceData.class);
+
+                if(dataSource == null) {
+                    dataSource = new ResourceData() {
+                        @Override
+                        public void storeResourceUsage(String path) {
+                            // no store
+                        }
+                    };
+                }
+            }
+        }
+        return dataSource;
     }
 
 }

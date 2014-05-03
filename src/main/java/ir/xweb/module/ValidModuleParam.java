@@ -1,5 +1,6 @@
 package ir.xweb.module;
 
+import java.io.File;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -14,75 +15,75 @@ public class ValidModuleParam extends ModuleParam {
     }
 
     public String get(String def) {
-        return super.getString(name, def);
+        return super.getString(this.name, def);
     }
 
     public String get() {
-        return super.getString(name, null);
+        return super.getString(this.name, null);
     }
 
     public String getString(String def) {
-        return getString(name, def);
+        return getString(this.name, def);
     }
 
     public String getString() {
-        return getString(name, null);
+        return getString(this.name, null);
     }
 
     public Integer getInt(Integer def) {
-        return getInt(name, def);
+        return getInt(this.name, def);
     }
 
     public Integer getInt() {
-        return getInt(name, null);
+        return getInt(this.name, null);
     }
 
     public Float getFloat(Float def) {
-        return getFloat(name, def);
+        return getFloat(this.name, def);
     }
 
     public Float getFloat() {
-        return getFloat(name, null);
+        return getFloat(this.name, null);
     }
 
     public Double getDouble(Double def) {
-        return getDouble(name, def);
+        return getDouble(this.name, def);
     }
 
     public Double getDouble() {
-        return getDouble(name, null);
+        return getDouble(this.name, null);
     }
 
     public Long getLong(Long def) {
-        return getLong(name, def);
+        return getLong(this.name, def);
     }
 
     public Long getLong() {
-        return getLong(name, null);
+        return getLong(this.name, null);
     }
 
     public Byte getByte(Byte def) {
-        return getByte(name, def);
+        return getByte(this.name, def);
     }
 
     public Byte getByte() {
-        return getByte(name, null);
+        return getByte(this.name, null);
     }
 
     public URL getURL(URL def) {
-        return getURL(name, def);
+        return getURL(this.name, def);
     }
 
     public URL getURL() {
-        return getURL(name, null);
+        return getURL(this.name, null);
     }
 
     public Locale getLocale(Locale def) {
-        return getLocale(name, def);
+        return getLocale(this.name, def);
     }
 
     public Locale getLocale() {
-        return getLocale(name, null);
+        return getLocale(this.name, null);
     }
 
     public Boolean getBoolean(Boolean def) {
@@ -90,19 +91,15 @@ public class ValidModuleParam extends ModuleParam {
     }
 
     public Boolean getBoolean() {
-        return getBoolean(name, null);
+        return getBoolean(this.name, null);
     }
 
     public Date getDate(final String pattern) {
-        return getDate(name, pattern, null, null);
+        return getDate(this.name, pattern, null, null);
     }
 
     public Date getDate(final String pattern, final Date def) {
-        return getDate(name, pattern, null, def);
-    }
-
-    public Date getDate(final String pattern, final TimeZone zone) {
-        return null;
+        return getDate(this.name, pattern, null, def);
     }
 
     public Date getDate(final String pattern, final TimeZone zone, final Date def) {
@@ -114,8 +111,14 @@ public class ValidModuleParam extends ModuleParam {
         try {
             return (s == null || s.length() == 0) ? def : format.parse(s);
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Value for " + name + " (" + s + ") is not valid for " + pattern + " pattern", ex);
+            throw new IllegalArgumentException(
+                "Value for " + this.name + " (" + s + ") is not valid for " + pattern + " pattern",
+                ex);
         }
+    }
+
+    public File getFile() {
+        return getFile(this.name, null);
     }
 
 }

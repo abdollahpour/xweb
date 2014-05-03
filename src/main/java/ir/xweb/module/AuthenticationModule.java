@@ -9,15 +9,7 @@ package ir.xweb.module;
 import ir.xweb.server.Constants;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.CookieTools;
-import ir.xweb.util.Tools;
 import org.apache.commons.fileupload.FileItem;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,15 +17,10 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AuthenticationModule extends Module {
 
@@ -42,12 +29,6 @@ public class AuthenticationModule extends Module {
     public final static String SESSION_USER = "xweb_user";
 
     public final static String PARAM_COOKIE_AGE = "cookie-age";
-
-    public final static String PARAM_XML_SOURCE = "source.xml";
-
-    public final static String PARAM_JSON_SOURCE = "source.json";
-
-    public final static String PARAM_TEXT_SOURCE = "source.text";
 
     public final static String PARAM_DEFAULT = "default";
 
@@ -59,9 +40,9 @@ public class AuthenticationModule extends Module {
 
     public final static String PARAM_NO_LOGIN = "nologin";
 
-    private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
+    public final static String PARAM_DATA = "data";
 
-    private final Map<String, DefaultUser> defaultSource = new HashMap<String, DefaultUser>();
+    private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
 
     private final int cookieAge;
 
@@ -73,6 +54,10 @@ public class AuthenticationModule extends Module {
 
     private final String nologin;
 
+    private AuthenticationData dataSource;
+
+    private final String dataName;
+
     public AuthenticationModule(
             final Manager manager,
             final ModuleInfo info,
@@ -82,130 +67,11 @@ public class AuthenticationModule extends Module {
 
         cookieAge = properties.getInt(PARAM_COOKIE_AGE, DEFAULT_COOKIE_AGE);
 
-        redirect = properties.getString(PARAM_REDIRECT, null);
-        check = properties.getString(PARAM_CHECK, null);
-        ignore = properties.getString(PARAM_IGNORE, null);
-        nologin = properties.getString(PARAM_NO_LOGIN, null);
-        System.out.println("nologin: " + nologin);
-
-        if(properties.containsKey(PARAM_XML_SOURCE)) {
-            importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
-        } else if(properties.containsKey(PARAM_JSON_SOURCE)) {
-            importJsonSource(properties.getString(PARAM_JSON_SOURCE, null));
-        } else if(properties.containsKey(PARAM_TEXT_SOURCE)) {
-            importTextSource(properties.getString(PARAM_TEXT_SOURCE, null));
-        }
-    }
-
-    private void importXmlSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            final SAXBuilder builder = new SAXBuilder();
-            final File xmlFile = new File(path);
-
-            try {
-
-                final Document document = builder.build(xmlFile);
-                final Element rootNode = document.getRootElement();
-                final List list = rootNode.getChildren("user");
-
-                for (int i = 0; i < list.size(); i++) {
-                    final Element u = (Element) list.get(i);
-
-                    final String id = u.getAttributeValue("id");
-                    final String password = Tools.md5(u.getAttributeValue("password"));
-                    final String role = u.getAttributeValue("role");
-                    final String uuid = u.getAttributeValue("uuid");
-
-                    final DefaultUser user = new DefaultUser();
-                    user.id = id;
-                    user.password = password;
-                    user.role = role;
-                    user.uuid = uuid;
-
-                    defaultSource.put(id, user);
-                }
-
-            } catch (IOException ex) {
-                logger.error("Error to access XML data source", ex);
-            } catch (JDOMException ex) {
-                logger.error("Error to parse", ex);
-            }
-        } else {
-            logger.error("XML source not found: " + path);
-        }
-    }
-
-    private void importJsonSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            try {
-                final String text = Tools.readTextFile(file);
-                final JSONArray array = new JSONArray(text);
-
-                for (int i = 0; i < array.length(); i++) {
-                    final JSONObject u = array.getJSONObject(i);
-
-                    final String id = u.getString("id");
-                    final String password = Tools.md5(u.getString("password"));
-                    final String role = u.getString("role");
-                    final String uuid = u.getString("uuid");
-
-                    final DefaultUser user = new DefaultUser();
-                    user.id = id;
-                    user.password = password;
-                    user.role = role;
-                    user.uuid = uuid;
-
-                    defaultSource.put(id, user);
-                }
-            } catch (IOException ex) {
-                logger.error("Error to access json source", ex);
-            } catch (JSONException ex) {
-                logger.error("Error to parse json source", ex);
-            }
-
-        } else {
-            logger.error("JSON source not found: " + path);
-        }
-    }
-
-    private void importTextSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            try {
-                final String text = Tools.readTextFile(file);
-                final BufferedReader reader = new BufferedReader(new StringReader(text));
-
-                String line;
-                while((line = reader.readLine()) != null) {
-                    if(line.length() > 0) {
-                        final String[] parts = line.split("\t");
-                        if(parts.length == 3) {
-                            final String id = parts[0];
-                            final String password = Tools.md5(parts[1]);
-                            final String role = parts[2];
-                            final String uuid = parts.length > 3 ? null : parts[3];
-
-                            final DefaultUser user = new DefaultUser();
-                            user.id = id;
-                            user.password = password;
-                            user.role = role;
-                            user.uuid = uuid;
-
-                            defaultSource.put(id, user);
-                        } else {
-                            logger.error("Illegal line text user source");
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                logger.error("Error to access text source", ex);
-            }
-
-        } else {
-            logger.error("JSON source not found: " + path);
-        }
+        this.redirect = properties.getString(PARAM_REDIRECT, null);
+        this.check = properties.getString(PARAM_CHECK, null);
+        this.ignore = properties.getString(PARAM_IGNORE, null);
+        this.nologin = properties.getString(PARAM_NO_LOGIN, null);
+        this.dataName = properties.getString(PARAM_DATA);
     }
 
     @Override
@@ -239,7 +105,7 @@ public class AuthenticationModule extends Module {
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
             logger.debug("Try to login with cookie. UUID: " + uuid);
-            user = getUserWithUUID(uuid);
+            user = getDataSource().getUserWithUUID(uuid);
             if(user != null) {
                 if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
                     logger.debug("User successfully login with UUID: " + uuid);
@@ -281,7 +147,7 @@ public class AuthenticationModule extends Module {
             if(header.startsWith("Basic")) {
                 final String token = header.substring(6);
 
-                user = getUserWithUUID(token);
+                user = getDataSource().getUserWithUUID(token);
                 if(user != null) {
                     if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
                         logger.debug("User successfully login with HTTP authentication: " + token);
@@ -344,6 +210,8 @@ public class AuthenticationModule extends Module {
             final ModuleParam params,
             final HashMap<String, FileItem> files) throws IOException {
 
+
+
         /**
          * Actions:
          * login: Fully login into system. User need to enter captcha code also
@@ -362,7 +230,7 @@ public class AuthenticationModule extends Module {
 
             final boolean remember = "true".equals(params.getString("remember", "false"));
             // (user, temporary password, is temporary password (false by default))
-            final XWebUser user = getUserWithId(identifier, password);
+            final XWebUser user = dataSource.getUserWithId(identifier, password);
 
             // Check for login, you can not login with no login role
             if (user != null) {
@@ -370,7 +238,7 @@ public class AuthenticationModule extends Module {
                     setUser(request, user);
 
                     if(remember) {
-                        final String uuid = generateUUID(identifier);
+                        final String uuid = getDataSource().generateUUID(identifier);
 
                         if(uuid != null) {
                             response.setContentType("text/plain");
@@ -384,7 +252,7 @@ public class AuthenticationModule extends Module {
 
                     logger.info(identifier + " successfully login into system. Remember = " + remember);
                 } else {
-                    final String uuid = generateUUID(identifier);
+                    final String uuid = getDataSource().generateUUID(identifier);
 
                     if(uuid != null) {
                         response.setContentType("text/plain");
@@ -405,26 +273,6 @@ public class AuthenticationModule extends Module {
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
 
-    }
-
-    public XWebUser getUserWithUUID(final String uuid) {
-        for(DefaultUser u:defaultSource.values()) {
-            if(u.uuid != null && u.uuid.equals(uuid)) {
-                return u;
-            }
-        }
-        return null;
-    }
-
-
-    public XWebUser getUserWithId(final String userId, final String pass) {
-        final DefaultUser user = defaultSource.get(userId);
-        if(user != null) {
-            if(user.password.equals(pass)) {
-                return user;
-            }
-        }
-        return null;
     }
 
     public XWebUser getUser(final HttpServletRequest request) {
@@ -451,39 +299,32 @@ public class AuthenticationModule extends Module {
         return request.getSession().getAttribute(SESSION_USER) != null;
     }
 
-    public String generateUUID(final String userId) {
-        final DefaultUser user = defaultSource.get(userId);
-        if(user != null) {
-            return user.uuid;
+    /**
+     * Get data source. It will load datasource if it's require.
+     * @return
+     */
+    private AuthenticationData getDataSource() {
+        // setup datasource
+        if(dataSource == null) {
+            if(dataName != null) {
+                final Module module = getManager().getModule(dataName);
+                if(module == null) {
+                    throw new IllegalStateException("Module \"" + dataName + "\" require for "
+                                                        + "DataSource but not found!");
+                }
+                if(!(module instanceof AuthenticationData )) {
+                    throw new IllegalArgumentException("Module \"" + dataName + "\""
+                                                           + "should implement "
+                                                           + "AuthenticationData "
+                                                           + "interface to be used as "
+                                                           + "DataSource");
+                }
+                dataSource = (AuthenticationData) module;
+            } else {
+                dataSource = getManager().getImplementedOrThrow(AuthenticationData.class);
+            }
         }
-        return null;
-    }
-
-    private class DefaultUser implements XWebUser {
-
-        String id;
-
-        String password;
-
-        String uuid;
-
-        String role;
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String getRole() {
-            return role;
-        }
-
-        @Override
-        public Object getExtra() {
-            return null;
-        }
-
+        return dataSource;
     }
 
 }
