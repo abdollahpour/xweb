@@ -9,15 +9,7 @@ package ir.xweb.module;
 import ir.xweb.server.Constants;
 import ir.xweb.server.XWebUser;
 import ir.xweb.util.CookieTools;
-import ir.xweb.util.Tools;
 import org.apache.commons.fileupload.FileItem;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,15 +17,10 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class AuthenticationModule extends Module {
 
@@ -42,12 +29,6 @@ public class AuthenticationModule extends Module {
     public final static String SESSION_USER = "xweb_user";
 
     public final static String PARAM_COOKIE_AGE = "cookie-age";
-
-    public final static String PARAM_XML_SOURCE = "source.xml";
-
-    public final static String PARAM_JSON_SOURCE = "source.json";
-
-    public final static String PARAM_TEXT_SOURCE = "source.text";
 
     public final static String PARAM_DEFAULT = "default";
 
@@ -59,9 +40,9 @@ public class AuthenticationModule extends Module {
 
     public final static String PARAM_NO_LOGIN = "nologin";
 
-    private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
+    public final static String PARAM_DATA = "data";
 
-    private final Map<String, DefaultUser> defaultSource = new HashMap<String, DefaultUser>();
+    private final static int DEFAULT_COOKIE_AGE = 60 * 60 * 24 * 30; // 1 month
 
     private final int cookieAge;
 
@@ -70,6 +51,8 @@ public class AuthenticationModule extends Module {
     private final String check;
 
     private final String ignore;
+
+    private final String nologin;
 
     public AuthenticationModule(
             final Manager manager,
@@ -80,17 +63,11 @@ public class AuthenticationModule extends Module {
 
         cookieAge = properties.getInt(PARAM_COOKIE_AGE, DEFAULT_COOKIE_AGE);
 
-        redirect = properties.getString(PARAM_REDIRECT, null);
-        check = properties.getString(PARAM_CHECK, null);
-        ignore = properties.getString(PARAM_IGNORE, null);
-
-        if(properties.containsKey(PARAM_XML_SOURCE)) {
-            importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
-        } else if(properties.containsKey(PARAM_JSON_SOURCE)) {
-            importJsonSource(properties.getString(PARAM_JSON_SOURCE, null));
-        } else if(properties.containsKey(PARAM_TEXT_SOURCE)) {
-            importTextSource(properties.getString(PARAM_TEXT_SOURCE, null));
-        }
+        this.redirect = properties.getString(PARAM_REDIRECT, null);
+        this.check = properties.getString(PARAM_CHECK, null);
+        this.ignore = properties.getString(PARAM_IGNORE, null);
+        this.nologin = properties.getString(PARAM_NO_LOGIN, null);
+        this.dataName = properties.getString(PARAM_DATA);
     }
 
     private void importXmlSource(final String path) {
@@ -234,8 +211,8 @@ public class AuthenticationModule extends Module {
          */
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
-            logger.trace("Try to login with cookie. UUID: " + uuid);
-            user = getUserWithUUID(uuid);
+            logger.debug("Try to login with cookie. UUID: " + uuid);
+            user = getDataSource().getUserWithUUID(uuid);
             if(user != null) {
                 logger.trace("User successfully login with UUID: " + uuid);
                 setUser(request, user);
@@ -276,7 +253,7 @@ public class AuthenticationModule extends Module {
             if(header.startsWith("Basic")) {
                 final String token = header.substring(6);
 
-                user = getUserWithUUID(token);
+                user = getDataSource().getUserWithUUID(token);
                 if(user != null) {
                     logger.debug("User successfully login with HTTP authentication: " + token);
                     setUser(request, user);
@@ -356,12 +333,28 @@ public class AuthenticationModule extends Module {
 
             final boolean remember = "true".equals(params.getString("remember", "false"));
             // (user, temporary password, is temporary password (false by default))
-            final XWebUser user = getUserWithId(identifier, password);
+            final XWebUser user = dataSource.getUserWithId(identifier, password);
 
             // Check for login, you can not login with no login role
             if (user != null) {
                 setUser(request, user);
 
+                    if(remember) {
+                        final String uuid = getDataSource().generateUUID(identifier);
+
+                        if(uuid != null) {
+                            response.setContentType("text/plain");
+                            CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                            response.getWriter().write(uuid);
+                            response.getWriter().flush();
+                        }
+                    } else {
+                        CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
+                    }
+
+                    logger.info(identifier + " successfully login into system. Remember = " + remember);
+                } else {
+                    final String uuid = getDataSource().generateUUID(identifier);
                 if(remember) {
                     final String uuid = generateUUID(identifier);
 
@@ -385,26 +378,6 @@ public class AuthenticationModule extends Module {
             CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
         }
 
-    }
-
-    public XWebUser getUserWithUUID(final String uuid) {
-        for(DefaultUser u:defaultSource.values()) {
-            if(u.uuid != null && u.uuid.equals(uuid)) {
-                return u;
-            }
-        }
-        return null;
-    }
-
-
-    public XWebUser getUserWithId(final String userId, final String pass) {
-        final DefaultUser user = defaultSource.get(userId);
-        if(user != null) {
-            if(user.password.equals(pass)) {
-                return user;
-            }
-        }
-        return null;
     }
 
     public XWebUser getUser(final HttpServletRequest request) {
@@ -431,39 +404,32 @@ public class AuthenticationModule extends Module {
         return request.getSession().getAttribute(SESSION_USER) != null;
     }
 
-    public String generateUUID(final String userId) {
-        final DefaultUser user = defaultSource.get(userId);
-        if(user != null) {
-            return user.uuid;
+    /**
+     * Get data source. It will load datasource if it's require.
+     * @return
+     */
+    private AuthenticationData getDataSource() {
+        // setup datasource
+        if(dataSource == null) {
+            if(dataName != null) {
+                final Module module = getManager().getModule(dataName);
+                if(module == null) {
+                    throw new IllegalStateException("Module \"" + dataName + "\" require for "
+                                                        + "DataSource but not found!");
+                }
+                if(!(module instanceof AuthenticationData )) {
+                    throw new IllegalArgumentException("Module \"" + dataName + "\""
+                                                           + "should implement "
+                                                           + "AuthenticationData "
+                                                           + "interface to be used as "
+                                                           + "DataSource");
+                }
+                dataSource = (AuthenticationData) module;
+            } else {
+                dataSource = getManager().getImplementedOrThrow(AuthenticationData.class);
+            }
         }
-        return null;
-    }
-
-    private class DefaultUser implements XWebUser {
-
-        String id;
-
-        String password;
-
-        String uuid;
-
-        String role;
-
-        @Override
-        public String getId() {
-            return id;
-        }
-
-        @Override
-        public String getRole() {
-            return role;
-        }
-
-        @Override
-        public Object getExtra() {
-            return null;
-        }
-
+        return dataSource;
     }
 
 }
