@@ -57,7 +57,6 @@
             <integer>412</integer>
           </property>
           <property key="param42">
-        boolean gzip = false;
             <code>42.1</code>
             <code>42.2</code>
           </property>

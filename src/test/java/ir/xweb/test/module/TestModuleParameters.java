@@ -24,6 +24,9 @@ class TestModuleParameters {
         final String param1 = p.getString("param1");
         assertEquals(param1, "value1");
 
+        final String[] params1 = p.getStrings("param1");
+        assertEquals(params1[0], "value1");
+
         final ModuleParam param2 = p.getParam("param2");
         assertEquals(param2.getString("param21"), "value21");
         assertEquals(param2.getString("param22"), "value22");
