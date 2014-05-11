@@ -49,8 +49,8 @@ class TestModuleParameters {
         assertEquals(param42.getDoubles("code")[0], new Double(42.1D));
         assertEquals(param42.getDoubles("code")[1], new Double(42.2D));
 
-        final String defaultParam = p.getString("defaultParam1");
-        assertEquals(defaultParam, "defaultValue1");
+        //final String defaultParam = p.getString("defaultParam1");
+        //assertEquals(defaultParam, "defaultValue1");
 
         //final String overrided = p.getString("defaultParam2");
         //assertEquals(overrided, "overrided");
