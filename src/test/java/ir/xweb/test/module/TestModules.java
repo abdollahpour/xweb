@@ -7,7 +7,8 @@
 
 package ir.xweb.test.module;
 
-import org.testng.annotations.Test;
+
+import org.junit.Test;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -22,21 +23,28 @@ public class TestModules extends TestModule {
      */
     @Test
     public void testModuleParameters() throws IOException {
-        final TestModuleParameters test = new TestModuleParameters();
-        test.test(getManager());
+        final TestModuleParameters module = new TestModuleParameters();
+        module.test(getManager());
     }
 
     @Test
     public void testJsonPost() throws IOException {
-        final TestJsonPost post = new TestJsonPost();
-        post.test();
+        final TestJsonPost module = new TestJsonPost();
+        module.test();
     }
 
     @Test
     public void testGZipModule() throws IOException, ServletException {
-        final TestGzipModule gzip = new TestGzipModule(this);
-        gzip.test(true);
-        gzip.test(false);
+        final TestGzipModule module = new TestGzipModule(this);
+        module.test(true);
+        module.test(false);
+    }
+
+    @Test
+    public void testRewriteModule() throws IOException, ServletException {
+        final TestRewriteModule module = new TestRewriteModule(this);
+        module.test1();
+        module.test2();
     }
 
 }

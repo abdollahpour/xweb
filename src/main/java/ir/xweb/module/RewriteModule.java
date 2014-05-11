@@ -81,8 +81,9 @@ public class RewriteModule extends Module {
         for(ModuleParam p:paramParams) {
             final ParamEntry e = new ParamEntry();
             // TODO: Validate value with regex
-            e.matcher = p.exists("from").getString().replaceAll("/$", "/(.*?)");
+            e.from = p.exists("from").getString();
             e.to = p.exists("to").getString();
+            e.matcher = e.from.replaceAll("/\\$", "/[^/]*");
 
             params.add(e);
         }
@@ -255,7 +256,7 @@ public class RewriteModule extends Module {
         if(redirects.size() > 0) {
             for(RedirectEntry e:redirects) {
                 if(e.from.equals(path)) {
-                    response.sendRedirect(getProperties().get(path) + rest);
+                    response.sendRedirect(e.to + rest);
                     return;
                 }
             }
@@ -278,13 +279,15 @@ public class RewriteModule extends Module {
          */
         if(params.size() > 0) {
             for(ParamEntry e:params) {
-                if(e.matcher.matches(path)) {
-                    final String[] parts = e.matcher.split("/");
+                if(path.matches(e.matcher)) {
+                    final String[] parts = path.split("");
 
                     String to = e.to;
-                    for(int i=2; i<parts.length; i++) {
-                        to += to.replaceAll("$" + (i - 1), parts[i]);
+                    for(int i=1; i<parts.length; i++) {
+                        System.out.println(parts[i]);
+                        to = to.replaceAll("$" + (i - 1), parts[i]);
                     }
+                    System.out.println(to);
 
                     request.getRequestDispatcher(to).forward(request, response);
                     return;
@@ -338,6 +341,8 @@ public class RewriteModule extends Module {
     private class ParamEntry {
 
         String matcher;
+
+        String from;
 
         String to;
 

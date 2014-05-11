@@ -8,14 +8,11 @@
 package ir.xweb.test.module;
 
 import ir.xweb.module.GzipModule;
-import ir.xweb.module.Manager;
 import ir.xweb.module.ModuleParam;
-import ir.xweb.module.ResourceModule;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletOutputStream;
@@ -32,8 +29,8 @@ import java.util.Iterator;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.testng.Assert.*;
 
 public class TestGzipModule {
 

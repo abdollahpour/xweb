@@ -1,7 +1,7 @@
 package ir.xweb.test.util;
 
 
-import org.testng.annotations.Test;
+import org.junit.Test;
 
 import java.io.IOException;
 

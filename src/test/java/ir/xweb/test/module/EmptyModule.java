@@ -30,7 +30,9 @@ public class EmptyModule extends Module {
             final ModuleParam param,
             final HashMap<String, FileItem> files) throws IOException {
 
-        final DataModule d = getManager().getModuleOrThrow(DataModule.class);
-        d.write(response, param);
+        if(param != null) {
+            final DataModule d = getManager().getModuleOrThrow(DataModule.class);
+            d.write(response, param);
+        }
     }
 }

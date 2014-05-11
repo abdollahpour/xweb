@@ -9,7 +9,6 @@ package ir.xweb.test.data;
 import ir.xweb.data.DataTools;
 import ir.xweb.data.XWebData;
 import ir.xweb.data.XWebDataElement;
-import org.testng.annotations.Test;
 
 import static org.mockito.Mockito.*;
 

@@ -70,8 +70,10 @@ public class Manager {
 
             final Element envPropertiesElement = root.getChild("properties");
             if(envPropertiesElement != null) {
-                this.properties = dataTools.read(null, envPropertiesElement, envParam);
+                this.properties = dataTools.read(envPropertiesElement, envParam);
             }
+
+            // TODO: Apply defaults
 
             if(this.properties != null) {
                 for (String key:this.properties.keySet()) {
@@ -162,7 +164,9 @@ public class Manager {
                     final Element propertiesElement = model.getChild("properties");
                     final ModuleParam properties;
                     if(propertiesElement != null) {
-                        properties = dataTools.read(defaultParam, propertiesElement, envParam);
+                        properties = dataTools.read(propertiesElement, envParam);
+
+                        // TODO: Apply defaults
                     } else {
                         properties = new ModuleParam();
                     }
