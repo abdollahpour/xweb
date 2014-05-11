@@ -6,7 +6,13 @@
 
 package ir.xweb.data;
 
+import ir.xweb.module.DataModule;
+import ir.xweb.module.ModuleParam;
 import ir.xweb.util.MimeType;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.JDOMException;
+import org.jdom.input.SAXBuilder;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -23,6 +30,8 @@ import java.lang.reflect.Method;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DataTools {
 
@@ -397,7 +406,87 @@ public class DataTools {
         return object;
     }
 
+    public ModuleParam read(
+            final String html) throws IOException {
+        return read(html, null);
+    }
 
+    public ModuleParam read(
+            final String html,
+            final Map<String, String> env) throws IOException {
+
+        try {
+            final SAXBuilder builder = new SAXBuilder();
+            final Document document = builder.build(new StringReader(html));
+            final Element root = document.getRootElement();
+
+            return read(root, env);
+        } catch (JDOMException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    public ModuleParam read(
+        final Element element,
+        final Map<String, String> env) {
+
+        final List<Element> children = element.getChildren();
+        final HashMap<String, Object> data = new HashMap<String, Object>();
+
+        for(Element e:children) {
+            String name = e.getAttributeValue("key");
+            if(name == null) {
+                name = e.getName();
+            }
+
+            Object value = e.getAttributeValue("value");
+            if(value == null) {
+                if(e.getChildren().size() == 0) {
+                    final String text = e.getText();
+                    if(env != null) {
+                        value = applyEnvironmentVariable(text, env);
+                    } else {
+                        value = text;
+                    }
+                }
+                else {
+                    value = read(e, env);
+                }
+            }
+            final Object old = data.get(name);
+
+            if(old != null) {
+                if(old instanceof List) {
+                    ((List)old).add(value);
+                }
+                else {
+                    final List list = new ArrayList(2);
+                    list.add(old);
+                    list.add(value);
+                    data.put(name, list);
+                }
+            }
+            else {
+                data.put(name, value);
+            }
+        }
+
+        return new ModuleParam(data);
+    }
+
+    private String applyEnvironmentVariable(final String s, final Map<String, String> env) {
+        final Pattern pattern = Pattern.compile("\\$\\{([^}]*)\\}");
+
+        final Matcher m = pattern.matcher(s);
+        final StringBuffer sb = new StringBuffer();
+        while (m.find()) {
+            final String text = m.group(1);
+            final String value = env.get(text);
+            m.appendReplacement(sb, value == null ? "" : value);
+        }
+        m.appendTail(sb);
+        return sb.toString();
+    }
 
     private class JsonpFormatter extends JsonFormatter {
 

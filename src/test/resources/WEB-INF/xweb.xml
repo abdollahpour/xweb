@@ -1,76 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xweb version='1.0'>
 
-  <properties>
-    <property key='default.user1'>hamed1</property>
-    <property key='user2'>hamed2</property>
-    <property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
-    <property key='default.defaultParam1'>defaultValue1</property>
-    <property key='default.defaultParam2'>defaultValue2</property>
-  </properties>
+	<properties>
+		<property key='default.user1'>hamed1</property>
+		<property key='user2'>hamed2</property>
+		<property key='default.dir.store'>/media/LINK/projects/PDroid/pdroid-server/data</property>
+		<property key='default.defaultParam1'>defaultValue1</property>
+		<property key='default.defaultParam2'>defaultValue2</property>
+	</properties>
 
-  <modules>
-    <module>
-      <name>data</name>
-      <class>ir.xweb.module.DataModule</class>
-    </module>
-    <module>
-      <name>gzip</name>
-      <class>ir.xweb.module.GzipModule</class>
-      <properties>
-        <property key='modules'>
-          <name>empty2</name>
-        </property>
-      </properties>
-    </module>
-    <module>
-      <name>reply</name>
-      <class>ir.xweb.test.module.ReplyModule</class>
-    </module>
-    <module>
-      <name>empty</name>
-      <class>ir.xweb.test.module.EmptyModule</class>
-      <validators>
-        <validator param="param1" regex="value1"/>
-      </validators>
-      <roles>
-        <role or="1" param="param1" accept="admin"/>
-        <role or="1" param="param1" accept="user"/>
-        <role and="2" param="param2" match="value2" accept="user"/>
-        <role and="2" param="param2" accept="admin"/>
-      </roles>
-      <properties>
-        <property key="param1">value1</property>
-        <property key="param2">
-          <property key="param21">value21</property>
-          <property key="param22">value22</property>
-        </property>
-        <property key="param3">
-          <property>value3[0]</property>
-          <property>value3[1]</property>
-          <property>value3[2]</property>
-          <property>value3[3]</property>
-        </property>
-        <property key="param4">
-          <property key="param41">
-            <integer>411</integer>
-            <integer>412</integer>
-          </property>
-          <property key="param42">
-            <code>42.1</code>
-            <code>42.2</code>
-          </property>
-        </property>
-        <property key="defaultParam2">overrided</property>
-        <property key="user.home">value: ${user.home}</property>
-        <property key="from.global1">${default.user1}</property>
-        <property key="from.global2">${user2}</property>
-      </properties>
-    </module>
-    <module>
-      <name>empty2</name>
-      <class>ir.xweb.test.module.EmptyModule2</class>
-    </module>
-  </modules>
+	<modules>
+
+		<module>
+			<name>rewrite</name>
+			<properties>
+				<map>
+					<from>/users/$</from>
+					<to>/users?api=users&amp;format=$1</to>
+				</map>
+				<map>
+					<from>/users/$/$</from>
+					<to>/users?api=users&amp;format=$1&amp;template=$2</to>
+				</map>
+				<map>
+					<from>/users/$/$/$</from>
+					<to>/users?api=users&amp;format=$1&amp;template=$2&amp;contains=$3</to>
+				</map>
+				<map>
+					<from>/users/$/$/$/$</from>
+					<to>/users?api=users&amp;format=$1&amp;template=$2&amp;contains=$3&amp;by=$4</to>
+				</map>
+			</properties>
+		</module>
+
+		<module>
+			<name>data</name>
+			<class>ir.xweb.module.DataModule</class>
+		</module>
+
+		<module>
+			<name>gzip</name>
+			<class>ir.xweb.module.GzipModule</class>
+			<properties>
+				<module>empty2</module>
+			</properties>
+		</module>
+
+		<module>
+			<name>reply</name>
+			<class>ir.xweb.test.module.ReplyModule</class>
+		</module>
+
+		<module>
+			<name>empty</name>
+			<class>ir.xweb.test.module.EmptyModule</class>
+			<validators>
+				<validator param="param1" regex="value1"/>
+			</validators>
+			<roles>
+				<role or="1" param="param1" accept="admin"/>
+				<role or="1" param="param1" accept="user"/>
+				<role and="2" param="param2" match="value2" accept="user"/>
+				<role and="2" param="param2" accept="admin"/>
+			</roles>
+			<properties>
+				<param1>value1</param1>
+				<param2>
+					<param21>value21</param21>
+					<param22>value22</param22>
+				</param2>
+				<param3>
+					<property>value3[0]</property>
+					<property>value3[1]</property>
+					<property>value3[2]</property>
+					<property>value3[3]</property>
+				</param3>
+				<param4>
+					<param41>
+						<integer>411</integer>
+						<integer>412</integer>
+					</param41>
+					<param42>
+						<code>42.1</code>
+						<code>42.2</code>
+					</param42>
+				</param4>
+				<defaultParam2>overrided</defaultParam2>
+				<user.home>value: ${user.home}</user.home>
+				<from.global1>${default.user1}</from.global1>
+				<from.global2>${user2}</from.global2>
+			</properties>
+		</module>
+
+		<module>
+			<name>empty2</name>
+			<class>ir.xweb.test.module.EmptyModule2</class>
+		</module>
+
+	</modules>
 
 </xweb>

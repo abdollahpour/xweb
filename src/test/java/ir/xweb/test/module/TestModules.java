@@ -21,7 +21,7 @@ public class TestModules extends TestModule {
      * Test module parameters.
      */
     @Test
-    public void testModuleParameters() {
+    public void testModuleParameters() throws IOException {
         final TestModuleParameters test = new TestModuleParameters();
         test.test(getManager());
     }
