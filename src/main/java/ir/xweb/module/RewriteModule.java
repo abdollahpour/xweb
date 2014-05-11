@@ -20,6 +20,8 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RewriteModule extends Module {
 
@@ -40,18 +42,18 @@ public class RewriteModule extends Module {
      */
     private boolean allowConfSwapViaHttp = false;
 
-    private boolean statusEnabled = true;
-
-    private String statusPath = "/rewrite-status";
-
     private ServerNameMatcher statusServerNameMatcher;
 
     private static final String DEFAULT_STATUS_ENABLED_ON_HOSTS = "localhost, local, 127.0.0.1";
 
+    private final List<MapEntry> maps;
 
-    /**
-     *
-     */
+    private final List<ParamEntry> params;
+
+    private final List<MatchEntry> matches;
+
+    private final List<RedirectEntry> redirects;
+
     private ServletContext context = null;
 
     public RewriteModule(
@@ -60,6 +62,53 @@ public class RewriteModule extends Module {
             final ModuleParam properties) throws ModuleException {
 
         super(manager, info, properties);
+
+        // Map "from url" to "to url"
+        final ModuleParam[] mapParams = properties.getParams("map", new ModuleParam[0]);
+        maps = new ArrayList<MapEntry>(mapParams.length);
+        for(ModuleParam p:mapParams) {
+            final MapEntry e = new MapEntry();
+            // TODO: Validate value with regex
+            e.from = p.exists("from").getString();
+            e.to = p.exists("to").getString();
+
+            maps.add(e);
+        }
+
+        // Map 'from url" to "to url" (matches)
+        final ModuleParam[] paramParams = properties.getParams("param", new ModuleParam[0]);
+        params = new ArrayList<ParamEntry>(paramParams.length);
+        for(ModuleParam p:paramParams) {
+            final ParamEntry e = new ParamEntry();
+            // TODO: Validate value with regex
+            e.matcher = p.exists("from").getString().replaceAll("/$", "/(.*?)");
+            e.to = p.exists("to").getString();
+
+            params.add(e);
+        }
+
+        final ModuleParam[] matchParams = properties.getParams("match", new ModuleParam[0]);
+        matches = new ArrayList<MatchEntry>(matchParams.length);
+        for(ModuleParam p:matchParams) {
+            final MatchEntry e = new MatchEntry();
+            // TODO: Validate value with regex
+            e.matcher = p.exists("from").getString();
+            e.to = p.exists("to").getString();
+
+            matches.add(e);
+        }
+
+        final ModuleParam[] redirectParams = properties.getParams("redirect", new ModuleParam[0]);
+        redirects = new ArrayList<RedirectEntry>(redirectParams.length);
+        for(ModuleParam p:redirectParams) {
+            final RedirectEntry e = new RedirectEntry();
+            // TODO: Validate value with regex
+            e.from = p.exists("from").getString();
+            e.to = p.exists("to").getString();
+
+            redirects.add(e);
+        }
+
     }
 
     @Override
@@ -79,87 +128,14 @@ public class RewriteModule extends Module {
             return;
         }
 
-
-        // get init paramerers from context web.xml file
-        //String confReloadCheckIntervalStr = filterConfig.getInitParameter("confReloadCheckInterval");
-        //String confPathStr = filterConfig.getInitParameter("confPath");
-        //String statusPathConf = filterConfig.getInitParameter("statusPath");
-        //String statusEnabledConf = filterConfig.getInitParameter("statusEnabled");
-        String statusEnabledOnHosts = filterConfig.getInitParameter("statusEnabledOnHosts");
-
-        String allowConfSwapViaHttpStr = filterConfig.getInitParameter("allowConfSwapViaHttp");
+        final String allowConfSwapViaHttpStr = filterConfig.getInitParameter("allowConfSwapViaHttp");
         if (!StringUtils.isBlank(allowConfSwapViaHttpStr)) {
             allowConfSwapViaHttp = "true".equalsIgnoreCase(allowConfSwapViaHttpStr);
         }
 
-        // confReloadCheckInterval (default to null)
-        /*if (!StringUtils.isBlank(confReloadCheckIntervalStr)) {
-            // convert to millis
-            confReloadCheckInterval = 1000 * NumberUtils.stringToInt(confReloadCheckIntervalStr);
-
-            if (confReloadCheckInterval < 0) {
-                confReloadCheckEnabled = false;
-                logger.info("conf reload check disabled");
-
-            } else if (confReloadCheckInterval == 0) {
-                confReloadCheckEnabled = true;
-                logger.info("conf reload check performed each request");
-
-            } else {
-                confReloadCheckEnabled = true;
-                logger.info("conf reload check set to " + confReloadCheckInterval / 1000 + "s");
-            }
-
-        } else {
-            confReloadCheckEnabled = false;
-        }*/
-
-        //String modRewriteConf = filterConfig.getInitParameter("modRewriteConf");
-        //if (!StringUtils.isBlank(modRewriteConf)) {
-        //    modRewriteStyleConf = "true".equals(StringUtils.trim(modRewriteConf).toLowerCase());
-        //}
-
-        //if (!StringUtils.isBlank(confPathStr)) {
-        //    confPath = StringUtils.trim(confPathStr);
-        //} else {
-        //    confPath = modRewriteStyleConf ? DEFAULT_MOD_REWRITE_STYLE_CONF_PATH : DEFAULT_WEB_CONF_PATH;
-        //}
-        //logger.debug("confPath set to " + confPath);
-
-        // status enabled (default true)
-        //if (statusEnabledConf != null && !"".equals(statusEnabledConf)) {
-        //    logger.debug("statusEnabledConf set to " + statusEnabledConf);
-        //    statusEnabled = "true".equals(statusEnabledConf.toLowerCase());
-        //}
-        //if (statusEnabled) {
-        //    // status path (default /rewrite-status)
-        //    if (statusPathConf != null && !"".equals(statusPathConf)) {
-        //        statusPath = statusPathConf.trim();
-        //        logger.info("status display enabled, path set to " + statusPath);
-        //    }
-        //} else {
-        //    logger.info("status display disabled");
-        //}
-
-        //if (StringUtils.isBlank(statusEnabledOnHosts)) {
-            statusEnabledOnHosts = DEFAULT_STATUS_ENABLED_ON_HOSTS;
-        //} else {
-        //    logger.debug("statusEnabledOnHosts set to " + statusEnabledOnHosts);
-        //}
+        final String statusEnabledOnHosts = DEFAULT_STATUS_ENABLED_ON_HOSTS;
         statusServerNameMatcher = new ServerNameMatcher(statusEnabledOnHosts);
 
-        // now load conf from snippet in web.xml if modRewriteStyleConf is set
-        //String modRewriteConfText = filterConfig.getInitParameter("modRewriteConfText");
-        //if (!StringUtils.isBlank(modRewriteConfText)) {
-        //    ModRewriteConfLoader loader = new ModRewriteConfLoader();
-        //    Conf conf = new Conf();
-        //    loader.process(modRewriteConfText, conf);
-        //    conf.initialise();
-        //    checkConf(conf);
-        //    confLoadedFromFile = false;
-        //
-        //}   else {
-        //
         loadUrlRewriter(filterConfig);
     }
 
@@ -170,33 +146,31 @@ public class RewriteModule extends Module {
         loadUrlRewriterLocal();
     }
 
-    private byte[] generateXml() throws IOException {
-        ModuleParam pro = getProperties();
+    private byte[] generateTuckeyXmlConfig() throws IOException {
+        final ModuleParam pro = getProperties();
 
-        Element urlrewrite = new Element("urlrewrite");
+        final Element urlrewrite = new Element("urlrewrite");
 
-        for(String key:pro.keySet()) {
+        for(MatchEntry e: matches) {
             //if(!pro.isDefaultProperties(key)) {
-                String value = pro.getString(key, null);
-
-                Element rule = new Element("rule");
+                final Element rule = new Element("rule");
                 urlrewrite.addContent(rule);
 
-                Element from = new Element("from");
-                from.setText(key);
+                final Element from = new Element("from");
+                from.setText(e.matcher);
                 rule.addContent(from);
 
-                Element to = new Element("to");
-                to.setText(value);
+                final Element to = new Element("to");
+                to.setText(e.to);
                 rule.addContent(to);
             //}
         }
 
-        Document doc = new Document(urlrewrite);
+        final Document doc = new Document(urlrewrite);
 
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        XMLOutputter xmlOutput = new XMLOutputter();
+        final XMLOutputter xmlOutput = new XMLOutputter();
         xmlOutput.setFormat(Format.getCompactFormat());
         xmlOutput.output(doc, baos);
 
@@ -206,37 +180,14 @@ public class RewriteModule extends Module {
     }
 
     private void loadUrlRewriterLocal() {
-        //InputStream inputStream = context.getResourceAsStream(confPath);
-        //URL confUrl = null;
-        //try {
-        //    confUrl = context.getResource(confPath);
-        //} catch (MalformedURLException e) {
-        //    logger.debug("", e);
-        //}
-        //String confUrlStr = null;
-        //if (confUrl != null) {
-        //    confUrlStr = confUrl.toString();
-        //}
-        //if (inputStream == null) {
-        //    logger.error("unable to find urlrewrite conf file at " + confPath);
-        //    // set the writer back to null
-        //    if (urlRewriter != null) {
-        //        logger.error("unloading existing conf");
-        //        urlRewriter = null;
-        //    }
-        //
-        //} else {
-            //Conf conf = new Conf(context, inputStream, confPath, confUrlStr, modRewriteStyleConf);
+        try{
+            final ByteArrayInputStream bais = new ByteArrayInputStream(generateTuckeyXmlConfig());
 
-            try{
-                ByteArrayInputStream bais = new ByteArrayInputStream(generateXml());
-
-                Conf conf = new Conf(context, bais, null, null, false);
-                checkConf(conf);
-            } catch (Exception ex) {
-                logger.error("", ex);
-            }
-        //}*/
+            final Conf conf = new Conf(context, bais, null, null, false);
+            checkConf(conf);
+        } catch (Exception ex) {
+            logger.error("", ex);
+        }
     }
 
     /**
@@ -247,13 +198,6 @@ public class RewriteModule extends Module {
     }
 
     private void checkConfLocal(Conf conf) {
-        //if (logger.isDebugEnabled()) {
-        //    if (conf.getRules() != null) {
-        //        logger.debug("inited with " + conf.getRules().size() + " rules");
-        //    }
-        //    logger.debug("conf is " + (conf.isOk() ? "ok" : "NOT ok"));
-        //}
-        //confLastLoaded = conf;
         if (conf.isOk() && conf.isEngineEnabled()) {
             urlRewriter = new UrlRewriter(conf);
             logger.info("loaded (conf ok)");
@@ -281,11 +225,7 @@ public class RewriteModule extends Module {
     public void destroyActual() {
         destroyUrlRewriter();
         context = null;
-        //confLastLoad = 0;
-        //confPath = DEFAULT_WEB_CONF_PATH;
         confReloadCheckEnabled = false;
-        //confReloadCheckInterval = 0;
-        //confReloadInProgress = false;
     }
 
     protected void destroyUrlRewriter() {
@@ -302,27 +242,75 @@ public class RewriteModule extends Module {
             final HttpServletResponse response,
             final FilterChain chain) throws IOException, ServletException {
 
-        UrlRewriter urlRewriter = getUrlRewriter(request, response, chain);
 
-        //final HttpServletRequest hsRequest = (HttpServletRequest) request;
-        //final HttpServletResponse hsResponse = (HttpServletResponse) response;
-        UrlRewriteWrappedResponse urlRewriteWrappedResponse = new UrlRewriteWrappedResponse(response, request,
-                urlRewriter);
+        final String uri = request.getRequestURI();
 
-        boolean requestRewritten = false;
-        if (urlRewriter != null) {
+        final String[] uriParts = uri.split("[#?]");
+        final String path = uriParts[0];
+        final String rest = uri.substring(uriParts[0].length());
 
-            // process the request
-            requestRewritten = urlRewriter.processRequest(request, urlRewriteWrappedResponse, chain);
-        } else {
-            if (logger.isDebugEnabled()) {
-                logger.debug("urlRewriter engine not loaded ignoring request (could be a conf file problem)");
+        /**
+         * Handle redirects
+         */
+        if(redirects.size() > 0) {
+            for(RedirectEntry e:redirects) {
+                if(e.from.equals(path)) {
+                    response.sendRedirect(getProperties().get(path) + rest);
+                    return;
+                }
             }
         }
 
-        // if no rewrite has taken place continue as normal
-        if (!requestRewritten) {
-            chain.doFilter(request, urlRewriteWrappedResponse);
+        /**
+         * Handle maps
+         */
+        if(maps.size() > 0) {
+            for(MapEntry e:maps) {
+                if(e.from.equals(path)) {
+                    request.getRequestDispatcher(e.to).forward(request, response);
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Handle params
+         */
+        if(params.size() > 0) {
+            for(ParamEntry e:params) {
+                if(e.matcher.matches(path)) {
+                    final String[] parts = e.matcher.split("/");
+
+                    String to = e.to;
+                    for(int i=2; i<parts.length; i++) {
+                        to += to.replaceAll("$" + (i - 1), parts[i]);
+                    }
+
+                    request.getRequestDispatcher(to).forward(request, response);
+                    return;
+                }
+            }
+        }
+
+        /**
+         * Handle matches
+         */
+        if(matches.size() > 0) {
+            final UrlRewriter urlRewriter = getUrlRewriter(request, response, chain);
+            final UrlRewriteWrappedResponse urlRewriteWrappedResponse = new UrlRewriteWrappedResponse(
+                    response, request, urlRewriter);
+
+            boolean requestRewritten = false;
+            if (urlRewriter != null) {
+
+                // process the request
+                requestRewritten = urlRewriter.processRequest(request, urlRewriteWrappedResponse, chain);
+            }
+
+            // if no rewrite has taken place continue as normal
+            if (!requestRewritten) {
+                chain.doFilter(request, urlRewriteWrappedResponse);
+            }
         }
     }
 
@@ -337,6 +325,38 @@ public class RewriteModule extends Module {
         //    reloadConf();
         //}
         return urlRewriter;
+    }
+
+    private class MapEntry {
+
+        String from;
+
+        String to;
+
+    }
+
+    private class ParamEntry {
+
+        String matcher;
+
+        String to;
+
+    }
+
+    private class MatchEntry {
+
+        String matcher;
+
+        String to;
+
+    }
+
+    private class RedirectEntry {
+
+        String from;
+
+        String to;
+
     }
 
 }

@@ -186,7 +186,7 @@ public class ModuleParam implements Map<String, Object>, Cloneable {
     }
 
     public Long getLong(final String name) {
-        return getLong(name, (Long)null);
+        return getLong(name, (Long) null);
     }
 
     public Long[] getLongs(final String name, final char... separator) {
@@ -346,6 +346,31 @@ public class ModuleParam implements Map<String, Object>, Cloneable {
         return getParam(name, null);
     }
 
+    public ModuleParam[] getParams(final String name) {
+        return getParams(name, null);
+    }
+
+    public ModuleParam[] getParams(final String name, final ModuleParam[] def) {
+        final Collection list = get(Collection.class, name, null);
+        if(list != null) {
+            final ModuleParam[] modules = new ModuleParam[list.size()];
+
+            final Iterator iterator = list.iterator();
+            for(int i=0; i<modules.length; i++) {
+                modules[i] = (ModuleParam) iterator.next();
+            }
+
+            return modules;
+        }
+
+        final ModuleParam param = getParam(name);
+        if(param != null) {
+            return new ModuleParam[]{param};
+        }
+
+        return def;
+    }
+
     /**
      * http://stackoverflow.com/questions/3684747/how-to-validate-a-locale-in-java
      * @param locale
@@ -500,6 +525,11 @@ public class ModuleParam implements Map<String, Object>, Cloneable {
     @Override
     public Set<Entry<String, Object>> entrySet() {
         return data.entrySet();
+    }
+
+    @Override
+    public String toString() {
+        return data.toString();
     }
 
     @Override

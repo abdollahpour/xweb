@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ir.xweb.data.DataTools;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -61,10 +62,11 @@ public class Manager {
             final Element root = document.getRootElement();
 
             final Map<String, String> envParam = getEnvMap();
+            final DataTools dataTools = new DataTools();
 
             final Element envPropertiesElement = root.getChild("properties");
             if(envPropertiesElement != null) {
-                this.properties = (ModuleParam) getElement(null, envParam, envPropertiesElement);
+                this.properties = dataTools.read(null, envPropertiesElement, envParam);
             }
 
             if(this.properties != null) {
@@ -156,7 +158,7 @@ public class Manager {
                     final Element propertiesElement = model.getChild("properties");
                     final ModuleParam properties;
                     if(propertiesElement != null) {
-                        properties = (ModuleParam) getElement(defaultParam, envParam, propertiesElement);
+                        properties = dataTools.read(defaultParam, propertiesElement, envParam);
                     } else {
                         properties = new ModuleParam();
                     }

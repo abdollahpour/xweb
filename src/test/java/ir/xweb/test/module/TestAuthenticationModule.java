@@ -72,7 +72,7 @@ public class TestAuthenticationModule {
     }
 
     /*@Test(expected=ModuleException.class)*/
-    public void loginFail() throws IOException {
+    /*public void loginFail() throws IOException {
         // set up
         final HttpServletRequest request = mock(HttpServletRequest.class);
         final HttpServletResponse response = mock(HttpServletResponse.class);
@@ -99,9 +99,9 @@ public class TestAuthenticationModule {
         module.init(servletContext);
 
         module.process(servletContext, request, response, requestParams, null);
-    }
+    }*/
 
-    public void loginSuccess() throws IOException {
+    /*public void loginSuccess() throws IOException {
         // set up
         final HttpServletRequest request = mock(HttpServletRequest.class);
         final HttpServletResponse response = mock(HttpServletResponse.class);
@@ -145,6 +145,6 @@ public class TestAuthenticationModule {
         module.init(servletContext);
 
         module.process(servletContext, request, response, requestParams, null);
-    }
+    }*/
 
 }
