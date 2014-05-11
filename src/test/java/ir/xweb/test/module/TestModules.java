@@ -40,11 +40,4 @@ public class TestModules extends TestModule {
         module.test(false);
     }
 
-    @Test
-    public void testRewriteModule() throws IOException, ServletException {
-        final TestRewriteModule module = new TestRewriteModule(this);
-        module.test1();
-        module.test2();
-    }
-
 }

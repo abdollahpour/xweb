@@ -26,9 +26,9 @@ import java.util.zip.GZIPOutputStream;
 
 public class GzipModule extends Module {
 
-    public final static String PARAM_MODULES = "modules";
+    public final static String PARAM_MODULE = "module";
 
-    public final static String PARAM_EXTENSIONS = "extensions";
+    public final static String PARAM_EXTENSION = "extension";
 
     public final static String PARAM_REQUESTS = "requests";
 
@@ -42,7 +42,7 @@ public class GzipModule extends Module {
 
     private final List<String> extensions;
 
-    private final String requests;
+    private final List<String> requests;
 
     private File cacheDir;
 
@@ -53,9 +53,9 @@ public class GzipModule extends Module {
 
         super(manager, info, properties);
 
-        this.modules = Arrays.asList(properties.getStrings(PARAM_MODULES, new String[0]));
-        this.extensions = Arrays.asList(properties.getStrings(PARAM_EXTENSIONS, new String[0]));
-        requests = properties.getString(PARAM_REQUESTS);
+        this.modules = Arrays.asList(properties.getStrings(PARAM_MODULE, new String[0]));
+        this.extensions = Arrays.asList(properties.getStrings(PARAM_EXTENSION, new String[0]));
+        this.requests = Arrays.asList(properties.getStrings(PARAM_REQUESTS));
         cacheDir = properties.getFile(PARAM_DIR_CACHE);
         maxSize = properties.getInt(PARAM_SIZE_MAX, 2097152); // 2MB default
     }
@@ -96,8 +96,10 @@ public class GzipModule extends Module {
 
                 // By regex
                 if(requests != null) {
-                    if(path.matches(requests)) {
-                        chainedResponse = new ZipResponseWrapper(response);
+                    for(String r:requests) {
+                        if(path.matches(r)) {
+                            chainedResponse = new ZipResponseWrapper(response);
+                        }
                     }
                 }
 
