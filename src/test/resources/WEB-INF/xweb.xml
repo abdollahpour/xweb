@@ -13,23 +13,28 @@
 
 		<module>
 			<name>rewrite</name>
+			<class>ir.xweb.module.RewriteModule</class>
 			<properties>
-				<map>
+				<redirect>
+					<from>/redirect</from>
+					<to>/success-redirect</to>
+				</redirect>
+				<param>
 					<from>/users/$</from>
-					<to>/users?api=users&amp;format=$1</to>
-				</map>
-				<map>
+					<to>/users?api=users&amp;users&amp;format=$1</to>
+				</param>
+				<!--<param>
 					<from>/users/$/$</from>
 					<to>/users?api=users&amp;format=$1&amp;template=$2</to>
-				</map>
-				<map>
+				</param>
+				<param>
 					<from>/users/$/$/$</from>
 					<to>/users?api=users&amp;format=$1&amp;template=$2&amp;contains=$3</to>
-				</map>
-				<map>
+				</param>
+				<param>
 					<from>/users/$/$/$/$</from>
 					<to>/users?api=users&amp;format=$1&amp;template=$2&amp;contains=$3&amp;by=$4</to>
-				</map>
+				</param>-->
 			</properties>
 		</module>
 

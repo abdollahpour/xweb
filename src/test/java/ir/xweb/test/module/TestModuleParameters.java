@@ -12,7 +12,8 @@ import ir.xweb.module.ModuleParam;
 
 import java.io.IOException;
 
-import static org.testng.Assert.*;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * Test module parameters from xweb.xml file.
