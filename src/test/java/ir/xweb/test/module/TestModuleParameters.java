@@ -49,6 +49,10 @@ class TestModuleParameters {
         assertEquals(param42.getDoubles("code")[0], new Double(42.1D));
         assertEquals(param42.getDoubles("code")[1], new Double(42.2D));
 
+        final String[] params5 = p.getStrings("param5");
+        assertEquals(params5[0], "value51");
+        assertEquals(params5[1], "value52");
+
         //final String defaultParam = p.getString("defaultParam1");
         //assertEquals(defaultParam, "defaultValue1");
 
