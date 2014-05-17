@@ -63,6 +63,8 @@
 						<code>42.2</code>
 					</param42>
 				</param4>
+				<param5>value51</param5>
+				<param5>value52</param5>
 				<defaultParam2>overrided</defaultParam2>
 				<user.home>value: ${user.home}</user.home>
 				<from.global1>${default.user1}</from.global1>
