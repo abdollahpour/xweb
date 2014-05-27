@@ -894,7 +894,7 @@ public class ResourceModule extends Module {
                     throw new IllegalStateException("Module \"" + dataName + "\" require for "
                                                         + "DataSource but not found!");
                 }
-                if(!(module instanceof AuthenticationData )) {
+                if(!(module instanceof AuthenticationModuleData)) {
                     throw new IllegalArgumentException("Module \"" + dataName + "\""
                                                            + "should implement "
                                                            + "ResourceData "
