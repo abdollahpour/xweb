@@ -1,7 +1,8 @@
+
 /**
- * xweb project
+ * XWeb project
  * Created by Hamed Abdollahpour
- * http://www.mobile4use.com/xweb
+ * https://github.com/abdollahpour/xweb
  */
 
 package ir.xweb.module;
@@ -22,15 +23,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.Map;
+import java.util.HashMap;
 import java.util.Random;
 
 /**
- * Created with IntelliJ IDEA.
- * User: hamed
- * Date: 5/20/13
- * Time: 1:04 PM
- * To change this template use File | Settings | File Templates.
+ * Generate captcha code/picture and store in session.
  */
 public class CaptchaModule extends Module {
 
@@ -42,101 +39,30 @@ public class CaptchaModule extends Module {
 
     public static String SESSION_CAPTCHA_PATTERN = "^[0-9]{5}$";
 
-    private Font font = null;
-
     public CaptchaModule(
             final Manager manager,
             final ModuleInfo info,
             final ModuleParam properties) throws ModuleException {
 
         super(manager, info, properties);
-
-        GraphicsEnvironment e = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        Font[] allFonts = e.getAllFonts();
-
-        font = allFonts[0];
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void process(
             final ServletContext context,
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam param,
-            final Map<String, FileItem> files) throws IOException {
+            final HashMap<String, FileItem> files) throws IOException {
 
-        Random rand = new Random();
+        final Random rand = new Random();
         final int code = 10000 + rand.nextInt(89999);
 
         // just for 10 min
-        long expire = System.currentTimeMillis() + 10 * 60 * 1000;
-
-        /*FontGenerator fontGenerator = new FontGenerator() {
-            @Override
-            public Font getFont() {
-                return font;
-            }
-
-            @Override
-            public int getMinFontSize() {
-                return 10;
-            }
-
-            @Override
-            public int getMaxFontSize() {
-                return 15;
-            }
-        };
-
-        BackgroundGenerator backgroundGenerator = new BackgroundGenerator() {
-            @Override
-            public int getImageHeight() {
-                return 60;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public int getImageWidth() {
-                return 150;  //To change body of implemented methods use File | Settings | File Templates.
-            }
-
-            @Override
-            public BufferedImage getBackground() {
-                BufferedImage image = new BufferedImage(150, 45, BufferedImage.TYPE_INT_RGB); // 123 wide, 123 tall
-                Graphics2D g = image.createGraphics();
-
-                g.setColor(Color.WHITE);
-                g.fillRect(0, 0, 150, 60);
-
-                //g.setFont(g.getFont().deriveFont(30f));
-                //g.setColor(Color.BLACK);
-                //g.drawString(Integer.toString(code), 10, 30);
-
-                g.dispose();
-
-                return image;
-            }
-        };
-
-        TextPaster textPaster = new RandomTextPaster(5, 5, Color.BLACK);
-
-        WordToImage w2i = new ComposedWordToImage(fontGenerator, backgroundGenerator, textPaster);
-
-        BufferedImage image = w2i.getImage(Integer.toString(code));
-        */
-
-
-
-        /*BufferedImage image = new BufferedImage(150, 45, BufferedImage.TYPE_INT_RGB); // 123 wide, 123 tall
-        Graphics2D g = image.createGraphics();
-
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, 150, 60);
-
-        g.setFont(g.getFont().deriveFont(30f));
-        g.setColor(Color.BLACK);
-        g.drawString(Integer.toString(code), 10, 30);
-
-        g.dispose();*/
+        final long expire = System.currentTimeMillis() + 10 * 60 * 1000;
 
         java.util.List<Font> textFonts = Arrays.asList(
                 //new Font("Arial", Font.PLAIN, 40),
@@ -170,7 +96,7 @@ public class CaptchaModule extends Module {
                 150 + rand.nextInt(55)
         );
 
-        char[] chars = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
+        final char[] chars = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
         Captcha captcha = new Captcha.Builder(200, 50)
                 .addText(
@@ -187,7 +113,7 @@ public class CaptchaModule extends Module {
                         //.addBorder()
                         .build();
 
-        BufferedImage image = captcha.getImage();
+        final BufferedImage image = captcha.getImage();
 
         response.setContentType("image/jpeg");
         response.setHeader("Cache-Control", "no-cache, no-store");
@@ -197,7 +123,7 @@ public class CaptchaModule extends Module {
         response.setDateHeader("Date", time);
         response.setDateHeader("Expires", time);
 
-        OutputStream outputStream = response.getOutputStream();
+        final OutputStream outputStream = response.getOutputStream();
         ImageIO.write(image, "jpeg", outputStream);
         outputStream.close();
 
@@ -205,9 +131,23 @@ public class CaptchaModule extends Module {
         request.getSession().setAttribute(SESSION_CAPTCHA_EXPIRE, expire);
     }
 
-    public static void validateOrThrow(HttpServletRequest request, String captcha) throws IOException {
-        Integer code = (Integer) request.getSession().getAttribute(CaptchaModule.SESSION_CAPTCHA_CODE);
-        Long expire = (Long) request.getSession().getAttribute(CaptchaModule.SESSION_CAPTCHA_EXPIRE);
+    /**
+     * Check captcha code in session is value or not. If will remove captcha if it was successful or not.
+     * @param request Request
+     * @param captcha Captcha code
+     * @throws IOException If captcha code not be value
+     * @throws java.lang.IllegalArgumentException If request or captcha be null.
+     */
+    public void validateOrThrow(final HttpServletRequest request, final String captcha) throws IOException {
+        if(request == null) {
+            throw new IllegalArgumentException("null request");
+        }
+        if(captcha == null) {
+            throw new IllegalArgumentException("null captcha");
+        }
+
+        final Integer code = (Integer) request.getSession().getAttribute(CaptchaModule.SESSION_CAPTCHA_CODE);
+        final Long expire = (Long) request.getSession().getAttribute(CaptchaModule.SESSION_CAPTCHA_EXPIRE);
 
         // remove
         request.getSession().removeAttribute(CaptchaModule.SESSION_CAPTCHA_CODE);
