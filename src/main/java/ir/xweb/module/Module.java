@@ -26,6 +26,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+/**
+ * Base module for xweb framework.
+ */
 public class Module {
 
     private final Manager manager;
@@ -40,6 +43,10 @@ public class Module {
 
     private Map<String, ModuleInfoValidator> validators = new HashMap<String, ModuleInfoValidator>();
 
+    /**
+     * Construct new module.
+     * @throws ir.xweb.module.ModuleException If any error happens to setup modules
+     */
     public Module(
             final Manager manager,
             final ModuleInfo info,
@@ -66,9 +73,18 @@ public class Module {
         }
     }
 
+    /**
+     * Empty method. Override to implement init module. This method will call after all the module load. The order or
+     * running is same as the order in xweb.xml file.
+     * @param context Application context
+     */
     public void init(ServletContext context) {
     }
 
+    /**
+     * Empty method. Override to implement destroy module. The order or
+     * running is reverse as the order in xweb.xml file.
+     */
     public void destroy() {
     }
 
