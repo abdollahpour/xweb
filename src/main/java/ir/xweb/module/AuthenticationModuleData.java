@@ -13,7 +13,7 @@ import ir.xweb.server.XWebUser;
  * Authentication module data source. Implement this interface into you module to be able to
  * handle authentication by Authentication module.
  */
-public interface AuthenticationData {
+public interface AuthenticationModuleData {
 
     /**
      * Generate UUID login code for user and return it. It should also store this code

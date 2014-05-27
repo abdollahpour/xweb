@@ -54,6 +54,10 @@ public class AuthenticationModule extends Module {
 
     private final String nologin;
 
+    private AuthenticationModuleData dataSource;
+
+    private final String dataName;
+
     public AuthenticationModule(
             final Manager manager,
             final ModuleInfo info,
@@ -68,117 +72,6 @@ public class AuthenticationModule extends Module {
         this.ignore = properties.getString(PARAM_IGNORE, null);
         this.nologin = properties.getString(PARAM_NO_LOGIN, null);
         this.dataName = properties.getString(PARAM_DATA);
-    }
-
-    private void importXmlSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            final SAXBuilder builder = new SAXBuilder();
-            final File xmlFile = new File(path);
-
-            try {
-
-                final Document document = builder.build(xmlFile);
-                final Element rootNode = document.getRootElement();
-                final List list = rootNode.getChildren("user");
-
-                for (int i = 0; i < list.size(); i++) {
-                    final Element u = (Element) list.get(i);
-
-                    final String id = u.getAttributeValue("id");
-                    final String password = Tools.md5(u.getAttributeValue("password"));
-                    final String role = u.getAttributeValue("role");
-                    final String uuid = u.getAttributeValue("uuid");
-
-                    final DefaultUser user = new DefaultUser();
-                    user.id = id;
-                    user.password = password;
-                    user.role = role;
-                    user.uuid = uuid;
-
-                    defaultSource.put(id, user);
-                }
-
-            } catch (IOException ex) {
-                logger.error("Error to access XML data source", ex);
-            } catch (JDOMException ex) {
-                logger.error("Error to parse", ex);
-            }
-        } else {
-            logger.error("XML source not found: " + path);
-        }
-    }
-
-    private void importJsonSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            try {
-                final String text = Tools.readTextFile(file);
-                final JSONArray array = new JSONArray(text);
-
-                for (int i = 0; i < array.length(); i++) {
-                    final JSONObject u = array.getJSONObject(i);
-
-                    final String id = u.getString("id");
-                    final String password = Tools.md5(u.getString("password"));
-                    final String role = u.getString("role");
-                    final String uuid = u.getString("uuid");
-
-                    final DefaultUser user = new DefaultUser();
-                    user.id = id;
-                    user.password = password;
-                    user.role = role;
-                    user.uuid = uuid;
-
-                    defaultSource.put(id, user);
-                }
-            } catch (IOException ex) {
-                logger.error("Error to access json source", ex);
-            } catch (JSONException ex) {
-                logger.error("Error to parse json source", ex);
-            }
-
-        } else {
-            logger.error("JSON source not found: " + path);
-        }
-    }
-
-    private void importTextSource(final String path) {
-        final File file = new File(path);
-        if(file.exists()) {
-            try {
-                final String text = Tools.readTextFile(file);
-                final BufferedReader reader = new BufferedReader(new StringReader(text));
-
-                String line;
-                while((line = reader.readLine()) != null) {
-                    if(line.length() > 0) {
-                        final String[] parts = line.split("\t");
-                        if(parts.length == 3) {
-                            final String id = parts[0];
-                            final String password = Tools.md5(parts[1]);
-                            final String role = parts[2];
-                            final String uuid = parts.length > 3 ? null : parts[3];
-
-                            final DefaultUser user = new DefaultUser();
-                            user.id = id;
-                            user.password = password;
-                            user.role = role;
-                            user.uuid = uuid;
-
-                            defaultSource.put(id, user);
-                        } else {
-                            logger.error("Illegal line text user source");
-                        }
-                    }
-                }
-            } catch (IOException ex) {
-                logger.error("Error to access text source", ex);
-            }
-
-        } else {
-            logger.error("JSON source not found: " + path);
-        }
     }
 
     @Override
@@ -327,7 +220,7 @@ public class AuthenticationModule extends Module {
             final String password = params.exists("password").getString();
             final String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString();
 
-            CaptchaModule.validateOrThrow(request, captcha);
+            getManager().getModuleOrThrow(CaptchaModule.class).validateOrThrow(request, captcha);
 
             logger.info("User try to login: " + identifier);
 
@@ -408,26 +301,9 @@ public class AuthenticationModule extends Module {
      * Get data source. It will load datasource if it's require.
      * @return
      */
-    private AuthenticationData getDataSource() {
-        // setup datasource
+    private AuthenticationModuleData getDataSource() {
         if(dataSource == null) {
-            if(dataName != null) {
-                final Module module = getManager().getModule(dataName);
-                if(module == null) {
-                    throw new IllegalStateException("Module \"" + dataName + "\" require for "
-                                                        + "DataSource but not found!");
-                }
-                if(!(module instanceof AuthenticationData )) {
-                    throw new IllegalArgumentException("Module \"" + dataName + "\""
-                                                           + "should implement "
-                                                           + "AuthenticationData "
-                                                           + "interface to be used as "
-                                                           + "DataSource");
-                }
-                dataSource = (AuthenticationData) module;
-            } else {
-                dataSource = getManager().getImplementedOrThrow(AuthenticationData.class);
-            }
+            dataSource = getManager().getImplementedOrThrow(AuthenticationModuleData.class, dataName);
         }
         return dataSource;
     }

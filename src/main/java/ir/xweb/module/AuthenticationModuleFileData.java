@@ -31,7 +31,7 @@ import java.util.Map;
  * Load user information from static file. It support XML, JSON and simple text file. If data file
  * change it will reload it automatically.
  */
-public class AuthenticationFileData extends Module implements AuthenticationData {
+public class AuthenticationModuleFileData extends Module implements AuthenticationModuleData {
 
     private final Logger logger = LoggerFactory.getLogger("AuthenticationFileData");
 
@@ -43,8 +43,8 @@ public class AuthenticationFileData extends Module implements AuthenticationData
 
     private Map<String, FileUser> defaultSource;
 
-    public AuthenticationFileData(final Manager manager, final ModuleInfo info,
-                                  final ModuleParam properties) throws ModuleException {
+    public AuthenticationModuleFileData(final Manager manager, final ModuleInfo info,
+                                        final ModuleParam properties) throws ModuleException {
 
         super(manager, info, properties);
 
