@@ -1,3 +1,4 @@
+
 /**
  * XWeb project
  * Created by Hamed Abdollahpour
@@ -54,7 +55,7 @@ public class AuthenticationModule extends Module {
 
     private final String nologin;
 
-    private AuthenticationData dataSource;
+    private AuthenticationModuleData dataSource;
 
     private final String dataName;
 
@@ -224,7 +225,7 @@ public class AuthenticationModule extends Module {
             final String password = params.exists("password").getString();
             final String captcha = params.validate("captcha", CaptchaModule.SESSION_CAPTCHA_PATTERN, true).getString();
 
-            CaptchaModule.validateOrThrow(request, captcha);
+            getManager().getModuleOrThrow(CaptchaModule.class).validateOrThrow(request, captcha);
 
             logger.info("User try to login: " + identifier);
 
@@ -303,26 +304,9 @@ public class AuthenticationModule extends Module {
      * Get data source. It will load datasource if it's require.
      * @return
      */
-    private AuthenticationData getDataSource() {
-        // setup datasource
+    private AuthenticationModuleData getDataSource() {
         if(dataSource == null) {
-            if(dataName != null) {
-                final Module module = getManager().getModule(dataName);
-                if(module == null) {
-                    throw new IllegalStateException("Module \"" + dataName + "\" require for "
-                                                        + "DataSource but not found!");
-                }
-                if(!(module instanceof AuthenticationData )) {
-                    throw new IllegalArgumentException("Module \"" + dataName + "\""
-                                                           + "should implement "
-                                                           + "AuthenticationData "
-                                                           + "interface to be used as "
-                                                           + "DataSource");
-                }
-                dataSource = (AuthenticationData) module;
-            } else {
-                dataSource = getManager().getImplementedOrThrow(AuthenticationData.class);
-            }
+            dataSource = getManager().getImplementedOrThrow(AuthenticationModuleData.class, dataName);
         }
         return dataSource;
     }
