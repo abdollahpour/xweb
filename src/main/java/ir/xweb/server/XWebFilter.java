@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class XWebFilter implements Filter {
 
@@ -51,37 +53,17 @@ public class XWebFilter implements Filter {
         ServletRequest req = request;
         ServletResponse resp = response;
 
-        if(modules != null) {
-            for(Module m:modules) {
-                if(request instanceof HttpServletRequest) {
-                    if(response instanceof HttpServletResponse) {
-                        try {
-                            final Chain chain = new Chain();
-                            chain.chainedRequest = req;
-                            chain.chainedResponse = resp;
+        if(modules != null && modules.size() > 0) {
+            final Iterator<Module> iterators = modules.iterator();
 
-                            m.doFilter(
-                                    context,
-                                    (HttpServletRequest) req,
-                                    (HttpServletResponse) resp,
-                                    chain
-                            );
-
-                            if(!chain.fired) {
-                                return; // fail
-                            }
-
-                            req = chain.chainedRequest;
-                            resp = chain.chainedResponse;
-                        } catch (Exception ex) {
-                            logger.error("Error filter in module: " + m.getClass(), ex);
-                        }
-                    }
-                }
-            }
+            final Chain chain = new Chain();
+            chain.iterator = iterators;
+            chain.mainChain = filterChain;
+            chain.doFilter(request, response);
         }
-
-        filterChain.doFilter(req, resp);
+        else {
+            filterChain.doFilter(req, resp);
+        }
     }
 
     @Override
@@ -95,21 +77,26 @@ public class XWebFilter implements Filter {
 
     private class Chain implements FilterChain {
 
-        boolean fired = false;
+        Iterator<Module> iterator;
 
-        ServletRequest chainedRequest;
-
-        ServletResponse chainedResponse;
+        FilterChain mainChain;
 
         @Override
         public void doFilter(
-                ServletRequest request,
-                ServletResponse response) throws IOException, ServletException {
-
-            chainedRequest = request;
-            chainedResponse = response;
-
-            fired = true;
+                final ServletRequest request,
+                final ServletResponse response) throws IOException, ServletException
+        {
+            if(iterator.hasNext()) {
+                final Module next = iterator.next();
+                next.doFilter(
+                        context,
+                        (HttpServletRequest) request,
+                        (HttpServletResponse) response,
+                        this);
+            }
+            else {
+                mainChain.doFilter(request, response);
+            }
         }
     }
 
