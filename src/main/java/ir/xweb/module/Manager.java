@@ -45,6 +45,8 @@ public class Manager {
 
     private final List<ScheduledExecutorService> schedulers = new ArrayList<ScheduledExecutorService>();
 
+    private final List<ManagerListener> listeners = new ArrayList<ManagerListener>();
+
     public Manager(final ServletContext context) {
         this.context = context;
     }
@@ -394,10 +396,29 @@ public class Manager {
             final Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
+                    final List<ManagerListener> _listeners = new ArrayList<ManagerListener>(listeners);
                     try {
+                        for(ManagerListener ml:_listeners) {
+                            try {
+                                ml.startSchedule(context, module, param);
+                            } catch (Exception ex) {
+                                logger.error("Error to run schedule listener", ex);
+                            }
+                        }
+
                         module.process(context, null, null, param, null);
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         logger.error("Error to execute schedule for: " + module.getInfo().getName() + " for: " + queryString, ex);
+                    }
+                    finally {
+                        for(ManagerListener ml:_listeners) {
+                            try {
+                                ml.startSchedule(context, module, param);
+                            } catch (Exception ex) {
+                                logger.error("Error to run schedule listener", ex);
+                            }
+                        }
                     }
                 }
             };
@@ -473,6 +494,32 @@ public class Manager {
         }
 
         return param;
+    }
+
+    /**
+     * Add new manager listener.
+     * @param listener listener
+     * @return true if listener list changed as a result of the call
+     */
+    public boolean addListener(final ManagerListener listener) {
+        if(listener == null) {
+            throw new IllegalArgumentException("Null listener");
+        }
+
+        return listeners.add(listener);
+    }
+
+    /**
+     * Remove current listeners.
+     * @param listener listener
+     * @return true if this listener list contained the specified element
+     */
+    public boolean removeListener(final ManagerListener listener) {
+        if(listener == null) {
+            throw new IllegalArgumentException("Null listener");
+        }
+
+        return listeners.remove(listener);
     }
 	
 	private class Info implements ModuleInfo {
