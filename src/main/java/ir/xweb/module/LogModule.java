@@ -17,7 +17,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.Math;
-import java.util.HashMap;
+import java.util.Map;
 import java.io.File;
 
 public class LogModule extends Module {
@@ -48,7 +48,7 @@ public class LogModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam params,
-            final HashMap<String, FileItem> files) throws IOException {
+            final Map<String, FileItem> files) throws IOException {
 
         /** We have different log history for different IDs, so we can have different HTMLs **/
         final String id = params.getString("id", "0");

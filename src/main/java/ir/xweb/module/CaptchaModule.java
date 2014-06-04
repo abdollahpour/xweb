@@ -22,7 +22,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -59,10 +59,11 @@ public class CaptchaModule extends Module {
 
     @Override
     public void process(
-            ServletContext context,
-            HttpServletRequest request,
-            HttpServletResponse response,
-            ModuleParam param, HashMap<String, FileItem> files) throws IOException {
+            final ServletContext context,
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final ModuleParam param,
+            final Map<String, FileItem> files) throws IOException {
 
         Random rand = new Random();
         final int code = 10000 + rand.nextInt(89999);

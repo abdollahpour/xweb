@@ -19,8 +19,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -176,7 +176,7 @@ public class GzipModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam param,
-            final HashMap<String, FileItem> files) throws IOException {
+            final Map<String, FileItem> files) throws IOException {
 
         if(param.containsKey("file")) {
             final ResourceModule module = getManager().getModuleOrThrow(ResourceModule.class);
