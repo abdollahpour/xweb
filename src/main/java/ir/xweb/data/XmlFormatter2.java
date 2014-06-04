@@ -36,10 +36,12 @@ public class XmlFormatter2 implements Formatter {
             final String name = (object instanceof AnnotedMap) ? ((AnnotedMap) object).name : "Map";
             final Element element = new Element(name);
             for(Map.Entry e:map.entrySet()) {
-                final Element sub = toElement(e.getValue());
-                sub.setAttribute("key", e.getKey().toString());
+                if(e.getValue() != null) {
+                    final Element sub = toElement(e.getValue());
+                    sub.setAttribute("key", e.getKey().toString());
 
-                element.addContent(sub);
+                    element.addContent(sub);
+                }
             }
             return element;
         }
@@ -47,8 +49,10 @@ public class XmlFormatter2 implements Formatter {
             final Collection<?> collection = (Collection) object;
             final Element element = new Element("Collection");
             for(Object o:collection) {
-                final Content c = toElement(o);
-                element.addContent(c);
+                if(o != null) {
+                    final Content c = toElement(o);
+                    element.addContent(c);
+                }
                 /*if(c instanceof Text) {
                     final Element sub = new Element(o.getClass().getSimpleName());
                     sub.addContent(c);
