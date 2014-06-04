@@ -185,7 +185,7 @@ public class Module {
 			HttpServletRequest request, 
 			HttpServletResponse response, 
 			ModuleParam param,
-			HashMap<String, FileItem> files) throws IOException {
+			Map<String, FileItem> files) throws IOException {
 
     }
 

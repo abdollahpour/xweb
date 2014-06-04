@@ -42,4 +42,5 @@ public class RedirectModule extends Module {
             filterChain.doFilter(request, response);
         }
     }
+
 }
