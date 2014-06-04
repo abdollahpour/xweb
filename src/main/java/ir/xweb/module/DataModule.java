@@ -236,17 +236,18 @@ public class DataModule extends Module {
             throw new IllegalArgumentException("null objects");
         }
 
-        final int page = params.getInt("page", 1);
         final int size = params.getInt("size", this.pageSize);
-        //final String format = params.getString("format", this.format);
-
-        final int from = Math.min(Math.max(page - 1, 0) * size, objects.size());
-        final int to = Math.min(size, objects.size() - from) + from;
 
         int count = objects.size() / size;
         if(count * size < objects.size()) {
             count++;
         }
+
+        final int page = Math.min(params.getInt("page", 1), count);
+        //final String format = params.getString("format", this.format);
+
+        final int from = Math.min(Math.max(page - 1, 0) * size, objects.size());
+        final int to = Math.min(size, objects.size() - from) + from;
 
         final List<Integer> pages = new ArrayList<Integer>();
         pages.add(1);
