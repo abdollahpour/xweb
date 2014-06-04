@@ -68,7 +68,7 @@ public class ScheduleRequest implements HttpServletRequest, Serializable {
 
     private String contentType;
 
-    private final Map parameters = CollectionFactory.createLinkedMapIfPossible(16);
+    private final Map parameters;// = CollectionFactory.createLinkedMapIfPossible(16);
 
     private String protocol = DEFAULT_PROTOCOL;
 
@@ -142,22 +142,20 @@ public class ScheduleRequest implements HttpServletRequest, Serializable {
     /**
      * Create a new MockHttpServletRequest.
      * @param servletContext the ServletContext that the request runs in
-     */
-    public ScheduleRequest(ServletContext servletContext) {
-        this.locales.add(Locale.ENGLISH);
-        this.servletContext = servletContext;
-    }
-
-    /**
-     * Create a new MockHttpServletRequest.
-     * @param servletContext the ServletContext that the request runs in
      * @param method the request method
      * @param requestURI the request URI
      * @see #setMethod
      * @see #setRequestURI
      */
-    public ScheduleRequest(ServletContext servletContext, String method, String requestURI) {
-        this(servletContext);
+    public ScheduleRequest(
+            final ServletContext servletContext,
+            final ModuleParam param,
+            final String method,
+            final String requestURI)
+    {
+        this.locales.add(Locale.ENGLISH);
+        this.servletContext = servletContext;
+        this.parameters = param;
         this.method = method;
         this.requestURI = requestURI;
     }
@@ -344,7 +342,7 @@ public class ScheduleRequest implements HttpServletRequest, Serializable {
     }
 
     public RequestDispatcher getRequestDispatcher(String path) {
-        return new MockRequestDispatcher(path);
+        return new ScheduleRequestDispatcher(path);
     }
 
     public String getRealPath(String path) {
@@ -483,7 +481,7 @@ public class ScheduleRequest implements HttpServletRequest, Serializable {
     public String getHeader(String name) {
         Object value = this.headers.get(name);
         if (value instanceof List) {
-            return StringUtils.collectionToCommaDelimitedString((List) value);
+            return collectionToDelimitedString((List) value, ",", "", "");
         }
         else if (value != null) {
             return value.toString();
@@ -491,6 +489,30 @@ public class ScheduleRequest implements HttpServletRequest, Serializable {
         else {
             return null;
         }
+    }
+
+    /**
+     * Convenience method to return a Collection as a delimited (e.g. CSV)
+     * String. E.g. useful for <code>toString()</code> implementations.
+     * @param coll the Collection to display
+     * @param delim the delimiter to use (probably a ",")
+     * @param prefix the String to start each element with
+     * @param suffix the String to end each element with
+     * @return the delimited String
+     */
+    private String collectionToDelimitedString(Collection coll, String delim, String prefix, String suffix) {
+        if (coll == null || coll.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        Iterator it = coll.iterator();
+        while (it.hasNext()) {
+            sb.append(prefix).append(it.next()).append(suffix);
+            if (it.hasNext()) {
+                sb.append(delim);
+            }
+        }
+        return sb.toString();
     }
 
     public Enumeration getHeaders(String name) {
