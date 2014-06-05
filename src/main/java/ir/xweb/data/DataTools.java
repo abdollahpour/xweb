@@ -1,3 +1,4 @@
+
 /**
  * XWeb project
  * Created by Hamed Abdollahpour
@@ -6,7 +7,6 @@
 
 package ir.xweb.data;
 
-import ir.xweb.module.DataModule;
 import ir.xweb.module.ModuleParam;
 import ir.xweb.util.MimeType;
 import org.jdom.Document;
@@ -59,7 +59,7 @@ public class DataTools {
         formatters.put(FORMAT_JSON, new JsonFormatter());
         formatters.put(FORMAT_JSONP, new JsonpFormatter());
         formatters.put(FORMAT_XML, new XmlFormatter());
-        formatters.put(FORMAT_XML1, new XmlFormatter());
+        formatters.put(FORMAT_XML1, new XmlFormatter1());
         formatters.put(FORMAT_XML2, new XmlFormatter2());
     }
 

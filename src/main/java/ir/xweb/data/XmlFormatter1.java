@@ -18,12 +18,15 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
-public class XmlFormatter implements Formatter {
+/**
+ * Format XWeb object to XML.
+ */
+public class XmlFormatter1 implements Formatter {
 
     /**
      * Content type for this formatter.
      */
-    private final String contentType = MimeType.get("xml");
+    private final String contentType = MimeType.get("text/xml");
 
     /**
      * {@inheritDoc}
@@ -75,15 +78,7 @@ public class XmlFormatter implements Formatter {
 
             final Map<?, ?> map =  (Map<?, ?>) object;
             for (Map.Entry<?, ?> e:map.entrySet()) {
-                final String name = e.getKey().toString();
-                final String fixedName = fixName(name);
-
                 final Element element = new Element(fixName(e.getKey().toString()));
-
-                if(!fixedName.equals(name)) {
-                    element.setAttribute("key", name);
-                }
-
                 write(element, e.getValue());
                 parent.addContent(element);
             }
@@ -122,7 +117,7 @@ public class XmlFormatter implements Formatter {
                 write(e, o);
                 parent.addContent(e);
             }
-        } else if(object != null) {
+        } else {
             parent.setText(object.toString());
         }
     }
