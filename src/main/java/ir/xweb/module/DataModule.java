@@ -12,10 +12,7 @@ import ir.xweb.data.Formatter;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataModule extends Module {
 
@@ -198,7 +195,7 @@ public class DataModule extends Module {
             final HttpServletResponse response,
             final ModuleParam params,
             final String role,
-            final List<?> objects) throws IOException {
+            final Collection<?> objects) throws IOException {
 
         writePage(
                 response,
@@ -218,7 +215,7 @@ public class DataModule extends Module {
             final String role,
             final String template,
             final String language,
-            final List<?> objects) throws IOException {
+            final Collection<?> objects) throws IOException {
         writePage(response, params, format, role, template, language, null, objects);
     }
 
@@ -230,7 +227,7 @@ public class DataModule extends Module {
             final String template,
             final String language,
             final Map<String, ?> templateParameters,
-            final List<?> objects) throws IOException {
+            final Collection<?> objects) throws IOException {
 
         if(objects == null) {
             throw new IllegalArgumentException("null objects");
@@ -279,7 +276,7 @@ public class DataModule extends Module {
         results.put("to", to);
         results.put("size", objects.size());
 
-        results.put("data", objects.subList(from, to));
+        results.put("data", new ArrayList<Object>(objects).subList(from, to));
         results.put("params", params);
         results.put("more", to != objects.size());
 
