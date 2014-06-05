@@ -18,7 +18,10 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 
-public class XmlFormatter implements Formatter {
+/**
+ * Format XWeb object to XML.
+ */
+public class XmlFormatter1 implements Formatter {
 
     /**
      * Content type for this formatter.
