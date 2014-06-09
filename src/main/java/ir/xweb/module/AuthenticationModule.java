@@ -71,8 +71,6 @@ public class AuthenticationModule extends Module {
 
     private final String ignore;
 
-    private final String nologin;
-
     public AuthenticationModule(
             final Manager manager,
             final ModuleInfo info,
@@ -85,8 +83,6 @@ public class AuthenticationModule extends Module {
         redirect = properties.getString(PARAM_REDIRECT, null);
         check = properties.getString(PARAM_CHECK, null);
         ignore = properties.getString(PARAM_IGNORE, null);
-        nologin = properties.getString(PARAM_NO_LOGIN, null);
-        System.out.println("nologin: " + nologin);
 
         if(properties.containsKey(PARAM_XML_SOURCE)) {
             importXmlSource(properties.getString(PARAM_XML_SOURCE, null));
@@ -238,17 +234,16 @@ public class AuthenticationModule extends Module {
          */
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
-            logger.debug("Try to login with cookie. UUID: " + uuid);
+            logger.trace("Try to login with cookie. UUID: " + uuid);
             user = getUserWithUUID(uuid);
             if(user != null) {
-                if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
-                    logger.debug("User successfully login with UUID: " + uuid);
-                    setUser(request, user);
-                    filterChain.doFilter(request, response);
-                    return;
-                }
+                logger.trace("User successfully login with UUID: " + uuid);
+                setUser(request, user);
+
+                filterChain.doFilter(request, response);
+                return;
             } else {
-                logger.debug("UUID not valid for login (maybe expired: " + uuid);
+                logger.trace("UUID not valid for login (maybe expired: " + uuid);
             }
         }
 
@@ -283,12 +278,11 @@ public class AuthenticationModule extends Module {
 
                 user = getUserWithUUID(token);
                 if(user != null) {
-                    if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
-                        logger.debug("User successfully login with HTTP authentication: " + token);
-                        setUser(request, user);
-                        filterChain.doFilter(request, response);
-                        return;
-                    }
+                    logger.debug("User successfully login with HTTP authentication: " + token);
+                    setUser(request, user);
+
+                    filterChain.doFilter(request, response);
+                    return;
                 } else {
                     logger.debug("HTTP token not valid for login. maybe expired: " + token);
                 }
@@ -366,36 +360,22 @@ public class AuthenticationModule extends Module {
 
             // Check for login, you can not login with no login role
             if (user != null) {
-                if(nologin == null || user.getRole() == null || !user.getRole().matches(nologin)) {
-                    setUser(request, user);
+                setUser(request, user);
 
-                    if(remember) {
-                        final String uuid = generateUUID(identifier);
-
-                        if(uuid != null) {
-                            response.setContentType("text/plain");
-                            CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
-                            response.getWriter().write(uuid);
-                            response.getWriter().flush();
-                        }
-                    } else {
-                        CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
-                    }
-
-                    logger.info(identifier + " successfully login into system. Remember = " + remember);
-                } else {
+                if(remember) {
                     final String uuid = generateUUID(identifier);
 
                     if(uuid != null) {
                         response.setContentType("text/plain");
+                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
                         response.getWriter().write(uuid);
                         response.getWriter().flush();
-                    } else {
-                        throw new ModuleException("Can not generate UUID for: " + user.getId());
                     }
+                } else {
+                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
                 }
 
-                return;
+                logger.info(identifier + " successfully login into system. Remember = " + remember);
             } else {
                 throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
             }
