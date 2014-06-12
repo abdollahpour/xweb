@@ -19,7 +19,8 @@ import java.io.*;
 import java.net.URI;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Map;
+List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -165,10 +166,10 @@ public class GzipModule extends Module {
         }
 
         //if(chainedRequest != null || chainedResponse != null) {
-            filterChain.doFilter(
-                    chainedRequest == null ? request : chainedRequest,
-                    chainedResponse == null ? response : chainedResponse
-            );
+        filterChain.doFilter(
+                chainedRequest == null ? request : chainedRequest,
+                chainedResponse == null ? response : chainedResponse
+        );
         //}
     }
 

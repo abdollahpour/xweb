@@ -232,22 +232,22 @@ public class AuthenticationModule extends Module {
             if (user != null) {
                 setUser(request, user);
 
-                    if(remember) {
-                        final String uuid = getDataSource().generateUUID(identifier);
-
-                        if(uuid != null) {
-                            response.setContentType("text/plain");
-                            CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
-                            response.getWriter().write(uuid);
-                            response.getWriter().flush();
-                        }
-                    } else {
-                        CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
-                    }
-
-                    logger.info(identifier + " successfully login into system. Remember = " + remember);
-                } else {
+                if(remember) {
                     final String uuid = getDataSource().generateUUID(identifier);
+
+                    if(uuid != null) {
+                        response.setContentType("text/plain");
+                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                        response.getWriter().write(uuid);
+                        response.getWriter().flush();
+                    }
+                } else {
+                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
+                }
+
+                logger.info(identifier + " successfully login into system. Remember = " + remember);
+            } else {
+                final String uuid = getDataSource().generateUUID(identifier);
                 if(remember) {
                     final String uuid = generateUUID(identifier);
 
