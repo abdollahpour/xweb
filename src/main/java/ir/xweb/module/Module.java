@@ -179,13 +179,16 @@ public class Module {
 
         // Check for roles
         try {
-            if(!roleManager.hasPermission(params, role)) {
-                if(role == null) {
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have permission to access with this role: " + role);
-                } else {
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST, "You do not have permission to access with this role: " + role);
+            // We don't apply any authentication to schedule tasks
+            if(!(request instanceof ScheduleRequest)) {
+                if (!roleManager.hasPermission(params, role)) {
+                    if (role == null) {
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have permission to access with this role: " + role);
+                    } else {
+                        response.sendError(HttpServletResponse.SC_BAD_REQUEST, "You do not have permission to access with this role: " + role);
+                    }
+                    return;
                 }
-                return;
             }
         } catch (Exception ex) {
             throw new IOException(ex);
@@ -201,7 +204,7 @@ public class Module {
 			HttpServletRequest request, 
 			HttpServletResponse response, 
 			ModuleParam param,
-			HashMap<String, FileItem> files) throws IOException {
+			Map<String, FileItem> files) throws IOException {
 
     }
 

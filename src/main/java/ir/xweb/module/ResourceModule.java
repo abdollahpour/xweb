@@ -152,7 +152,7 @@ public class ResourceModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam params,
-            final HashMap<String, FileItem> files) throws IOException {
+            final Map<String, FileItem> files) throws IOException {
 
         final XWebUser user = (XWebUser)request.getSession().getAttribute(ir.xweb.server.Constants.SESSION_USER);
 

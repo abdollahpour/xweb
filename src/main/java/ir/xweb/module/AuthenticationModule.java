@@ -21,7 +21,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
-import java.util.HashMap;
+import java.util.Map;
 
 public class AuthenticationModule extends Module {
 
@@ -209,7 +209,7 @@ public class AuthenticationModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam params,
-            final HashMap<String, FileItem> files) throws IOException {
+            final Map<String, FileItem> files) throws IOException {
 
 
 

@@ -23,6 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ir.xweb.data.DataTools;
+import ir.xweb.server.Constants;
+import org.apache.commons.fileupload.FileItem;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -30,7 +32,9 @@ import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class Manager {
 	
@@ -452,8 +456,19 @@ public class Manager {
                 @Override
                 public void run() {
                     try {
-                        module.process(context, null, null, param, null);
-                    } catch (Exception ex) {
+                        final String requestUri = Constants.MODULE_URI_PERFIX;// + "?" + Constants.MODULE_NAME_PARAMETER + "=" + queryString;
+                        final ScheduleRequest request = new ScheduleRequest(context, param, "POST", requestUri);
+                        final ScheduleResponse response = new ScheduleResponse();
+
+                        final ScheduleChain chain = new ScheduleChain();
+                        chain.context = context;
+                        chain.iterator = modules.values().iterator();
+                        chain.module = module;
+                        chain.param = param;
+
+                        chain.doFilter(request, response);
+                    }
+                    catch (Exception ex) {
                         logger.error("Error to execute schedule for: " + module.getInfo().getName() + " for: " + queryString, ex);
                     }
                 }
@@ -778,6 +793,40 @@ public class Manager {
         @Override
         public boolean isRequire() {
             return this.require;
+        }
+    }
+
+    private class ScheduleChain implements FilterChain {
+
+        Iterator<Module> iterator;
+
+        ServletContext context;
+
+        ModuleParam param;
+
+        Module module;
+
+        @Override
+        public void doFilter(
+                final ServletRequest request,
+                final ServletResponse response) throws IOException, ServletException
+        {
+            if(iterator.hasNext()) {
+                final Module next = iterator.next();
+                next.doFilter(
+                        context,
+                        (HttpServletRequest) request,
+                        (HttpServletResponse) response,
+                        this);
+            }
+            else {
+                module.process(
+                        context,
+                        (HttpServletRequest) request,
+                        (HttpServletResponse) response,
+                        param,
+                        Collections.<String, FileItem>emptyMap());
+            }
         }
     }
 
