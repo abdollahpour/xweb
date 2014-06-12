@@ -237,7 +237,7 @@ public class Manager {
 	
 	public void destroy() {
         for(ScheduledExecutorService s:schedulers) {
-            s.shutdown();
+            s.shutdownNow();
         }
 
 		if(modules != null) {
