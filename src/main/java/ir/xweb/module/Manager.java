@@ -187,17 +187,20 @@ public class Manager {
                                     throw new IllegalArgumentException("On of start or period should define for schedule");
                                 }
 
-                                long s = 0;
-                                long p = 0;
-
-                                if(start != null) {
-                                    s = getStart(start);
+                                final long s;
+                                if(start == null) {
+                                    s = 2000;
                                 }
-                                // system load
-                                s += 2000;
+                                else {
+                                    s = 2000 + getTime(start);
+                                }
 
-                                if(period != null) {
-                                    p = getPeriod(period);
+
+                                final long p;
+                                if(period == null) {
+                                    p = 0;
+                                } else {
+                                    p = getTime(period);
                                 }
 
                                 // we don't add schedule in module test
@@ -417,6 +420,7 @@ public class Manager {
                 }
             };
 
+            System.out.println("start: " + start + " " + period);
             final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
             if(period > 0) {
                 scheduler.scheduleAtFixedRate(runnable, start, period, TimeUnit.MILLISECONDS);
@@ -598,96 +602,60 @@ public class Manager {
         }
     }
 
-    private long getStart(final String text) {
-        final long now = new Date().getTime();
-
-        final Calendar c = Calendar.getInstance();
-        c.setTime(new Date());
-
-        Calendar c1;
-
-        c1 = dateFor("HH:mm", text);
-        if(c1 != null) {
-            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
-            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
-
-            if(c.getTime().before(new Date(now))) {
-                c.add(Calendar.DAY_OF_MONTH, 1);
-            }
+    private long getTime(final String s) {
+        final long now = System.currentTimeMillis();
+        if(s.matches("[0-9]+")) {
+            return Integer.parseInt(s.replaceAll("[^0-9]", "")) * 60000;
+        }
+        else if(s.matches("[0-9]+(s|sec|second|seconds)")) {
+            return Integer.parseInt(s.replaceAll("[^0-9]", "")) * 1000;
+        }
+        else if(s.matches("[0-9]+(m|min|minuet|minuets)")) {
+            return Integer.parseInt(s.replaceAll("[^0-9]", "")) * 60000;
+        }
+        else if(s.matches("[0-9]+(h|hour|hours)")) {
+            return Integer.parseInt(s.replaceAll("[^0-9]", "")) * 1440000;
+        }
+        else if(s.matches("[0-9]+(month|months)")) {
+            final Calendar c = Calendar.getInstance();
+            c.setTime(new Date(now));
+            c.add(Calendar.MONTH, Integer.parseInt(s.replaceAll("[^0-9]", "")));
             return c.getTimeInMillis() - now;
         }
-
-        c1 = dateFor("EEE HH:mm", text);
-        if(c1 != null) {
-            c.set(Calendar.DAY_OF_WEEK, c1.get(Calendar.DAY_OF_WEEK));
-            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
-            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
-
-            if(c.getTime().before(new Date(now))) {
-                c.add(Calendar.WEEK_OF_MONTH, 1);
-            }
+        else if(s.matches("[0-9]+(year|years)")) {
+            final Calendar c = Calendar.getInstance();
+            c.setTime(new Date(now));
+            c.add(Calendar.YEAR, Integer.parseInt(s.replaceAll("[^0-9]", "")));
             return c.getTimeInMillis() - now;
         }
-
-        c1 = dateFor("dd HH:mm", text);
-        if(c1 != null) {
-            c.set(Calendar.DAY_OF_MONTH, c1.get(Calendar.DAY_OF_MONTH));
-            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
-            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
-
-            if(c.getTime().before(new Date(now))) {
-                c.add(Calendar.MONTH, 1);
-            }
+        else if(s.matches("[0-9]+:[0-9]+")) {
+            final String[] parts = s.split(":");
+            final Calendar c = Calendar.getInstance();
+            c.setTime(new Date(now));
+            c.add(Calendar.HOUR, Integer.parseInt(parts[0]));
+            c.add(Calendar.MINUTE, Integer.parseInt(parts[1]));
             return c.getTimeInMillis() - now;
         }
-
-        c1 = dateFor("MM-dd HH:mm", text);
-        if(c1 != null) {
-            c.set(Calendar.MONTH, c1.get(Calendar.MONTH));
-            c.set(Calendar.DAY_OF_MONTH, c1.get(Calendar.DAY_OF_MONTH));
-            c.set(Calendar.HOUR_OF_DAY, c1.get(Calendar.HOUR_OF_DAY));
-            c.set(Calendar.MINUTE, c1.get(Calendar.MINUTE));
-
-            if(c.getTime().before(new Date(now))) {
-                c.add(Calendar.YEAR, 1);
-            }
+        else if(s.matches("[0-9]+:[0-9]+:[0-9]+")) {
+            final String[] parts = s.split(":");
+            final Calendar c = Calendar.getInstance();
+            c.setTime(new Date(now));
+            c.add(Calendar.HOUR, Integer.parseInt(parts[0]));
+            c.add(Calendar.MINUTE, Integer.parseInt(parts[1]));
+            c.add(Calendar.SECOND, Integer.parseInt(parts[2]));
             return c.getTimeInMillis() - now;
         }
-
-        return 0;
-    }
-
-    private long getPeriod(final String text) {
-        try {
-            return (long) (Float.parseFloat(text) * 60 * 1000D);
-        } catch (Exception ex) {}
-
-        if(text.endsWith("hour")) {
-            final String t = text.substring(0, text.length() - 4).trim();
-            int hour = t.length() == 0 ? 1 : Integer.parseInt(t);
-            return hour * 60 * 60 * 1000L;
+        else if(s.matches("[0-9]+/[0-9]+/[0-9]+\\s[0-9]+:[0-9]+")) {
+            try {
+                final SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd hh:mm");
+                return format.parse(s).getTime() - now;
+            } catch (Exception ex) {}
         }
-
-        if(text.endsWith("week")) {
-            final String t = text.substring(0, text.length() - 4).trim();
-            int week = t.length() == 0 ? 1 : Integer.parseInt(t);
-            return week * 7 * 24 * 60 * 60 * 1000L;
-        }
-
-        // TODO: We can not handle month in this way, month should calculate (29~31),
-        // we need to remove the schedule and setup new one every month
-        if(text.endsWith("month")) {
-            final String t = text.substring(0, text.length() - 5).trim();
-            int month = t.length() == 0 ? 1 : Integer.parseInt(t);
-            return month * 30 * 24 * 60 * 60 * 1000L;
-        }
-
-        // TODO: We can not handle year in this way (365~366),
-        // we need to remove the schedule and setup new one every year
-        if(text.endsWith("year")) {
-            final String t = text.substring(0, text.length() - 4).trim();
-            int year = t.length() == 0 ? 1 : Integer.parseInt(t);
-            return year * 365 * 24 * 60 * 60 * 1000L;
+        else if(s.matches("[0-9]+/[0-9]+/[0-9]+\\s[0-9]+:[0-9]+:[0-9]+")) {
+            try {
+                final SimpleDateFormat format = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
+                return format.parse(s).getTime() - now;
+            } catch (Exception ex) {}
         }
 
         return 0;
