@@ -26,7 +26,7 @@ public class XmlFormatter implements Formatter {
     /**
      * Content type for this formatter.
      */
-    private final String contentType = MimeType.get("text/xml");
+    private final String contentType = MimeType.get("xml");
 
     /**
      * {@inheritDoc}
@@ -117,7 +117,7 @@ public class XmlFormatter implements Formatter {
                 write(e, o);
                 parent.addContent(e);
             }
-        } else {
+        } else if(object != null) {
             parent.setText(object.toString());
         }
     }
