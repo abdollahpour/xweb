@@ -78,7 +78,15 @@ public class XmlFormatter implements Formatter {
 
             final Map<?, ?> map =  (Map<?, ?>) object;
             for (Map.Entry<?, ?> e:map.entrySet()) {
+                final String name = e.getKey().toString();
+                final String fixedName = fixName(name);
+
                 final Element element = new Element(fixName(e.getKey().toString()));
+
+                if(!fixedName.equals(name)) {
+                    element.setAttribute("key", name);
+                }
+
                 write(element, e.getValue());
                 parent.addContent(element);
             }
