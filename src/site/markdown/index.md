@@ -113,15 +113,15 @@ You should put &lt;module&gt; in &lt;modules&gt; tag in xweb.xml file like this:
 * **&lt;class&gt;:** Module full class (name). Remember that if you are using obfuscation tools (like proguard) add follow line to your configuraion:
 `-keep public class * extends Module`
 * **&lt;validator&gt;:** Validate all the parameters that passed to module over http (GET or POST).
- * require: Means that this parameter is mandetory or not (default is false)
- * param: Paremeter that you want to validate
+ * require: Means that this parameter is mandatory or not (default is false)
+ * param: Parameter that you want to validate
  * regex: Regex that use for matching
 * **&lt;role&gt;:** Role checking. You can check that specific role (user role) can access the module with specific parameter or not.
  * name: name of param(s) that you want to check in this role. You can use multi param and seprate them with ',' character.
  * eval: Javascript that will run for validation. The parameter valid replace with %param% keyword in this script. For example, if you have action in params, and eval is 'OK'==%action%, the script that will run will be: 'OK'=='param'. To avoid script injection, all the values pass as string to script part.
  * value: Regex that you want to match for roles. For example "admin|user" apply for both admin and user
 * **&lt;property&gt;:** Please read [Properties](wiki/Properties)
-* **&lt;schedule&gt;:** Run specific task in specific time or peroid of time.
+* [schedule](schedule.html): Run specific task in specific time or repeatedly.
 
 ## Default modules
 * [ResourceModule](wiki/ResourceModule)
