@@ -616,6 +616,12 @@ public class Manager {
         else if(s.matches("[0-9]+(h|hour|hours)")) {
             return Integer.parseInt(s.replaceAll("[^0-9]", "")) * 1440000;
         }
+        else if(s.matches("[0-9]+(d|day|days)")) {
+            final Calendar c = Calendar.getInstance();
+            c.setTime(new Date(now));
+            c.add(Calendar.DAY_OF_YEAR, Integer.parseInt(s.replaceAll("[^0-9]", "")));
+            return c.getTimeInMillis() - now;
+        }
         else if(s.matches("[0-9]+(month|months)")) {
             final Calendar c = Calendar.getInstance();
             c.setTime(new Date(now));
