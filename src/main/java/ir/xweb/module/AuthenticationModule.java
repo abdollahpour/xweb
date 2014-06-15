@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.HashMap;
+import java.util.Map;
 
 public class AuthenticationModule extends Module {
 
@@ -104,7 +105,7 @@ public class AuthenticationModule extends Module {
          */
         final String uuid = CookieTools.getCookieValue(request, Constants.COOKIE_AUTH_REMEMBER);
         if(uuid != null) {
-            logger.debug("Try to login with cookie. UUID: " + uuid);
+            logger.trace("Try to login with cookie. UUID: " + uuid);
             user = getDataSource().getUserWithUUID(uuid);
             if(user != null) {
                 logger.trace("User successfully login with UUID: " + uuid);
@@ -234,22 +235,6 @@ public class AuthenticationModule extends Module {
 
                 if(remember) {
                     final String uuid = getDataSource().generateUUID(identifier);
-
-                    if(uuid != null) {
-                        response.setContentType("text/plain");
-                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
-                        response.getWriter().write(uuid);
-                        response.getWriter().flush();
-                    }
-                } else {
-                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
-                }
-
-                logger.info(identifier + " successfully login into system. Remember = " + remember);
-            } else {
-                final String uuid = getDataSource().generateUUID(identifier);
-                if(remember) {
-                    final String uuid = generateUUID(identifier);
 
                     if(uuid != null) {
                         response.setContentType("text/plain");
