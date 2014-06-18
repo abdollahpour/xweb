@@ -87,9 +87,12 @@ public class ResourceModule extends Module {
 
     private final String defaultLanguage;
 
-    private ServletContext context;
-
     private final Map<String, XmlBundle> bundles = new HashMap<String, XmlBundle>();
+
+    /**
+     * Use Authentication module. Using this module with resource module is optional (it can be null).
+     */
+    private AuthenticationModule authentication;
 
     public ResourceModule(
             final Manager manager,
@@ -134,7 +137,7 @@ public class ResourceModule extends Module {
 
     @Override
     public void init(final ServletContext context) {
-        this.context = context;
+        authentication = getManager().getModule(AuthenticationModule.class);
     }
 
     @Override
@@ -414,6 +417,23 @@ public class ResourceModule extends Module {
             }
         }
 
+        final String ifNotMatch = request.getHeader("If-None-Match");
+        if(ifNotMatch != null) {
+            // checking for etag
+            final String etag;
+            if(zipSupport) {
+                etag = getETag(request, zipFile);
+            }
+            else {
+                etag = getETag(request, file);
+            }
+
+            if(ifNotMatch.equals(etag)) {
+                response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                return;
+            }
+        }
+
         if(zipSupport) {
             response.addHeader("Content-Encoding", "gzip");
             if(!response.containsHeader("Content-Type")) {
@@ -436,7 +456,6 @@ public class ResourceModule extends Module {
 
             // set headers
             response.setHeader("Accept-Ranges", "bytes");
-            response.setHeader("ETag", getETag(file));
             response.setHeader("Last-Modified", getLastModified(file));
             response.setHeader("Content-Length", String.valueOf(till - from));
             response.setHeader("Content-Disposition",
@@ -565,7 +584,31 @@ public class ResourceModule extends Module {
     }
 
     private String getETag(final File file) {
-        return "W/\"" + file.length() + "-" + file.lastModified() + "\"";
+        return getETag(null, file);
+    }
+
+    /**
+     * Get ETag by request (authentication).
+     * @param request Request
+     * @param file File
+     * @return Etag string
+     */
+    private String getETag(final HttpServletRequest request, final File file) {
+        final StringBuilder s = new StringBuilder();
+        s.append("W/\"");
+
+        if(request != null && this.authentication != null) {
+            final XWebUser user = this.authentication.getUser(request);
+            if(user != null) {
+                s.append(user.getRole()).append('-');
+            }
+        }
+
+        s.append(file.length())
+                .append("-")
+                .append(file.lastModified())
+                .append("\"");
+        return s.toString();
     }
 
     private String getLastModified(final File file) {
