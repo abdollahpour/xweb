@@ -31,9 +31,12 @@ Supported time format for START and PERIOD attributes:
 Second: 23s / 23sec / 23second / 23seconds
 Minuet: 21 / 21m / 22min / 22minuet / 22minuets
 Hour: 2 / 2h / 2hour / 2hours
+Hour+minuet: 10:34 / 22:14
+Hour+minuet+second: 10:34:30 / 22:14:15
 Day: 3d / 3day / 3days
 Month: 6month / 6months
 Year: 2y / 2year / 2years
+Date: 2014/11/1 23:11:00
 
 
 ##Example
