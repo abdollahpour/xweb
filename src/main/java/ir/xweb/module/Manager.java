@@ -293,6 +293,47 @@ public class Manager {
         throw new IllegalArgumentException("Module " + clazz.getName() + " not find. But it's require");
     }
 
+    public <T> T getImplementedOrThrow(final Class<T> clazz) {
+        return getImplementedOrThrow(clazz, null);
+    }
+
+    /**
+     * Get module that implement specific interface
+     * @param clazz Interface name
+     * @param name Module name. If null search for all modules
+     * @param <T>
+     * @return Founded module
+     * @throws java.lang.IllegalArgumentException Null clazz
+     */
+    public <T> T getImplementedOrThrow(final Class<T> clazz, final String name) {
+        if(clazz == null) {
+            throw new IllegalArgumentException("null clazz");
+        }
+
+        if(name != null) {
+            final Module m = modules.get(name);
+            if(m != null) {
+                if (clazz.isAssignableFrom(m.getClass())) {
+                    return (T) m;
+                }
+                else {
+                    throw new IllegalArgumentException("Module with name \"" + name + "\" is not instance of " + clazz);
+                }
+            }
+
+            throw new IllegalArgumentException("Module with " + clazz + " interface and name \"" + name + "\" not find. But it's require");
+        }
+        else {
+            for(Module m:modules.values()) {
+                if(clazz.isAssignableFrom(m.getClass())) {
+                    return (T)m;
+                }
+            }
+
+            throw new IllegalArgumentException("Module with " + clazz + " interface not find. But it's require");
+        }
+    }
+
     private ModuleParam getDefaultProperties(final ModuleParam def) {
         if(def != null) {
             final ModuleParam param = new ModuleParam();
