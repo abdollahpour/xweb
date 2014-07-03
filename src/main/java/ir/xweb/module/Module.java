@@ -62,8 +62,8 @@ public class Module {
 
         roleManager = new RoleManager(info.getRoles());
 
-        validators =  new HashMap<String, ModuleInfoValidator>(info.getValidators().size());
-        requireParams = new ArrayList<String>(validators.size());
+        validators =  new HashMap<>(info.getValidators().size());
+        requireParams = new ArrayList<>(validators.size());
 
         for(ModuleInfoValidator validator:info.getValidators()) {
             validators.put(validator.getParam(), validator);

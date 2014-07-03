@@ -324,7 +324,7 @@ public class Manager {
      * @throws java.lang.IllegalArgumentException Null clazz
      */
     public <T> T getImplemented(final Class<T> clazz, final String name) {
-        if(clazz == null || name == null) {
+        if(clazz == null && name == null) {
             throw new IllegalArgumentException("one of class and name should not be null");
         }
 
@@ -759,8 +759,62 @@ public class Manager {
         }
     }
 
+    /**
+     * Get Application server context.
+     * @return
+     */
     public ServletContext getContext() {
         return this.context;
+    }
+
+    /**
+     * Register new module dynamically.
+     * @param name Name of the module
+     * @param module Module
+     * @throws java.lang.IllegalArgumentException if name or module be null or module with same name exists.
+     */
+    public void registerModule(final String name, final Module module) {
+        if(name == null) {
+            throw new IllegalArgumentException("null name");
+        }
+        if(module == null) {
+            throw new IllegalArgumentException("null module");
+        }
+
+        if(this.modules.containsKey(name)) {
+            throw new IllegalArgumentException("Module with same name already exist: " + name);
+        }
+
+        this.modules.put(name, module);
+    }
+
+    /**
+     * Unregister module by name. You can unregister modules that has been loaded dynamically or statically (xweb.xml).
+     * @param name Module name
+     * @return Removed module or null if module does not find.
+     */
+    public Module unregisterModule(final String name) {
+        return this.modules.get(name);
+    }
+
+    /**
+     * Unregister module by module class. You can unregister modules that has been loaded dynamically or statically (xweb.xml).
+     * @param clazz Module class
+     * @return Number of removed modules.
+     */
+    public int unregisterModule(final Class clazz) {
+        final List<String> names = new ArrayList<>();
+        for(Map.Entry<String, Module> e:this.modules.entrySet()) {
+            if(clazz.isAssignableFrom(e.getValue().getClass())) {
+                names.add(e.getKey());
+            }
+        }
+
+        for(String name:names) {
+            this.modules.remove(name);
+        }
+
+        return names.size();
     }
 
     private class Validator implements ModuleInfoValidator {
