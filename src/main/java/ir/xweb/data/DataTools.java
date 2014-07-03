@@ -321,7 +321,7 @@ public class DataTools {
             final String role) throws IOException, InvocationTargetException, IllegalAccessException {
 
         if(object == null) {
-            throw new IllegalArgumentException("null object");
+            return null;
         }
 
         final Class c = object.getClass();
