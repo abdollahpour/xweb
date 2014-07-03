@@ -12,12 +12,7 @@ import ir.xweb.module.ModuleParam;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayInputStream;
@@ -183,6 +178,27 @@ public class TestGzipModule {
         public int read() throws IOException {
             return bais.read();
         }
+
+        /*
+        @Override
+        public boolean isFinished() {
+            return false;
+        }
+        */
+
+        /*
+        @Override
+        public boolean isReady() {
+            return false;
+        }
+        */
+
+        /*
+        @Override
+        public void setReadListener(ReadListener readListener) {
+
+        }
+        */
     }
 
     private class ResponseOut extends ServletOutputStream {
@@ -193,6 +209,20 @@ public class TestGzipModule {
         public void write(int b) throws IOException {
             baos.write(b);
         }
+
+        /*
+        @Override
+        public boolean isReady() {
+            return false;
+        }
+        */
+
+        /*
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+
+        }
+        */
     }
 
 }

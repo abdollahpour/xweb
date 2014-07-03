@@ -263,8 +263,12 @@ public class GzipModule extends Module {
     private class ZipRequestStream extends ServletInputStream {
 
         final HttpServletRequest request;
+
         final ServletInputStream inStream;
+
         final GZIPInputStream in;
+
+        boolean isClosed = false;
 
         public ZipRequestStream(final HttpServletRequest request) throws IOException {
             this.request = request;
@@ -290,7 +294,29 @@ public class GzipModule extends Module {
         @Override
         public void close() throws IOException {
             in.close();
+            isClosed = true;
         }
+
+        /*
+        @Override
+        public boolean isFinished() {
+            return isClosed;
+        }
+        */
+
+        /*
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+        */
+
+        /*
+        @Override
+        public void setReadListener(ReadListener readListener) {
+
+        }
+        */
     }
 
     private class ZipRequestWrapper extends HttpServletRequestWrapper {
@@ -360,6 +386,19 @@ public class GzipModule extends Module {
         public void finish() throws IOException {
             out.finish();
         }
+
+        /*
+        @Override
+        public boolean isReady() {
+            return true;
+        }
+        */
+
+        /*
+        @Override
+        public void setWriteListener(WriteListener writeListener) {
+        }
+        */
     }
 
     private class ZipResponseWrapper extends HttpServletResponseWrapper {

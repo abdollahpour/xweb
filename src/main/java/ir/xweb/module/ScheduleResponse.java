@@ -6,15 +6,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -47,7 +39,7 @@ public class ScheduleResponse implements HttpServletResponse {
 
     private PrintWriter writer;
 
-    private int contentLength = 0;
+    private long contentLength = 0;
 
     private String contentType;
 
@@ -117,8 +109,15 @@ public class ScheduleResponse implements HttpServletResponse {
         this.contentLength = contentLength;
     }
 
+    /*
+    @Override
+    public void setContentLengthLong(long l) {
+        this.contentLength = l;
+    }
+    */
+
     public int getContentLength() {
-        return contentLength;
+        return (int)contentLength;
     }
 
     public void setContentType(String contentType) {
@@ -214,8 +213,15 @@ public class ScheduleResponse implements HttpServletResponse {
         return this.headers.containsKey(name);
     }
 
-    public Object getHeader(String name) {
-        return this.headers.get(name);
+    @Override
+    public String getHeader(String name) {
+        final Object header = this.headers.get(name);
+        if(header != null) {
+            if(!(header instanceof Collection)) { // array headers
+                return header.toString();
+            }
+        }
+        return null;
     }
 
     public List getHeaders(String name) {

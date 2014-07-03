@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.Map;
 
 public class EmptyModule2 extends Module {
 
@@ -34,7 +34,7 @@ public class EmptyModule2 extends Module {
         final HttpServletRequest request,
         final HttpServletResponse response,
         final ModuleParam param,
-        final HashMap<String, FileItem> files) throws IOException {
+        final Map<String, FileItem> files) throws IOException {
 
         // write input to output
         byte[] buffer = new byte[1024];
