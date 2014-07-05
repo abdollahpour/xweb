@@ -243,6 +243,7 @@ public class AuthenticationModule extends Module {
                 filterChain.doFilter(request, response);
                 return;
             } else {
+                CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
                 logger.trace("UUID not valid for login (maybe expired: " + uuid);
             }
         }
