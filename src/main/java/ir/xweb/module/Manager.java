@@ -302,7 +302,7 @@ public class Manager {
      * @throws java.lang.IllegalArgumentException Null clazz
      */
     public <T> T getImplemented(final Class<T> clazz, final String name) {
-        if(clazz == null || name == null) {
+        if(clazz == null && name == null) {
             throw new IllegalArgumentException("one of class and name should not be null");
         }
 

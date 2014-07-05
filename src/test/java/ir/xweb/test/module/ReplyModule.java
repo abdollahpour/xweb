@@ -12,7 +12,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 public class ReplyModule extends Module {
 
@@ -29,7 +29,7 @@ public class ReplyModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam param,
-            final HashMap<String, FileItem> files) throws IOException {
+            final Map<String, FileItem> files) throws IOException {
 
         new DataTools().write(response, "json", null, param);
     }
