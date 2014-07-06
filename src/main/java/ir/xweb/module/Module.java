@@ -80,7 +80,8 @@ public class Module {
 			final ServletContext context,
             final HttpServletRequest request,
             final HttpServletResponse response,
-            final String role) throws IOException {
+            final String role) throws IOException
+    {
 		
 		final String contentType = request.getHeader("Content-Type");
 
@@ -174,7 +175,8 @@ public class Module {
                     return;
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new IOException(ex);
         }
 		
@@ -188,7 +190,8 @@ public class Module {
 			HttpServletRequest request, 
 			HttpServletResponse response, 
 			ModuleParam param,
-			Map<String, FileItem> files) throws IOException {
+			Map<String, FileItem> files) throws IOException
+    {
 
     }
 
