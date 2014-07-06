@@ -881,4 +881,8 @@ public class Manager {
         }
     }
 
+    public String getDefaultEncoding() {
+        return "UTF-8";
+    }
+
 }
