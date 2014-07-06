@@ -6,13 +6,10 @@
 
 package ir.xweb.data;
 
-import ir.xweb.util.MimeType;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -27,8 +24,6 @@ import java.util.*;
 public class DataTools {
 
     private final static Logger logger = LoggerFactory.getLogger("DataTools");
-
-    public final static String PROPERTY_JSONP_CALLBACK = "jsonp.callback";
 
     public final static String FORMAT_JSON = "json";
 
@@ -48,10 +43,19 @@ public class DataTools {
 
     public DataTools() {
         formatters.put(FORMAT_JSON, new JsonFormatter());
-        formatters.put(FORMAT_JSONP, new JsonpFormatter());
+        formatters.put(FORMAT_JSONP, new JsonpFormatter(this.properties));
         formatters.put(FORMAT_XML, new XmlFormatter());
         formatters.put(FORMAT_XML1, new XmlFormatter());
         formatters.put(FORMAT_XML2, new XmlFormatter2());
+    }
+
+    public String getFormat(final HttpServletRequest request) {
+        for(Map.Entry<String, ir.xweb.data.Formatter> e:formatters.entrySet()) {
+            if(e.getValue().isSupported(request)) {
+                return e.getKey();
+            }
+        }
+        return null;
     }
 
     public ir.xweb.data.Formatter addFormatter(final String name, final ir.xweb.data.Formatter formatter) {
@@ -421,42 +425,6 @@ public class DataTools {
         }
 
         return object;
-    }
-
-
-
-    private class JsonpFormatter extends JsonFormatter {
-
-        private final String mimeType = MimeType.get("json");
-
-        @Override
-        public void write(final Writer writer, final Object object) throws IOException {
-            try {
-                if(object instanceof Map) {
-                    final String callback = properties.get(PROPERTY_JSONP_CALLBACK);
-                    if(callback == null) {
-                        writer.write("jsonCallback(");
-                    } else {
-                        writer.append(callback).write("(");
-                    }
-                    ((JSONObject) write(object)).write(writer);
-                    writer.write(");");
-
-                } else {
-                    writer.write("jsonCallback(");
-                    ((JSONArray) write(object)).write(writer);
-                    writer.write(");");
-                }
-            } catch (JSONException ex) {
-                throw new IOException(ex);
-            }
-        }
-
-        @Override
-        public String getContentType() {
-            return mimeType;
-        }
-
     }
 
 }

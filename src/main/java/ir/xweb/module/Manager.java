@@ -810,4 +810,21 @@ public class Manager {
         return "UTF-8";
     }
 
+    public static Manager getManager(final ServletContext context) {
+        if(context == null) {
+            throw new IllegalArgumentException("null context");
+        }
+        return (Manager) context.getAttribute(Constants.SESSION_MANAGER);
+    }
+
+    public static void setManager(final ServletContext context, final Manager manager) {
+        if(context == null) {
+            throw new IllegalArgumentException("null context");
+        }
+        if(manager == null) {
+            throw new IllegalArgumentException("null manager");
+        }
+        context.setAttribute(Constants.SESSION_MANAGER, manager);
+    }
+
 }

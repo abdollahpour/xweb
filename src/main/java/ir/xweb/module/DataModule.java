@@ -9,6 +9,7 @@ package ir.xweb.module;
 import ir.xweb.data.DataTools;
 import ir.xweb.data.Formatter;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -53,6 +54,41 @@ public class DataModule extends Module {
         return dataTools.addFormatter(name, formatter);
     }
 
+    /**
+     * Write data to response. Format will detect from request.
+     * @param request Request
+     * @param response Response
+     * @param object Object
+     * @throws IOException
+     */
+    public void writeToResponse(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final Object object) throws IOException
+    {
+        final WriteConfig c = new WriteConfig();
+        c.format = this.dataTools.getFormat(request);
+        write(response, c, object);
+    }
+
+    /**
+     * Write data to response.
+     * @param response Response
+     * @param format Format
+     * @param object Object
+     * @throws IOException
+     */
+    public void writeToReponse(
+            final HttpServletResponse response,
+            final String format,
+            final Object object) throws IOException
+    {
+        final WriteConfig c = new WriteConfig();
+        c.format = format;
+        write(response, c, object);
+    }
+
+    @Deprecated
     public void write(
             final HttpServletResponse response,
             final String format,

@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -61,6 +62,21 @@ public class JsonFormatter implements Formatter {
     @Override
     public String getContentType() {
         return mimeType;
+    }
+
+    @Override
+    public boolean isSupported(final HttpServletRequest request) {
+        return isSupported(request.getHeader("Accept"));
+    }
+
+    @Override
+    public boolean isSupported(final String accept) {
+        if(accept != null) {
+            if(accept.indexOf(mimeType) > -1) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -38,8 +38,8 @@ public class XWebListener implements ServletContextListener {
 			for(String name:manager.getModules().keySet()) {
 				logger.debug("\t\t" + name + ": " + manager.getModules().get(name).getClass());
 			}
-			
-			context.getServletContext().setAttribute(Constants.SESSION_MANAGER, manager);
+
+            Manager.setManager(context.getServletContext(), manager);
 		} catch (Exception ex) {
 			logger.error("Error in load modules", ex);
 		}

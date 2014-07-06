@@ -13,6 +13,8 @@ import org.jdom.Element;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
@@ -26,7 +28,7 @@ public class XmlFormatter implements Formatter {
     /**
      * Content type for this formatter.
      */
-    private final String contentType = MimeType.get("xml");
+    private final String mimeType = MimeType.get("xml");
 
     /**
      * {@inheritDoc}
@@ -130,12 +132,22 @@ public class XmlFormatter implements Formatter {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public final String getContentType() {
-        return contentType;
+    public String getContentType() {
+        return mimeType;
+    }
+
+    @Override
+    public boolean isSupported(final HttpServletRequest request) {
+        return isSupported(request.getHeader("Accept"));
+    }
+
+    @Override
+    public boolean isSupported(final String accept) {
+        if(accept != null) {
+            return accept.indexOf("text/xml") > -1 || accept.indexOf("application/xml") > -1;
+        }
+        return false;
     }
 
     /**
