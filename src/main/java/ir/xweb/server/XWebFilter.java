@@ -41,14 +41,16 @@ public class XWebFilter implements Filter {
     public void doFilter(
             final ServletRequest request,
             final ServletResponse response,
-            final FilterChain filterChain) throws IOException, ServletException {
+            final FilterChain filterChain) throws IOException, ServletException
+    {
+        final Manager manager = Manager.getManager(this.context);
 
         // Damn servlet!
         // http://stackoverflow.com/questions/469874/how-do-i-correctly-decode-unicode-parameters-passed-to-a-servlet
         // We should to add to server.xml too:
         // <Connector    URIEncoding="UTF-8"    connectionTimeout="20000" port="8080" protocol="HTTP/1.1" ...>
-        request.setCharacterEncoding("UTF-8");
-        response.setCharacterEncoding("UTF-8");
+        request.setCharacterEncoding(manager.getDefaultEncoding());
+        response.setCharacterEncoding(manager.getDefaultEncoding());
 
         ServletRequest req = request;
         ServletResponse resp = response;
