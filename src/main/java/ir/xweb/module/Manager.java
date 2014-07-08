@@ -25,8 +25,6 @@ import java.util.regex.Pattern;
 import ir.xweb.server.Constants;
 import org.apache.commons.fileupload.FileItem;
 import ir.xweb.data.DataTools;
-import ir.xweb.server.Constants;
-import org.apache.commons.fileupload.FileItem;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -883,6 +881,23 @@ public class Manager {
 
     public String getDefaultEncoding() {
         return "UTF-8";
+    }
+
+    public static Manager getManager(final ServletContext context) {
+        if(context == null) {
+            throw new IllegalArgumentException("null context");
+        }
+        return (Manager) context.getAttribute(Constants.SESSION_MANAGER);
+    }
+
+    public static void setManager(final ServletContext context, final Manager manager) {
+        if(context == null) {
+            throw new IllegalArgumentException("null context");
+        }
+        if(manager == null) {
+            throw new IllegalArgumentException("null manager");
+        }
+        context.setAttribute(Constants.SESSION_MANAGER, manager);
     }
 
 }
