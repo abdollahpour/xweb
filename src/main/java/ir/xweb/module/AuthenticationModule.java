@@ -226,29 +226,34 @@ public class AuthenticationModule extends Module {
             logger.info("User try to login: " + identifier);
 
             final boolean remember = "true".equals(params.getString("remember", "false"));
-            // (user, temporary password, is temporary password (false by default))
-            final XWebUser user = dataSource.getUserWithId(identifier, password);
+            if(getDataSource() != null) {
+                // (user, temporary password, is temporary password (false by default))
+                final XWebUser user = getDataSource().getUserWithId(identifier, password);
 
-            // Check for login, you can not login with no login role
-            if (user != null) {
-                setUser(request, user);
+                // Check for login, you can not login with no login role
+                if (user != null) {
+                    setUser(request, user);
 
-                if(remember) {
-                    final String uuid = getDataSource().generateUUID(identifier);
+                    if (remember) {
+                        final String uuid = getDataSource().generateUUID(identifier);
 
-                    if(uuid != null) {
-                        response.setContentType("text/plain");
-                        CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
-                        response.getWriter().write(uuid);
-                        response.getWriter().flush();
+                        if (uuid != null) {
+                            response.setContentType("text/plain");
+                            CookieTools.addCookie(request, response, Constants.COOKIE_AUTH_REMEMBER, uuid, cookieAge);
+                            response.getWriter().write(uuid);
+                            response.getWriter().flush();
+                        }
+                    } else {
+                        CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
                     }
-                } else {
-                    CookieTools.removeCookie(request, response, Constants.COOKIE_AUTH_REMEMBER);
-                }
 
-                logger.info(identifier + " successfully login into system. Remember = " + remember);
-            } else {
-                throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
+                    logger.info(identifier + " successfully login into system. Remember = " + remember);
+                } else {
+                    throw new ModuleException(HttpServletResponse.SC_UNAUTHORIZED, "Invalid username or password");
+                }
+            }
+            else {
+                throw new IllegalArgumentException("Authentication data source not found!");
             }
         }
         else if(params.containsKey("logout")) {
