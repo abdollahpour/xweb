@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
@@ -56,14 +57,58 @@ public class CaptchaModule extends Module {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final ModuleParam param,
-            final Map<String, FileItem> files) throws IOException {
-
+            final Map<String, FileItem> files) throws IOException
+    {
         final Random rand = new Random();
         final int code = 10000 + rand.nextInt(89999);
 
         // just for 10 min
         final long expire = System.currentTimeMillis() + 10 * 60 * 1000;
 
+        final BufferedImage image = createCaptchaImage();
+
+        response.setContentType("image/jpeg");
+        response.setHeader("Cache-Control", "no-cache, no-store");
+        response.setHeader("Pragma", "no-cache");
+        long time = System.currentTimeMillis();
+        response.setDateHeader("Last-Modified", time);
+        response.setDateHeader("Date", time);
+        response.setDateHeader("Expires", time);
+
+        final OutputStream outputStream = response.getOutputStream();
+        ImageIO.write(image, "jpeg", outputStream);
+        outputStream.close();
+
+        request.getSession().setAttribute(SESSION_CAPTCHA_CODE, code);
+        request.getSession().setAttribute(SESSION_CAPTCHA_EXPIRE, expire);
+    }
+
+    public File createCaptcha(final int code) {
+        final BufferedImage image = createCaptchaImage(code);
+
+        final ResourceModule resource = getManager().getModule(ResourceModule.class);
+
+        final File file;
+        try {
+            if (resource != null) {
+                file = resource.initTempFile();
+            } else {
+                file = File.createTempFile("xweb_captcha_image_" + code, ".jpg");
+            }
+        }
+        catch (IOException ex) {
+            throw new IllegalStateException("Error to create temp file", ex);
+        }
+
+        try {
+            ImageIO.write(image, "jpeg", file);
+        }
+        catch (Exception ex) {
+            throw new IllegalStateException("Error to save jpeg file");
+        }
+    }
+
+    public BufferedImage createCaptchaImage(final int code) {
         java.util.List<Font> textFonts = Arrays.asList(
                 //new Font("Arial", Font.PLAIN, 40),
                 new Font("Courier", Font.PLAIN, 40));
@@ -111,24 +156,9 @@ public class CaptchaModule extends Module {
                 .gimp(new FishEyeGimpyRenderer(fishColor1, fishColor2))
                         //.addNoise()
                         //.addBorder()
-                        .build();
+                .build();
 
-        final BufferedImage image = captcha.getImage();
-
-        response.setContentType("image/jpeg");
-        response.setHeader("Cache-Control", "no-cache, no-store");
-        response.setHeader("Pragma", "no-cache");
-        long time = System.currentTimeMillis();
-        response.setDateHeader("Last-Modified", time);
-        response.setDateHeader("Date", time);
-        response.setDateHeader("Expires", time);
-
-        final OutputStream outputStream = response.getOutputStream();
-        ImageIO.write(image, "jpeg", outputStream);
-        outputStream.close();
-
-        request.getSession().setAttribute(SESSION_CAPTCHA_CODE, code);
-        request.getSession().setAttribute(SESSION_CAPTCHA_EXPIRE, expire);
+        return captcha.getImage();
     }
 
     /**
