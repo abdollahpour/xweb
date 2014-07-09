@@ -65,7 +65,7 @@ public class CaptchaModule extends Module {
         // just for 10 min
         final long expire = System.currentTimeMillis() + 10 * 60 * 1000;
 
-        final BufferedImage image = createCaptchaImage();
+        final BufferedImage image = createCaptchaImage(code);
 
         response.setContentType("image/jpeg");
         response.setHeader("Cache-Control", "no-cache, no-store");
@@ -102,6 +102,7 @@ public class CaptchaModule extends Module {
 
         try {
             ImageIO.write(image, "jpeg", file);
+            return file;
         }
         catch (Exception ex) {
             throw new IllegalStateException("Error to save jpeg file");
@@ -109,6 +110,8 @@ public class CaptchaModule extends Module {
     }
 
     public BufferedImage createCaptchaImage(final int code) {
+        final Random rand = new Random();
+
         java.util.List<Font> textFonts = Arrays.asList(
                 //new Font("Arial", Font.PLAIN, 40),
                 new Font("Courier", Font.PLAIN, 40));
