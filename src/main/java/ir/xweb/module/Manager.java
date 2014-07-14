@@ -783,7 +783,9 @@ public class Manager {
             throw new IllegalArgumentException("Module with same name already exist: " + name);
         }
 
-        this.modules.put(name, module);
+        synchronized (modules) {
+            this.modules.put(name, module);
+        }
     }
 
     /**
@@ -792,7 +794,9 @@ public class Manager {
      * @return Removed module or null if module does not find.
      */
     public Module unregisterModule(final String name) {
-        return this.modules.get(name);
+        synchronized (modules) {
+            return this.modules.get(name);
+        }
     }
 
     /**

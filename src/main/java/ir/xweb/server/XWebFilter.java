@@ -89,17 +89,15 @@ public class XWebFilter implements Filter {
                 final ServletResponse response) throws IOException, ServletException
         {
             // May modules change
-           synchronized (modules) {
-               if (iterator.hasNext()) {
-                   final Module next = iterator.next();
-                   next.doFilter(
-                           context,
-                           (HttpServletRequest) request,
-                           (HttpServletResponse) response,
-                           this);
-               } else {
-                   mainChain.doFilter(request, response);
-               }
+           if (iterator.hasNext()) {
+               final Module next = iterator.next();
+               next.doFilter(
+                       context,
+                       (HttpServletRequest) request,
+                       (HttpServletResponse) response,
+                       this);
+           } else {
+               mainChain.doFilter(request, response);
            }
         }
     }
