@@ -128,7 +128,9 @@ public class XmlFormatter implements Formatter {
                 parent.addContent(e);
             }
         } else if(object != null) {
-            parent.setText(object.toString());
+            final String text = object.toString();
+            // https://bitbucket.org/wpic/wpic-lp/issue/10/character-endoing-problem-for-some-of
+            parent.setText(text.replace((char)0x8, ' '));
         }
     }
 
